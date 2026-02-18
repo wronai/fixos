@@ -15,7 +15,7 @@ from ..config import FixOsConfig
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize
 from ..utils.terminal import (
-    _C, print_problem_header, print_cmd_block,
+    _C, console, print_problem_header, print_cmd_block,
     print_stdout_box, print_stderr_box, render_tree_colored,
 )
 from .executor import CommandExecutor, ExecutionResult, DangerousCommandError, CommandTimeoutError
@@ -218,12 +218,12 @@ class FixOrchestrator:
                     if not result.success and result.executed:
                         break
                 except DangerousCommandError as e:
-                    print(f"\n  ⛔ ZABLOKOWANO: {e}")
+                    console.print(f"\n  [bold red]⛔ ZABLOKOWANO:[/bold red] {e}")
                     problem.status = "failed"
                     self._log("dangerous_blocked", {"command": cmd, "error": str(e)})
                     break
                 except CommandTimeoutError as e:
-                    print(f"\n  ⏰ TIMEOUT: {e}")
+                    console.print(f"\n  [bold yellow]⏰ TIMEOUT:[/bold yellow] {e}")
                     last_result = ExecutionResult(command=cmd, timed_out=True, executed=False)
                     break
 
@@ -237,7 +237,7 @@ class FixOrchestrator:
                     np.caused_by.append(problem.id)
                     problem.may_cause.append(np.id)
                     self.graph.add(np)
-                    print(f"\n  🔍 Odkryto nowy problem: [{np.id}] {np.description}")
+                    console.print(f"\n  [cyan]🔍 Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
 
         return self._session_summary()
 
@@ -354,13 +354,10 @@ class FixOrchestrator:
         )
         print_cmd_block(command)
         try:
-            prompt = (
-                f"  {_C.BOLD}Wykonać?{_C.RESET} "
-                f"{_C.GREEN}[Y]{_C.RESET}es / "
-                f"{_C.RED}[n]{_C.RESET}o / "
-                f"{_C.YELLOW}[s]{_C.RESET}kip all: "
-            )
-            ans = input(prompt).strip().lower()
+            ans = console.input(
+                r"  [bold]Wykonać?[/bold] [green]\[Y][/green]es / "
+                r"[red]\[n][/red]o / [yellow]\[s][/yellow]kip all: "
+            ).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return False
         if ans in ("s", "skip", "skip all"):
@@ -370,19 +367,16 @@ class FixOrchestrator:
     @staticmethod
     def _default_progress(problem: Problem, result: ExecutionResult) -> None:
         if not result.executed:
-            print(f"\n  {_C.DIM}{_C.YELLOW}⏭️  DRY-RUN:{_C.RESET} {_C.CYAN}`{result.command}`{_C.RESET}")
+            console.print(f"\n  [dim yellow]⏭️  DRY-RUN:[/dim yellow] [cyan]`{result.command}`[/cyan]")
             if result.preview:
-                print(f"  {_C.DIM}{result.preview}{_C.RESET}")
+                console.print(f"  [dim]{result.preview}[/dim]")
             return
-        print()
+        console.print()
         if result.success:
-            status_str = f"{_C.GREEN}{_C.BOLD}✅ OK{_C.RESET}"
+            console.print(f"  [bold green]✅ OK[/bold green]  [cyan]`{result.command}`[/cyan]")
         else:
-            status_str = f"{_C.RED}{_C.BOLD}❌ kod {result.returncode}{_C.RESET}"
-        print(f"  {status_str}  {_C.CYAN}`{result.command}`{_C.RESET}")
+            console.print(f"  [bold red]❌ kod {result.returncode}[/bold red]  [cyan]`{result.command}`[/cyan]")
         if result.stdout and not result.stdout.startswith("(już wykonane"):
-            print()
             print_stdout_box(result.stdout)
         if result.stderr and not result.success:
-            print()
             print_stderr_box(result.stderr)

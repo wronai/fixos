@@ -757,33 +757,35 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
         click.echo(click.style("  ✅ LLM nie wykrył problemów wymagających naprawy.", fg="green"))
         return
 
-    from .utils.terminal import _C, render_tree_colored
+    from .utils.terminal import console, render_tree_colored
+    from rich.rule import Rule
+    from rich.panel import Panel
+    from rich.text import Text
 
-    click.echo(click.style(f"\n📊 Graf problemów ({len(problems)} wykrytych):", fg="cyan"))
-    print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
-    click.echo()
+    console.print(Rule(f"[bold cyan]📊 Graf problemów ({len(problems)} wykrytych)[/bold cyan]", style="cyan"))
+    console.print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
+    console.print()
 
     # Główna pętla napraw
     summary = orch.run_sync()
 
     # Podsumowanie
-    print(f"\n{_C.CYAN}{_C.BOLD}{'═' * 65}{_C.RESET}")
-    print(f"{_C.CYAN}{_C.BOLD}  📊 PODSUMOWANIE SESJI{_C.RESET}")
-    print(f"{_C.CYAN}{_C.BOLD}{'═' * 65}{_C.RESET}")
     by_status = summary.get("by_status", {})
     resolved = len(by_status.get("resolved", []))
     failed   = len(by_status.get("failed", []))
     skipped  = len(by_status.get("skipped", []))
     pending  = len(by_status.get("pending", []))
     elapsed  = summary.get("elapsed_seconds", 0)
-    print(f"  {_C.GREEN}✅ Naprawiono  : {resolved}{_C.RESET}")
-    print(f"  {_C.RED}❌ Nieudane    : {failed}{_C.RESET}")
-    print(f"  {_C.YELLOW}⏭️  Pominięte   : {skipped}{_C.RESET}")
-    print(f"  {_C.DIM}⏳ Pozostałe   : {pending}{_C.RESET}")
-    print(f"  {_C.DIM}⏱️  Czas sesji  : {elapsed}s{_C.RESET}")
-    print()
-    print(f"{_C.CYAN}  Aktualny stan grafu:{_C.RESET}")
-    print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
+    summary_text = Text()
+    summary_text.append(f"✅ Naprawiono  : {resolved}\n", style="green")
+    summary_text.append(f"❌ Nieudane    : {failed}\n", style="red")
+    summary_text.append(f"⏭️  Pominięte   : {skipped}\n", style="yellow")
+    summary_text.append(f"⏳ Pozostałe   : {pending}\n", style="dim")
+    summary_text.append(f"⏱️  Czas sesji  : {elapsed}s", style="dim")
+    console.print(Panel(summary_text, title="[bold cyan]📊 PODSUMOWANIE SESJI[/bold cyan]", border_style="cyan"))
+    console.print()
+    console.print("[cyan]  Aktualny stan grafu:[/cyan]")
+    console.print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
 
     if output:
         try:

@@ -1,3 +1,18 @@
+## [2.1.9] - 2026-02-18
+
+### Summary
+
+refactor(goal): CLI interface improvements
+
+### Other
+
+- update fixos/agent/hitl.py
+- update fixos/cli.py
+- update fixos/orchestrator/orchestrator.py
+- update fixos/utils/terminal.py
+- update requirements.txt
+
+
 ## [2.1.8] - 2026-02-18
 
 ### Summary

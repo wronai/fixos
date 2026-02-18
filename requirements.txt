@@ -23,3 +23,6 @@ click>=8.1.0
 
 # Ładowanie pliku .env do zmiennych środowiskowych
 python-dotenv>=1.0.0
+
+# Terminal markdown rendering z kolorami (zastępuje ręczne ANSI)
+rich>=13.0

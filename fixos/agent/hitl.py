@@ -21,7 +21,11 @@ from typing import Optional
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
-from ..utils.terminal import _C, render_md as _render_md, colorize as _colorize_inline
+from ..utils.terminal import (
+    _C, render_md as _render_md, colorize as _colorize_inline,
+    console, print_cmd_block as _print_cmd_block_rich,
+    print_stdout_box, print_stderr_box,
+)
 from ..config import FixOsConfig
 from ..platform_utils import (
     is_dangerous, elevate_cmd, run_command,
@@ -81,58 +85,35 @@ class CmdResult:
 
 
 def _sep(char: str = "─", width: int = 65):
-    print(char * width)
+    from rich.rule import Rule
+    console.print(Rule(style="dim cyan"))
 
 
 def _print_cmd_preview(cmd: str, comment: str = ""):
     """Shows command in a clear block before execution."""
-    print()
-    _sep("┄")
-    print("  🔧 KOMENDA DO WYKONANIA")
-    print()
-    print("  ```bash")
-    print(f"  {cmd}")
-    print("  ```")
-    if comment:
-        print()
-        print(f"  📝 Co robi: {comment}")
-    _sep("┄")
+    _print_cmd_block_rich(cmd, comment=comment)
 
 
 def _print_cmd_result(result: CmdResult):
     """Shows command result with colorized markdown."""
+    from rich.text import Text
     if result.skipped:
-        print(f"  {_C.DIM}⏭️  Pominięto: {_C.CYAN}`{result.cmd}`{_C.RESET}")
+        console.print(Text(f"⏭️  Pominięto: `{result.cmd}`", style="dim"))
         return
 
     if result.ok:
-        status = f"{_C.GREEN}{_C.BOLD}✅{_C.RESET}"
+        console.print(Text(f"✅  {result.cmd}", style="bold green"))
     else:
-        status = f"{_C.RED}{_C.BOLD}❌ (kod {result.returncode}){_C.RESET}"
-
-    print()
-    print(f"  {status} {_C.CYAN}`{result.cmd}`{_C.RESET}")
-    print()
+        console.print(Text(f"❌  (kod {result.returncode})  {result.cmd}", style="bold red"))
 
     if result.stdout.strip():
-        lines = result.stdout.strip().splitlines()
-        print(f"{_C.BG_DARK}{_C.DIM}  ┌─ stdout {'─' * 47}┐{_C.RESET}")
-        for line in lines[:40]:
-            print(f"{_C.BG_DARK}  │ {_C.GREEN}{line}{_C.RESET}")
-        if len(lines) > 40:
-            print(f"{_C.BG_DARK}  │ {_C.DIM}... ({len(lines) - 40} więcej linii){_C.RESET}")
-        print(f"{_C.BG_DARK}{_C.DIM}  └{'─' * 54}┘{_C.RESET}")
+        print_stdout_box(result.stdout, max_lines=40)
     elif not result.ok and not result.stderr.strip():
-        print(f"  {_C.DIM}(brak stdout){_C.RESET}")
+        console.print("[dim](brak stdout)[/dim]")
 
     if result.stderr.strip() and not result.ok:
-        print()
-        print(f"  {_C.YELLOW}{_C.BOLD}⚠️  Stderr:{_C.RESET}")
-        print(f"{_C.BG_DARK}{_C.DIM}  ┌─ stderr {'─' * 47}┐{_C.RESET}")
-        for line in result.stderr.strip().splitlines()[:15]:
-            print(f"{_C.BG_DARK}  │ {_C.RED}{line}{_C.RESET}")
-        print(f"{_C.BG_DARK}{_C.DIM}  └{'─' * 54}┘{_C.RESET}")
-    print()
+        print_stderr_box(result.stderr)
+    console.print()
 
 
 def _run_cmd(cmd: str, comment: str = "") -> CmdResult:
@@ -140,19 +121,18 @@ def _run_cmd(cmd: str, comment: str = "") -> CmdResult:
     cmd = elevate_cmd(cmd)
     danger = is_dangerous(cmd)
     if danger:
-        print(f"\n  ⛔ ZABLOKOWANO: {danger}")
-        print(f"  Komenda: `{cmd}`")
+        console.print(f"\n  [bold red]⛔ ZABLOKOWANO:[/bold red] {danger}")
+        console.print(f"  Komenda: [cyan]`{cmd}`[/cyan]")
         return CmdResult(cmd=cmd, comment=comment, ok=False,
                          stdout="", stderr=f"Zablokowano: {danger}", returncode=-99)
     _print_cmd_preview(cmd, comment)
-    print("  Wykonać? [Y/n]: ", end="", flush=True)
-    ans = input().strip().lower()
+    ans = console.input("  [bold]Wykonać?[/bold] \\[Y/n]: ").strip().lower()
     if ans in ("n", "no", "nie"):
         return CmdResult(cmd=cmd, comment=comment, ok=False,
                          stdout="", stderr="Pominięto.", returncode=-1, skipped=True)
-    print("  ⏳ Wykonuję...", end="", flush=True)
+    console.print("  [dim]⏳ Wykonuję...[/dim]", end="")
     ok, stdout, stderr, rc = run_command(cmd, timeout=120)
-    print("\r" + " " * 30 + "\r", end="")
+    console.print("\r" + " " * 30 + "\r", end="")
     result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                        stdout=stdout, stderr=stderr, returncode=rc)
     _print_cmd_result(result)
@@ -187,51 +167,58 @@ def _print_action_menu(
     tokens: int,
 ):
     """Prints the interactive numbered action menu."""
-    print()
-    _sep("═")
-    print(f"  📋 DOSTĘPNE AKCJE  |  ⏰ {rem_time}  |  ~{tokens} tokenów")
-    _sep("─")
+    from rich.rule import Rule
+    from rich.syntax import Syntax
+    from rich.panel import Panel
+    console.print()
+    console.print(Rule(
+        f"[bold cyan]📋 DOSTĘPNE AKCJE[/bold cyan]  [dim]⏰ {rem_time}  ~{tokens} tokenów[/dim]",
+        style="cyan",
+    ))
     if fixes:
         for i, (cmd, comment) in enumerate(fixes, 1):
             label = comment if comment else (cmd[:55] + "..." if len(cmd) > 55 else cmd)
-            print(f"  [{i}] {label}")
-            print(f"       ```bash")
-            print(f"       {cmd}")
-            print(f"       ```")
-        print()
-        print(f"  [A]  Wykonaj wszystkie ({len(fixes)} komend)")
-        print(f"  [S]  Pomiń wszystkie")
+            console.print(f"  [bold yellow][{i}][/bold yellow] {label}")
+            console.print(Panel(
+                Syntax(cmd, "bash", theme="monokai", word_wrap=True),
+                border_style="dim cyan",
+                padding=(0, 1),
+            ))
+        console.print()
+        console.print(f"  [bold yellow][A][/bold yellow]  Wykonaj wszystkie ({len(fixes)} komend)")
+        console.print(f"  [bold yellow][S][/bold yellow]  Pomiń wszystkie")
     else:
-        print("  (brak zaproponowanych komend)")
-    print()
-    print(f"  [D]           Opisz własny problem / co chcesz zmienić")
-    print(f"  [!cmd]        Wykonaj własną komendę")
-    print(f"  [search <q>]  Szukaj zewnętrznie")
-    print(f"  [?]           Zapytaj o więcej szczegółów")
-    print(f"  [Q]           Zakończ sesję")
-    _sep("═")
+        console.print("  [dim](brak zaproponowanych komend)[/dim]")
+    console.print()
+    console.print(f"  [bold yellow][D][/bold yellow]           Opisz własny problem / co chcesz zmienić")
+    console.print(f"  [bold yellow][!cmd][/bold yellow]        Wykonaj własną komendę")
+    console.print(f"  [bold yellow][search <q>][/bold yellow]  Szukaj zewnętrznie")
+    console.print(f"  [bold yellow][?][/bold yellow]           Zapytaj o więcej szczegółów")
+    console.print(f"  [bold yellow][Q][/bold yellow]           Zakończ sesję")
+    console.print(Rule(style="cyan"))
 
 
 def _ask_user_problem() -> str:
     """Interactively asks the user to describe their problem."""
-    print()
-    _sep("═")
-    print("  💬 OPISZ SWÓJ PROBLEM")
-    _sep("─")
-    print("  Napisz co chcesz naprawić, zmienić lub co nie działa.")
-    print("  Możesz pisać po polsku lub angielsku.")
-    print()
-    print("  Przykłady:")
-    print("    - 'brak dźwięku po aktualizacji'")
-    print("    - 'chcę przyspieszyć uruchamianie systemu'")
-    print("    - 'wifi nie działa po uśpieniu'")
-    print("    - 'chcę zainstalować sterowniki NVIDIA'")
-    print("    - 'dysk jest prawie pełny, co usunąć'")
-    print("    - 'jak skonfigurować firewall'")
-    _sep("─")
-    print()
+    from rich.panel import Panel
+    from rich.text import Text
+    body = Text()
+    body.append("Napisz co chcesz naprawić, zmienić lub co nie działa.\n", style="white")
+    body.append("Możesz pisać po polsku lub angielsku.\n\n", style="dim")
+    body.append("Przykłady:\n", style="bold cyan")
+    body.append(
+        "  - 'brak dźwięku po aktualizacji'\n"
+        "  - 'chcę przyspieszyć uruchamianie systemu'\n"
+        "  - 'wifi nie działa po uśpieniu'\n"
+        "  - 'chcę zainstalować sterowniki NVIDIA'\n"
+        "  - 'dysk jest prawie pełny, co usunąć'\n"
+        "  - 'jak skonfigurować firewall'",
+        style="dim",
+    )
+    console.print()
+    console.print(Panel(body, title="[bold cyan]💬 OPISZ SWÓJ PROBLEM[/bold cyan]", border_style="cyan"))
     try:
-        return input("  Twój problem: ").strip()
+        return console.input("  [bold cyan]Twój problem:[/bold cyan] ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""
 
@@ -249,10 +236,9 @@ def run_hitl_session(
     anon_str, report = anonymize(str(diagnostics))
     if show_data:
         display_anonymized_preview(anon_str, report)
-        print("\n  Czy wysłać te dane do LLM? [Y/n]: ", end="")
-        ans = input().strip().lower()
+        ans = console.input("\n  Czy wysłać te dane do LLM? \\[Y/n]: ").strip().lower()
         if ans in ("n", "no", "nie"):
-            print("  Anulowano.")
+            console.print("  Anulowano.")
             return
 
     setup_signal_timeout(config.session_timeout, _timeout)
@@ -282,12 +268,14 @@ def run_hitl_session(
     def fmt_time(s: int) -> str:
         return f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}"
 
-    print()
-    _sep("═")
-    print(f"  👤 HUMAN-IN-THE-LOOP  |  Model: {config.model}")
-    print(f"  🖥️  OS: {os_info['system']} {os_info['release']}  |  PM: {pkg_manager}")
-    print(f"  ⏰ Sesja: max {fmt_time(config.session_timeout)}")
-    _sep("═")
+    from rich.panel import Panel
+    from rich.text import Text as _Text
+    _header = _Text()
+    _header.append(f"👤 HUMAN-IN-THE-LOOP  |  Model: {config.model}\n", style="bold cyan")
+    _header.append(f"🖥️  OS: {os_info['system']} {os_info['release']}  |  PM: {pkg_manager}\n", style="cyan")
+    _header.append(f"⏰ Sesja: max {fmt_time(config.session_timeout)}", style="dim")
+    console.print()
+    console.print(Panel(_header, border_style="cyan"))
 
     try:
         while True:
@@ -295,25 +283,25 @@ def run_hitl_session(
             if rem <= 0:
                 raise SessionTimeout()
 
-            print(f"\n  🧠 Analizuję...", end="", flush=True)
+            console.print(f"\n  [dim]🧠 Analizuję...[/dim]", end="")
             try:
                 reply = llm.chat(messages, max_tokens=2500, temperature=0.2)
                 messages.append({"role": "assistant", "content": reply})
             except LLMError as e:
-                print(f"\n  ❌ Błąd LLM: {e}")
+                console.print(f"\n  [bold red]❌ Błąd LLM:[/bold red] {e}")
                 if config.enable_web_search and web_search_count < MAX_WEB_SEARCHES:
                     web_search_count += 1
-                    print("  🔎 Szukam zewnętrznie...")
+                    console.print("  [yellow]🔎 Szukam zewnętrznie...[/yellow]")
                     results = search_all("linux system diagnostics repair", config.serpapi_key)
                     if results:
-                        print(format_results_for_llm(results))
+                        console.print(format_results_for_llm(results))
                 break
-            print("\r" + " " * 30 + "\r", end="")
+            console.print("\r" + " " * 30 + "\r", end="")
 
-            print()
-            _sep("─")
+            from rich.rule import Rule as _Rule
+            console.print(_Rule(style="dim cyan"))
             _render_md(reply)
-            _sep("─")
+            console.print(_Rule(style="dim cyan"))
 
             last_fixes = _extract_fixes(reply)
 
@@ -322,14 +310,13 @@ def run_hitl_session(
                 "not sure", "cannot determine",
             ])
             if low_conf and config.enable_web_search and web_search_count < MAX_WEB_SEARCHES:
-                print("\n  💡 LLM niepewny – szukać zewnętrznie? [y/N]: ", end="")
-                if input().strip().lower() in ("y", "yes", "tak"):
+                if console.input("\n  [dim]💡 LLM niepewny – szukać zewnętrznie? [y/N]:[/dim] ").strip().lower() in ("y", "yes", "tak"):
                     web_search_count += 1
                     topic = _extract_search_topic(reply)
                     results = search_all(topic, config.serpapi_key)
                     if results:
                         web_ctx = format_results_for_llm(results)
-                        print(web_ctx)
+                        console.print(web_ctx)
                         messages.append({"role": "user",
                                          "content": f"External sources:\n{web_ctx}\nUpdate analysis."})
                         continue
@@ -337,9 +324,9 @@ def run_hitl_session(
             _print_action_menu(last_fixes, fmt_time(rem), llm.total_tokens)
 
             try:
-                user_in = input(f"\n  fixos [{fmt_time(rem)}] ❯ ").strip()
+                user_in = console.input(f"\n  [bold cyan]fixos [{fmt_time(rem)}] ❯[/bold cyan] ").strip()
             except (EOFError, KeyboardInterrupt):
-                print("\n  Sesja przerwana.")
+                console.print("\n  Sesja przerwana.")
                 break
 
             if not user_in:
@@ -349,7 +336,7 @@ def run_hitl_session(
 
             # [Q] Quit
             if lo in ("q", "quit", "exit", "koniec"):
-                print("\n  ✅ Sesja zakończona.")
+                console.print("\n  [bold green]✅ Sesja zakończona.[/bold green]")
                 break
 
             # [D] Describe own problem
@@ -375,9 +362,9 @@ def run_hitl_session(
             # [A] Execute all
             if lo in ("a", "all", "wszystkie"):
                 if not last_fixes:
-                    print("  Brak komend do wykonania.")
+                    console.print("  [dim]Brak komend do wykonania.[/dim]")
                     continue
-                print(f"\n  ▶️  Wykonuję wszystkie {len(last_fixes)} komend...\n")
+                console.print(f"\n  [bold cyan]▶️  Wykonuję wszystkie {len(last_fixes)} komend...[/bold cyan]\n")
                 summary_lines = []
                 for cmd, comment in last_fixes:
                     result = _run_cmd(cmd, comment)
@@ -415,7 +402,7 @@ def run_hitl_session(
                         ),
                     })
                 else:
-                    print(f"  Brak opcji [{user_in}]. Dostępne: 1–{len(last_fixes)}")
+                    console.print(f"  [yellow]Brak opcji [{user_in}]. Dostępne: 1–{len(last_fixes)}[/yellow]")
                 continue
 
             # [!cmd] Direct command execution
@@ -436,27 +423,29 @@ def run_hitl_session(
                 results = search_all(query, config.serpapi_key)
                 if results:
                     web_ctx = format_results_for_llm(results)
-                    print(web_ctx)
+                    console.print(web_ctx)
                     messages.append({
                         "role": "user",
                         "content": f"Search results for '{query}':\n{web_ctx}\nWhat do you think?"
                     })
                 else:
-                    print("  Brak wyników.")
+                    console.print("  [dim]Brak wyników.[/dim]")
                 continue
 
             # Free text → send to LLM
             messages.append({"role": "user", "content": user_in})
 
     except SessionTimeout:
-        print(f"\n\n  ⏰ Sesja wygasła (limit: {fmt_time(config.session_timeout)}).")
+        console.print(f"\n\n  [bold yellow]⏰ Sesja wygasła (limit: {fmt_time(config.session_timeout)}).[/bold yellow]")
     finally:
         cancel_signal_timeout()
 
     elapsed = int(time.time() - start_ts)
     ok_count = sum(1 for r in executed if r.ok)
-    print(f"\n  📊 Sesja: {len(messages)-2} tur | {fmt_time(elapsed)} | "
-          f"~{llm.total_tokens} tokenów | {ok_count}/{len(executed)} komend OK")
+    console.print(
+        f"\n  [bold cyan]📊 Sesja:[/bold cyan] {len(messages)-2} tur | {fmt_time(elapsed)} | "
+        f"~{llm.total_tokens} tokenów | [green]{ok_count}[/green]/[red]{len(executed)}[/red] komend OK"
+    )
 
 
 def _extract_search_topic(llm_reply: str) -> str:

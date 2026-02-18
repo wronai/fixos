@@ -3,23 +3,24 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "fixfedora"
-version = "2.0.8"
-description = "AI-powered Fedora Linux diagnostics – audio, thumbnails, hardware (Lenovo Yoga)"
+name = "fixos"
+version = "2.1.0"
+description = "AI-powered Linux/Windows diagnostics and repair – audio, hardware, system issues"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"
 authors = [
-    { name = "fixfedora contributors" },
+    { name = "fixos contributors" },
     { name = "Tom Sapletta", email = "tom@sapletta.com" },
 ]
-keywords = ["fedora", "linux", "diagnostics", "ai", "llm", "audio", "sof-firmware"]
+keywords = ["linux", "windows", "diagnostics", "ai", "llm", "audio", "system-repair", "cross-platform"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
     "Topic :: System :: Systems Administration",
     "Topic :: System :: Monitoring",
     "Environment :: Console",
@@ -41,11 +42,11 @@ dev = [
 ]
 
 [project.scripts]
-fixfedora = "fixfedora.cli:main"
+fixos = "fixos.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/wronai/fixfedora"
-"Bug Tracker" = "https://github.com/wronai/fixfedora/issues"
+Homepage = "https://github.com/wronai/fixos"
+"Bug Tracker" = "https://github.com/wronai/fixos/issues"
 
 [tool.setuptools.packages.find]
 exclude = ["tests*", "docker*"]
@@ -58,7 +59,7 @@ python_functions = ["test_*"]
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["fixfedora"]
+source = ["fixos"]
 omit = ["tests/*", "docker/*"]
 
 [tool.coverage.report]

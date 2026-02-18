@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from fixfedora.utils.anonymizer import anonymize, AnonymizationReport
+from fixos.utils.anonymizer import anonymize, AnonymizationReport
 
 REAL_HOSTNAME = socket.gethostname()
 REAL_USER = getpass.getuser()
@@ -40,8 +40,8 @@ def _assert_no_sensitive(text: str, label: str = ""):
 
 @pytest.fixture
 def mock_cfg():
-    from fixfedora.config import FixFedoraConfig
-    return FixFedoraConfig(
+    from fixos.config import FixOsConfig
+    return FixOsConfig(
         provider="gemini",
         api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_1234567890",
         model="gemini-2.5-flash-preview-04-17",
@@ -232,9 +232,9 @@ class TestDiagnosticsAnonymization:
 
 class TestHITLAnonymizationLayer:
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_prompt_no_hostname(self, mock_openai, mock_cfg):
-        from fixfedora.agent.hitl import run_hitl_session
+        from fixos.agent.hitl import run_hitl_session
 
         captured = []
 
@@ -261,9 +261,9 @@ class TestHITLAnonymizationLayer:
         for content in captured:
             assert REAL_HOSTNAME not in content, f"Hostname wyciekł do LLM: {content[:200]}"
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_prompt_no_username(self, mock_openai, mock_cfg):
-        from fixfedora.agent.hitl import run_hitl_session
+        from fixos.agent.hitl import run_hitl_session
 
         captured = []
 
@@ -293,9 +293,9 @@ class TestHITLAnonymizationLayer:
 
     def test_user_rejects_send_no_llm_call(self, mock_cfg):
         """Gdy użytkownik odpowie 'n', LLM nie powinien być wywołany."""
-        from fixfedora.agent.hitl import run_hitl_session
+        from fixos.agent.hitl import run_hitl_session
 
-        with patch("fixfedora.providers.llm.openai") as mock_openai:
+        with patch("fixos.providers.llm.openai") as mock_openai:
             mock_openai.OpenAI.return_value.chat.completions.create.return_value = MagicMock()
 
             with patch("builtins.input", return_value="n"):
@@ -326,12 +326,12 @@ class TestAutonomousAnonymizationLayer:
         assert REAL_USER not in anon
         assert "PipeWire 1.4.7" in anon
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_exec_output_anonymized_before_llm(self, mock_openai, mock_cfg):
-        from fixfedora.agent.autonomous import run_autonomous_session
-        from fixfedora.config import FixFedoraConfig
+        from fixos.agent.autonomous import run_autonomous_session
+        from fixos.config import FixOsConfig
 
-        auto_cfg = FixFedoraConfig(
+        auto_cfg = FixOsConfig(
             provider="gemini",
             api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_1234567890",
             model="gemini-2.5-flash-preview-04-17",
@@ -397,9 +397,9 @@ class TestAutonomousAnonymizationLayer:
 
 class TestOrchestratorAnonymizationLayer:
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_diagnostics_anonymized_in_prompt(self, mock_openai, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
 
         captured = []
 
@@ -432,11 +432,11 @@ class TestOrchestratorAnonymizationLayer:
             assert REAL_HOSTNAME not in content, f"Hostname wyciekł w orchestrate diagnose"
             assert REAL_USER not in content, f"Username wyciekł w orchestrate diagnose"
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_stdout_stderr_anonymized_in_evaluate(self, mock_openai, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
-        from fixfedora.orchestrator.graph import Problem
-        from fixfedora.orchestrator.executor import ExecutionResult
+        from fixos.orchestrator import FixOrchestrator
+        from fixos.orchestrator.graph import Problem
+        from fixos.orchestrator.executor import ExecutionResult
 
         captured = []
 

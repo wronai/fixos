@@ -8,4 +8,4 @@ def test_placeholder():
 
 def test_import():
     """Verify the main package can be imported."""
-    import fixfedora  # noqa: F401
+    import fixos  # noqa: F401

@@ -7,8 +7,8 @@ from __future__ import annotations
 import pytest
 from unittest.mock import MagicMock, patch
 
-from fixfedora.orchestrator.graph import Problem, ProblemGraph
-from fixfedora.orchestrator.executor import (
+from fixos.orchestrator.graph import Problem, ProblemGraph
+from fixos.orchestrator.executor import (
     CommandExecutor, DangerousCommandError, CommandTimeoutError, ExecutionResult
 )
 
@@ -205,8 +205,8 @@ class TestCommandExecutor:
 class TestFixOrchestrator:
     @pytest.fixture
     def mock_cfg(self):
-        from fixfedora.config import FixFedoraConfig
-        return FixFedoraConfig(
+        from fixos.config import FixOsConfig
+        return FixOsConfig(
             provider="gemini",
             api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_1234567890",
             model="gemini-2.5-flash-preview-04-17",
@@ -218,7 +218,7 @@ class TestFixOrchestrator:
         )
 
     def test_load_from_dict(self, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
         orch = FixOrchestrator(config=mock_cfg)
         problems = orch.load_from_dict([
             {"id": "p1", "description": "Brak SOF firmware", "severity": "critical",
@@ -231,7 +231,7 @@ class TestFixOrchestrator:
         assert orch.graph.get("p2") is not None
 
     def test_graph_render_after_load(self, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
         orch = FixOrchestrator(config=mock_cfg)
         orch.load_from_dict([
             {"id": "p1", "description": "Brak dźwięku", "severity": "critical",
@@ -243,8 +243,8 @@ class TestFixOrchestrator:
 
     def test_run_sync_dry_run_no_confirm(self, mock_cfg):
         """Dry-run nie wymaga potwierdzenia i nie wykonuje komend."""
-        from fixfedora.orchestrator import FixOrchestrator
-        from fixfedora.orchestrator.executor import CommandExecutor
+        from fixos.orchestrator import FixOrchestrator
+        from fixos.orchestrator.executor import CommandExecutor
 
         executor = CommandExecutor(dry_run=True)
         orch = FixOrchestrator(config=mock_cfg, executor=executor)
@@ -265,10 +265,10 @@ class TestFixOrchestrator:
 
         assert summary["total"] == 1
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_load_from_diagnostics_mock_llm(self, mock_openai, mock_cfg):
         """load_from_diagnostics parsuje JSON z LLM."""
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
 
         mock_resp = MagicMock()
         mock_resp.choices[0].message.content = """{
@@ -294,20 +294,20 @@ class TestFixOrchestrator:
         assert problems[0].severity == "critical"
 
     def test_parse_json_clean(self, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
         orch = FixOrchestrator(config=mock_cfg)
         data = orch._parse_json('{"key": "value"}')
         assert data["key"] == "value"
 
     def test_parse_json_with_markdown_fence(self, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
         orch = FixOrchestrator(config=mock_cfg)
         raw = "```json\n{\"key\": \"value\"}\n```"
         data = orch._parse_json(raw)
         assert data["key"] == "value"
 
     def test_parse_json_invalid_raises(self, mock_cfg):
-        from fixfedora.orchestrator import FixOrchestrator
+        from fixos.orchestrator import FixOrchestrator
         orch = FixOrchestrator(config=mock_cfg)
         with pytest.raises(ValueError):
             orch._parse_json("not json at all")

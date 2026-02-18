@@ -15,8 +15,8 @@ import pytest
 # Skip all tests in this module if psutil not available (e.g. goal tool's env)
 pytest.importorskip("psutil")
 
-from fixfedora.utils.anonymizer import anonymize
-from fixfedora.diagnostics.system_checks import diagnose_audio, diagnose_hardware
+from fixos.utils.anonymizer import anonymize
+from fixos.diagnostics.system_checks import diagnose_audio, diagnose_hardware
 
 
 class TestAudioAnonymization:
@@ -120,7 +120,7 @@ class TestAudioDiagnosticsMockLLM:
 
     def test_llm_receives_anonymized_data(self, broken_audio_diagnostics, mock_config):
         """LLM powinien otrzymywać zanonimizowane dane, nie surowe."""
-        from fixfedora.utils.anonymizer import anonymize
+        from fixos.utils.anonymizer import anonymize
         import socket
 
         # Dodaj wrażliwe dane do diagnostics
@@ -142,10 +142,10 @@ class TestAudioDiagnosticsMockLLM:
         _, report = anonymize(data)
         assert len(report.replacements) > 0
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_called_with_sof_context(self, mock_openai, broken_audio_diagnostics, mock_config):
         """LLM powinien być wywołany z danymi zawierającymi info o SOF."""
-        from fixfedora.providers.llm import LLMClient
+        from fixos.providers.llm import LLMClient
 
         # Setup mock
         mock_resp = MagicMock()
@@ -166,11 +166,11 @@ class TestAudioDiagnosticsMockLLM:
         # Sprawdź że odpowiedź zawiera sugestię
         assert "sof-firmware" in reply.lower()
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_rate_limit_retry(self, mock_openai, mock_config):
         """LLM powinien retry przy rate limit."""
         import openai as real_openai
-        from fixfedora.providers.llm import LLMClient
+        from fixos.providers.llm import LLMClient
 
         mock_create = mock_openai.OpenAI.return_value.chat.completions.create
         mock_openai.RateLimitError = real_openai.RateLimitError
@@ -208,8 +208,8 @@ class TestAudioDiagnosticsReal:
     )
     def test_real_llm_analyzes_audio(self, broken_audio_diagnostics, test_config):
         """Prawdziwy LLM powinien wykryć problemy SOF w danych audio."""
-        from fixfedora.providers.llm import LLMClient
-        from fixfedora.utils.anonymizer import anonymize
+        from fixos.providers.llm import LLMClient
+        from fixos.utils.anonymizer import anonymize
 
         client = LLMClient(test_config)
         anon_str, _ = anonymize(str(broken_audio_diagnostics))

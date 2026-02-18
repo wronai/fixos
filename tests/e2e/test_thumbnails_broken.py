@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from fixfedora.utils.anonymizer import anonymize
+from fixos.utils.anonymizer import anonymize
 
 
 class TestThumbnailsDetection:
@@ -69,10 +69,10 @@ class TestThumbnailsAnonymization:
 class TestThumbnailsMockLLM:
     """Testy z mock LLM dla scenariusza thumbnails."""
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_suggests_ffmpegthumbnailer(self, mock_openai, broken_thumbnails_diagnostics, mock_config):
         """LLM powinien sugerować instalację ffmpegthumbnailer."""
-        from fixfedora.providers.llm import LLMClient
+        from fixos.providers.llm import LLMClient
 
         mock_resp = MagicMock()
         mock_resp.choices[0].message.content = (
@@ -95,10 +95,10 @@ class TestThumbnailsMockLLM:
         assert "ffmpegthumbnailer" in reply.lower()
         assert "dnf install" in reply.lower()
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_llm_suggests_cache_clear(self, mock_openai, broken_thumbnails_diagnostics, mock_config):
         """LLM powinien sugerować wyczyszczenie cache thumbnails."""
-        from fixfedora.providers.llm import LLMClient
+        from fixos.providers.llm import LLMClient
 
         mock_resp = MagicMock()
         mock_resp.choices[0].message.content = (
@@ -120,20 +120,20 @@ class TestWebSearchFallback:
 
     def test_search_arch_wiki_thumbnails(self):
         """Arch Wiki powinno zwrócić wyniki dla 'thumbnails'."""
-        from fixfedora.utils.web_search import search_arch_wiki
+        from fixos.utils.web_search import search_arch_wiki
         results = search_arch_wiki("file manager thumbnails")
         # Wyniki mogą być puste gdy brak internetu w Docker
         assert isinstance(results, list)
 
     def test_search_fedora_bugzilla_audio(self):
         """Bugzilla może zwrócić wyniki dla problemów audio SOF."""
-        from fixfedora.utils.web_search import search_fedora_bugzilla
+        from fixos.utils.web_search import search_fedora_bugzilla
         results = search_fedora_bugzilla("sof-firmware audio Lenovo")
         assert isinstance(results, list)
 
     def test_format_results_for_llm(self):
         """Wyniki powinny być poprawnie sformatowane dla LLM."""
-        from fixfedora.utils.web_search import SearchResult, format_results_for_llm
+        from fixos.utils.web_search import SearchResult, format_results_for_llm
         results = [
             SearchResult(
                 title="Fix audio Fedora 40",
@@ -149,7 +149,7 @@ class TestWebSearchFallback:
 
     def test_empty_results_handled(self):
         """Puste wyniki powinny zwrócić sensowny komunikat."""
-        from fixfedora.utils.web_search import format_results_for_llm
+        from fixos.utils.web_search import format_results_for_llm
         formatted = format_results_for_llm([])
         assert "Brak wyników" in formatted
 
@@ -175,12 +175,12 @@ class TestFullBrokenScenario:
         assert "192.168.100.200" not in anon
         assert len(report.replacements) >= 2
 
-    @patch("fixfedora.providers.llm.openai")
+    @patch("fixos.providers.llm.openai")
     def test_full_scenario_llm_comprehensive(
         self, mock_openai, full_broken_diagnostics, mock_config
     ):
         """LLM powinien wykryć wiele problemów naraz."""
-        from fixfedora.providers.llm import LLMClient
+        from fixos.providers.llm import LLMClient
 
         mock_resp = MagicMock()
         mock_resp.choices[0].message.content = """
@@ -218,8 +218,8 @@ class TestFullBrokenScenario:
     )
     def test_real_llm_full_scenario(self, full_broken_diagnostics, test_config):
         """Prawdziwy LLM analizuje pełny scenariusz uszkodzeń."""
-        from fixfedora.providers.llm import LLMClient
-        from fixfedora.utils.anonymizer import anonymize
+        from fixos.providers.llm import LLMClient
+        from fixos.utils.anonymizer import anonymize
 
         client = LLMClient(test_config)
         anon_str, _ = anonymize(str(full_broken_diagnostics))

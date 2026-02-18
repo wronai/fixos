@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from fixfedora.config import FixFedoraConfig
+from fixos.config import FixOsConfig
 
 
 # ── Helpers ───────────────────────────────────────────────
@@ -24,7 +24,7 @@ def _env(key: str, default: str = "") -> str:
 
 def _has_real_token() -> bool:
     """Sprawdza czy .env zawiera prawdziwy token API."""
-    cfg = FixFedoraConfig.load()
+    cfg = FixOsConfig.load()
     key = cfg.api_key or ""
     return len(key) > 10 and "TWOJ" not in key and "KLUCZ" not in key
 
@@ -39,15 +39,15 @@ def real_api_available() -> bool:
 
 
 @pytest.fixture(scope="session")
-def test_config() -> FixFedoraConfig:
+def test_config() -> FixOsConfig:
     """Konfiguracja testowa załadowana z .env."""
-    return FixFedoraConfig.load()
+    return FixOsConfig.load()
 
 
 @pytest.fixture
-def mock_config() -> FixFedoraConfig:
+def mock_config() -> FixOsConfig:
     """Konfiguracja z fake tokenem do testów bez API."""
-    cfg = FixFedoraConfig(
+    cfg = FixOsConfig(
         provider="gemini",
         api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_ONLY_1234567",
         model="gemini-2.5-flash-preview-04-17",
@@ -63,7 +63,7 @@ def mock_config() -> FixFedoraConfig:
 @pytest.fixture
 def mock_llm_client(mock_config):
     """Mock LLMClient zwracający predefiniowane odpowiedzi."""
-    with patch("fixfedora.providers.llm.openai") as mock_openai:
+    with patch("fixos.providers.llm.openai") as mock_openai:
         mock_response = MagicMock()
         mock_response.choices[0].message.content = """
 ━━━ DIAGNOZA ━━━

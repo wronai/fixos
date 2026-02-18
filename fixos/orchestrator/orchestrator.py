@@ -11,7 +11,7 @@ import time
 import uuid
 from typing import Optional
 
-from ..config import FixFedoraConfig
+from ..config import FixOsConfig
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize
 from .executor import CommandExecutor, ExecutionResult, DangerousCommandError, CommandTimeoutError
@@ -83,7 +83,7 @@ class FixOrchestrator:
 
     def __init__(
         self,
-        config: FixFedoraConfig,
+        config: FixOsConfig,
         executor: Optional[CommandExecutor] = None,
         auto_confirm_threshold: float = 0.90,
     ):

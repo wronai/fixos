@@ -16,7 +16,7 @@ from typing import Optional
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
-from ..config import FixFedoraConfig
+from ..config import FixOsConfig
 
 
 # Komendy NIGDY nie wykonywane automatycznie (bez względu na wszystko)
@@ -139,7 +139,7 @@ def _execute(cmd: str) -> tuple[bool, str]:
 
 def run_autonomous_session(
     diagnostics: dict,
-    config: FixFedoraConfig,
+    config: FixOsConfig,
     show_data: bool = True,
     max_fixes: int = 10,
 ):

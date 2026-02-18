@@ -4,12 +4,12 @@ from pathlib import Path
 long_description = (Path(__file__).parent / "README.md").read_text(encoding="utf-8")
 
 setup(
-    name="fixfedora",
-    version="2.0.0",
-    description="AI-powered Fedora Linux diagnostics (audio, thumbnails, hardware) with anonymization",
+    name="fixos",
+    version="2.1.0",
+    description="AI-powered Linux/Windows diagnostics and repair with anonymization",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/wronai/fixfedora",
+    url="https://github.com/wronai/fixos",
     packages=find_packages(exclude=["tests*", "docker*"]),
     python_requires=">=3.10",
     install_requires=[
@@ -29,7 +29,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "fixfedora=fixfedora.cli:main",
+            "fixos=fixos.cli:main",
         ]
     },
     classifiers=[
@@ -38,6 +38,7 @@ setup(
         "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX :: Linux",
+        "Operating System :: Microsoft :: Windows",
         "Topic :: System :: Systems Administration",
     ],
 )

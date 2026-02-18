@@ -1,5 +1,5 @@
 """
-Moduł zbierający dane diagnostyczne z systemu Fedora.
+Moduł zbierający dane diagnostyczne z systemu system.
 Używa psutil do metryk oraz subprocess do komend systemowych.
 """
 
@@ -105,7 +105,7 @@ def get_top_processes(n: int = 10) -> list:
 
 
 def get_fedora_specific() -> dict:
-    """Komendy specyficzne dla Fedora: dnf, journalctl, systemctl."""
+    """Komendy specyficzne dla system: dnf, journalctl, systemctl."""
     return {
         'dnf_check_update': run_cmd('dnf check-update --quiet 2>/dev/null | head -30'),
         'dnf_history_recent': run_cmd('dnf history list --last=5 2>/dev/null'),
@@ -127,7 +127,7 @@ def get_fedora_specific() -> dict:
 
 def get_full_diagnostics() -> dict:
     """
-    Zbiera kompletne dane diagnostyczne systemu Fedora.
+    Zbiera kompletne dane diagnostyczne systemu system.
     Zwraca słownik gotowy do anonimizacji i wysłania do LLM.
     """
     print("  → CPU i obciążenie...", end="\r")
@@ -140,7 +140,7 @@ def get_full_diagnostics() -> dict:
     network = get_network_info()
     print("  → Procesy...         ", end="\r")
     processes = get_top_processes()
-    print("  → Fedora (dnf/systemd/journal)...", end="\r")
+    print("  → system (dnf/systemd/journal)...", end="\r")
     fedora = get_fedora_specific()
     print("  → Gotowe!             ")
 

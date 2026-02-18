@@ -1,6 +1,6 @@
 """
 Zewnętrzne źródła wiedzy – fallback gdy LLM nie zna rozwiązania.
-Przeszukuje: Fedora Bugzilla, ask.fedoraproject.org, Reddit, GitHub Issues,
+Przeszukuje: Linux Bugzilla, Linux forums, Reddit, GitHub Issues,
              ALSA/PulseAudio docs, Arch Wiki (Linux-agnostic), SerpAPI.
 """
 
@@ -28,7 +28,7 @@ def _http_get(url: str, timeout: int = 8) -> Optional[str]:
     try:
         req = urllib.request.Request(
             url,
-            headers={"User-Agent": "fixos/1.0 (Fedora diagnostics tool)"},
+            headers={"User-Agent": "fixos/1.0 (cross-platform diagnostics tool)"},
         )
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", errors="replace")
@@ -37,13 +37,13 @@ def _http_get(url: str, timeout: int = 8) -> Optional[str]:
 
 
 def search_fedora_bugzilla(query: str, max_results: int = 3) -> list[SearchResult]:
-    """Szuka w Fedora Bugzilla przez REST API."""
+    """Szuka w Linux Bugzilla przez REST API."""
     results = []
     try:
         q = urllib.parse.quote(query)
         url = (
             f"https://bugzilla.redhat.com/rest/bug"
-            f"?summary={q}&product=Fedora&status=VERIFIED,CLOSED"
+            f"?summary={q}&product=system&status=VERIFIED,CLOSED"
             f"&limit={max_results}&include_fields=id,summary,status,resolution,url"
         )
         data = _http_get(url)
@@ -55,7 +55,7 @@ def search_fedora_bugzilla(query: str, max_results: int = 3) -> list[SearchResul
                 title=f"[BUG #{bug['id']}] {bug['summary']}",
                 url=f"https://bugzilla.redhat.com/show_bug.cgi?id={bug['id']}",
                 snippet=f"Status: {bug.get('status','?')} | Rozwiązanie: {bug.get('resolution','?')}",
-                source="Fedora Bugzilla",
+                source="Linux Bugzilla",
             ))
     except Exception:
         pass
@@ -63,11 +63,11 @@ def search_fedora_bugzilla(query: str, max_results: int = 3) -> list[SearchResul
 
 
 def search_ask_fedora(query: str, max_results: int = 3) -> list[SearchResult]:
-    """Szuka w ask.fedoraproject.org przez Discourse API."""
+    """Szuka w Linux forums przez Discourse API."""
     results = []
     try:
         q = urllib.parse.quote(query)
-        url = f"https://ask.fedoraproject.org/search.json?q={q}&order=latest&page=1"
+        url = f"https://Linux forums/search.json?q={q}&order=latest&page=1"
         data = _http_get(url)
         if not data:
             return []
@@ -75,9 +75,9 @@ def search_ask_fedora(query: str, max_results: int = 3) -> list[SearchResult]:
         for t in topics[:max_results]:
             results.append(SearchResult(
                 title=t.get("title", ""),
-                url=f"https://ask.fedoraproject.org/t/{t.get('slug','')}/{t.get('id','')}",
+                url=f"https://Linux forums/t/{t.get('slug','')}/{t.get('id','')}",
                 snippet=f"Odpowiedzi: {t.get('posts_count', 0)} | Widoki: {t.get('views', 0)}",
-                source="ask.fedoraproject.org",
+                source="Linux forums",
             ))
     except Exception:
         pass
@@ -217,8 +217,8 @@ def search_all(
     print(f"\n  🔎 Szukam w zewnętrznych źródłach: '{query}'...")
 
     sources = [
-        ("Fedora Bugzilla", lambda: search_fedora_bugzilla(query, max_per_source)),
-        ("ask.fedoraproject.org", lambda: search_ask_fedora(query, max_per_source)),
+        ("Linux Bugzilla", lambda: search_fedora_bugzilla(query, max_per_source)),
+        ("Linux forums", lambda: search_ask_fedora(query, max_per_source)),
         ("Arch Wiki", lambda: search_arch_wiki(query, max_per_source)),
         ("GitHub Issues", lambda: search_github_issues(query, max_per_source)),
     ]

@@ -1,18 +1,37 @@
-# Instalacja fixfedora
+# Instalacja fixos
 
 ## Wymagania systemowe
 
-- Fedora Linux 38+ (lub RHEL/CentOS Stream 9+)
+- **Linux** (Fedora 38+, Ubuntu 22.04+, Arch) / **Windows** 10/11 / **macOS** 12+
 - Python 3.10+
 - Dostęp do internetu (do API LLM)
 - Klucz API jednego z providerów (patrz niżej)
 
 ---
 
-## 1. Zależności systemowe (Fedora)
+## 1. Zależności systemowe
 
+### Linux (Fedora/RHEL)
 ```bash
 sudo dnf install python3-pip python3-psutil python3-pyyaml
+```
+
+### Linux (Ubuntu/Debian)
+```bash
+sudo apt install python3-pip python3-psutil python3-yaml
+```
+
+### Windows
+```powershell
+# PowerShell (jako Administrator)
+winget install Python.Python.3.10
+pip install psutil pyyaml
+```
+
+### macOS
+```bash
+brew install python@3.10
+pip3 install psutil pyyaml
 ```
 
 ---
@@ -22,8 +41,8 @@ sudo dnf install python3-pip python3-psutil python3-pyyaml
 ### Ze źródeł (zalecane podczas development)
 
 ```bash
-git clone https://github.com/wronai/fixfedora.git
-cd fixfedora
+git clone https://github.com/wronai/fixos.git
+cd fixos
 pip install -e ".[dev]"    # z zależnościami testowymi
 # lub
 pip install -e .           # tylko runtime
@@ -32,15 +51,15 @@ pip install -e .           # tylko runtime
 ### Z archiwum ZIP
 
 ```bash
-unzip fixfedora-2.0.0.zip
-cd fixfedora-2.0.0
+unzip fixos-2.1.1.zip
+cd fixos-2.1.1
 pip install -e ".[dev]"
 ```
 
 ### Z PyPI (po publikacji)
 
 ```bash
-pip install fixfedora
+pip install fixos
 ```
 
 ---
@@ -54,19 +73,19 @@ pip install fixfedora
 3. Skopiuj klucz (`AIzaSy...`)
 
 ```bash
-fixfedora token set AIzaSyTWOJKLUCZGEMINI
+fixos token set AIzaSyTWOJKLUCZGEMINI
 ```
 
 ### OpenAI
 
 ```bash
-fixfedora token set sk-TWOJKLUCZ --provider openai
+fixos token set sk-TWOJKLUCZ --provider openai
 ```
 
 ### xAI (Grok)
 
 ```bash
-fixfedora token set xai-TWOJKLUCZ --provider xai
+fixos token set xai-TWOJKLUCZ --provider xai
 ```
 
 ### Ollama (lokalny, bez klucza)
@@ -74,7 +93,7 @@ fixfedora token set xai-TWOJKLUCZ --provider xai
 ```bash
 # Zainstaluj Ollama: https://ollama.ai
 ollama pull llama3.2
-fixfedora config set LLM_PROVIDER ollama
+fixos config set LLM_PROVIDER ollama
 ```
 
 ---
@@ -82,15 +101,15 @@ fixfedora config set LLM_PROVIDER ollama
 ## 4. Inicjalizacja pliku konfiguracyjnego
 
 ```bash
-fixfedora config init      # tworzy .env z szablonu
-nano .env                  # opcjonalne dostosowanie
+fixos config init      # tworzy .env z szablonu
+nano .env              # opcjonalne dostosowanie
 ```
 
 Lub ręcznie:
 
 ```bash
 cp .env.example .env
-chmod 600 .env             # ogranicz dostęp!
+chmod 600 .env         # ogranicz dostęp!
 # Edytuj .env i wstaw klucz API
 ```
 
@@ -99,9 +118,9 @@ chmod 600 .env             # ogranicz dostęp!
 ## 5. Weryfikacja
 
 ```bash
-fixfedora test-llm         # test połączenia z LLM
-fixfedora config show      # pokaż konfigurację
-fixfedora scan             # testowa diagnostyka (bez LLM)
+fixos test-llm         # test połączenia z LLM
+fixos config show      # pokaż konfigurację
+fixos scan             # testowa diagnostyka (bez LLM)
 ```
 
 ---
@@ -109,7 +128,7 @@ fixfedora scan             # testowa diagnostyka (bez LLM)
 ## 6. Pierwsze uruchomienie
 
 ```bash
-fixfedora fix              # pełna diagnostyka + sesja naprawcza
+fixos fix              # pełna diagnostyka + sesja naprawcza
 ```
 
 ---
@@ -123,21 +142,29 @@ pip install openai>=1.35.0
 
 **`ModuleNotFoundError: No module named 'psutil'`**
 ```bash
-sudo dnf install python3-psutil
+# Linux
+sudo dnf install python3-psutil   # Fedora
+sudo apt install python3-psutil   # Ubuntu
 # lub
+pip install psutil
+
+# Windows/macOS
 pip install psutil
 ```
 
-**`fixfedora: command not found`**
+**`fixos: command not found`**
 ```bash
-# Dodaj ~/.local/bin do PATH
+# Linux/macOS - dodaj ~/.local/bin do PATH
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
+
+# Windows - dodaj do PATH w System Properties
 ```
 
 **`Permission denied` przy wykonaniu komend systemowych**
 ```bash
-# fixfedora automatycznie dodaje sudo dla komend systemowych
-# upewnij się że masz sudo skonfigurowane
+# Linux/macOS - fixos automatycznie dodaje sudo dla komend systemowych
 sudo -v
+
+# Windows - uruchom PowerShell jako Administrator
 ```

@@ -28,7 +28,7 @@ BANNER = r"""
  / _|(_)_ __/ __| ___  / _| ___ | |_  ___  _ _ __ _
 |  _|| | \ \ (__/ -_) |  _|/ -_)|  _|/ _ \| '_/ _` |
 |_|  |_|_/_/\_,_\___| |_|  \___| \__|\/\__/|_| \__,_|
-  Fedora AI Diagnostics  •  v2.0.0
+  AI Diagnostics  •  v2.0.0
 """
 
 COMMON_OPTIONS = [
@@ -56,7 +56,7 @@ def add_common_options(fn):
 @click.pass_context
 def cli(ctx):
     """
-    fixos – AI-powered diagnostyka i naprawa Fedora Linux.
+    fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
     \b
     Szybki start:
@@ -87,7 +87,7 @@ def cli(ctx):
 @click.option("--show-raw", is_flag=True, default=False, help="Pokaż surowe (zanonimizowane) dane")
 @click.option("--no-banner", is_flag=True, default=False)
 def scan(modules, output, show_raw, no_banner):
-    """Przeprowadza diagnostykę systemu Fedora bez uruchamiania LLM."""
+    """Przeprowadza diagnostykę systemu system bez uruchamiania LLM."""
     if not no_banner:
         click.echo(click.style(BANNER, fg="cyan"))
 
@@ -482,7 +482,7 @@ def test_llm(provider, token, model, no_banner):
     llm = LLMClient(cfg)
     try:
         resp = llm.chat(
-            [{"role": "user", "content": "Odpowiedz jednym zdaniem po polsku: co to jest Fedora Linux?"}],
+            [{"role": "user", "content": "Odpowiedz jednym zdaniem po polsku: co to jest Linux, Windows, macOS?"}],
             max_tokens=100,
         )
         click.echo(click.style(f"\n  ✅ Połączenie działa!", fg="green"))

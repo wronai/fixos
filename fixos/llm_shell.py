@@ -1,5 +1,5 @@
 """
-Interaktywny shell LLM do diagnostyki i naprawy systemu Fedora.
+Interaktywny shell LLM do diagnostyki i naprawy systemu system.
 Sesja trwa maksymalnie 1 godzinę (3600 sekund).
 Dane diagnostyczne są wysyłane jawnie do modelu.
 """
@@ -28,7 +28,7 @@ from .anonymizer import anonymize
 
 # ── Stałe ──────────────────────────────────────────────────────────────────
 SESSION_TIMEOUT = 3600  # 1 godzina w sekundach
-SYSTEM_PROMPT = """Jesteś ekspertem od diagnostyki i naprawy systemu Fedora Linux.
+SYSTEM_PROMPT = """Jesteś ekspertem od diagnostyki i naprawy systemu Linux, Windows, macOS.
 Otrzymujesz anonimizowane dane diagnostyczne z systemu użytkownika.
 
 Twoje zadania:
@@ -137,7 +137,7 @@ def run_llm_shell(
         {
             "role": "user",
             "content": (
-                f"Oto anonimizowane dane diagnostyczne mojego systemu Fedora:\n\n"
+                f"Oto anonimizowane dane diagnostyczne mojego systemu system:\n\n"
                 f"```\n{anon_data}\n```\n\n"
                 f"Przeanalizuj je i przedstaw wykryte problemy."
             )

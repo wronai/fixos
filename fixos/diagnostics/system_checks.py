@@ -1,5 +1,5 @@
 """
-Diagnostyka systemu Fedora – rozszerzona o:
+Diagnostyka systemu system – rozszerzona o:
 - Dźwięk (ALSA, PipeWire, PulseAudio) dla Lenovo Yoga
 - Podglądy plików (thumbnails) w menedżerach plików
 - Sprzęt laptopa (ACPI, sensor, touchpad, kamera)
@@ -40,7 +40,7 @@ def _cmd(cmd: str, timeout: int = 20) -> str:
 def diagnose_audio() -> dict[str, Any]:
     """
     Diagnostyka dźwięku dla Lenovo Yoga i innych laptopów.
-    Typowe problemy po aktualizacji Fedora:
+    Typowe problemy po aktualizacji system:
     - SOF (Sound Open Firmware) - brak karty dźwiękowej
     - PipeWire nie startuje / błędna konfiguracja
     - ALSA: brak urządzeń / mute
@@ -96,7 +96,7 @@ def diagnose_audio() -> dict[str, Any]:
 
 def diagnose_thumbnails() -> dict[str, Any]:
     """
-    Diagnostyka podglądów plików (thumbnails) w Fedora.
+    Diagnostyka podglądów plików (thumbnails) w system.
     Typowe problemy po aktualizacji:
     - Brak thumbnailerów (totem-video-thumbnailer, evince-thumbnailer)
     - Uszkodzony cache miniaturek

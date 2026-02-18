@@ -39,7 +39,7 @@ SUDO_PREFIXES = [
     "modprobe", "rmmod", "alsactl", "grub2-", "update-grub",
 ]
 
-SYSTEM_PROMPT_AUTONOMOUS = """Jesteś autonomicznym agentem diagnostyki Fedora Linux.
+SYSTEM_PROMPT_AUTONOMOUS = """Jesteś autonomicznym agentem diagnostyki Linux, Windows, macOS.
 
 Działasz w pętli: OBSERVE → ANALYZE → ACT → VERIFY
 
@@ -177,7 +177,7 @@ def run_autonomous_session(
         {
             "role": "user",
             "content": (
-                f"Dane diagnostyczne Fedora:\n```\n{anon_str}\n```\n\n"
+                f"Dane diagnostyczne system:\n```\n{anon_str}\n```\n\n"
                 f"Rozpocznij analizę i naprawę. Odpowiadaj TYLKO w formacie JSON."
             ),
         },

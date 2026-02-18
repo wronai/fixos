@@ -1,17 +1,27 @@
 ![img.png](img.png)
 
-# fixfedora v2.0 🔧🤖
+# fixos v2.1 🔧🤖
 
-**AI diagnostyka i naprawa Fedora Linux** – audio, thumbnails, sprzęt Lenovo Yoga
+**AI diagnostyka i naprawa wszystkich systemów** – Linux, Windows, macOS
 z anonimizacją danych, trybem HITL/Autonomous i zewnętrznymi źródłami wiedzy.
 
 ```
-  __  _      ___        __       _
- / _|(_)_ __/ __| ___  / _| ___ | |_  ___  _ _ __ _
-|  _|| | \ \ (__/ -_) |  _|/ -_)|  _|/ _ \| '_/ _` |
-|_|  |_|_/_/\_,_\___| |_|  \___| \__|\/\__/|_| \__,_|
-  Fedora AI Diagnostics  •  v2.0.0
+   __ _  ___   __| | ___ _ __
+  / _` |/ _ \ / _` |/ _ \ '__|
+ | (_| | (_) | (_| |  __/ |
+  \__, |\___/ \__,_|\___|_|
+  |___/         AI Diagnostics  •  v2.1.1
 ```
+
+---
+
+## 🌍 Cross-Platform Support
+
+| System | Package Manager | Audio | Hardware | System |
+|:--|:--|:--:|:--:|:--:|
+| **Linux** (Fedora, Ubuntu, Arch) | dnf/apt/pacman | ✅ ALSA/PipeWire | ✅ DMI/sensors | ✅ systemd/journal |
+| **Windows** 10/11 | winget/choco | ✅ WMI Audio | ✅ WMI Hardware | ✅ Event Log |
+| **macOS** | brew | ✅ CoreAudio | ✅ system_profiler | ✅ launchd |
 
 ---
 
@@ -22,10 +32,10 @@ z anonimizacją danych, trybem HITL/Autonomous i zewnętrznymi źródłami wiedz
 pip install -e ".[dev]"
 
 # 2. Token Google Gemini (domyślny, darmowy)
-fixfedora token set AIzaSy...          # lub --provider openai/xai
+fixos token set AIzaSy...          # lub --provider openai/xai
 
 # 3. Uruchom diagnostykę
-fixfedora fix
+fixos fix
 ```
 
 ---
@@ -33,41 +43,41 @@ fixfedora fix
 ## Komendy CLI
 
 ```
-fixfedora scan              – tylko diagnostyka (bez LLM)
-fixfedora fix               – diagnoza + sesja naprawcza (HITL lub autonomous)
-fixfedora token set KEY     – zapisz token API
-fixfedora token show        – pokaż aktualny token (zamaskowany)
-fixfedora token clear       – usuń token
-fixfedora config show       – pokaż konfigurację
-fixfedora config init       – utwórz .env z szablonu
-fixfedora config set K V    – ustaw wartość w .env
-fixfedora providers         – lista providerów LLM
-fixfedora test-llm          – testuj połączenie z LLM
+fixos scan              – tylko diagnostyka (bez LLM)
+fixos fix               – diagnoza + sesja naprawcza (HITL lub autonomous)
+fixos token set KEY     – zapisz token API
+fixos token show        – pokaż aktualny token (zamaskowany)
+fixos token clear       – usuń token
+fixos config show       – pokaż konfigurację
+fixos config init       – utwórz .env z szablonu
+fixos config set K V    – ustaw wartość w .env
+fixos providers         – lista providerów LLM
+fixos test-llm          – testuj połączenie z LLM
 ```
 
 ### Przykłady użycia
 
 ```bash
 # Tylko diagnostyka audio + zapis do pliku
-fixfedora scan --audio --output /tmp/audio-report.json
+fixos scan --audio --output /tmp/audio-report.json
 
 # Napraw audio i thumbnails (HITL – pyta o potwierdzenie)
-fixfedora fix --modules audio,thumbnails
+fixos fix --modules audio,thumbnails
 
 # Tryb autonomiczny (agent sam naprawia, max 5 akcji)
-fixfedora fix --mode autonomous --max-fixes 5
+fixos fix --mode autonomous --max-fixes 5
 
 # Bez pokazywania danych użytkownikowi przed wysłaniem
-fixfedora fix --no-show-data
+fixos fix --no-show-data
 
 # Z xAI Grok
-fixfedora fix --provider xai --token xai-...
+fixos fix --provider xai --token xai-...
 
 # Timeout 30 minut
-fixfedora fix --timeout 1800
+fixos fix --timeout 1800
 
 # Test połączenia z Gemini
-fixfedora test-llm
+fixos test-llm
 ```
 
 ---
@@ -79,17 +89,19 @@ fixfedora test-llm
 ```
 LLM sugeruje → Ty decydujesz → Skrypt wykonuje
 
-fixfedora [00:58:42] ❯ 1           ← napraw problem nr 1
-fixfedora [00:58:30] ❯ !dnf list   ← wykonaj komendę bezpośrednio
-fixfedora [00:58:10] ❯ search sof  ← szukaj w zewnętrznych źródłach
-fixfedora [00:57:55] ❯ all         ← napraw wszystko
-fixfedora [00:57:40] ❯ q           ← zakończ
+fixos [00:58:42] ❯ 1           ← napraw problem nr 1
+fixos [00:58:30] ❯ !dnf list   ← wykonaj komendę bezpośrednio
+fixos [00:58:10] ❯ search sof  ← szukaj w zewnętrznych źródłach
+fixos [00:57:55] ❯ D           ← opisz własny problem
+fixos [00:57:40] ❯ q           ← zakończ
 ```
+
+**Nowość v2.1**: Opcja `[D]` – opisz własny problem, a LLM zaproponuje rozwiązania.
 
 ### 🤖 Autonomous – agent działa samodzielnie
 
 ```bash
-fixfedora fix --mode autonomous
+fixos fix --mode autonomous
 ```
 - Agent analizuje → wykonuje → weryfikuje → kontynuuje
 - Protokół JSON: `{ "action": "EXEC", "command": "...", "reason": "..." }`
@@ -124,46 +136,18 @@ Maskowane dane: IPv4, MAC, hostname, username, `/home/<user>`, tokeny API, UUID,
 
 ## Moduły diagnostyki
 
-| Moduł | Co sprawdza |
-|:--|:--|
-| `system` | CPU, RAM, dyski, `systemctl --failed`, `dnf check-update`, `journalctl` |
-| `audio` | ALSA karty, PipeWire/WirePlumber status, SOF firmware, mikrofon Lenovo |
-| `thumbnails` | ffmpegthumbnailer, totem-nautilus, cache ~/.cache/thumbnails, GNOME ustawienia |
-| `hardware` | DMI (Lenovo Yoga), BIOS, GPU, touchpad, kamera, ACPI, czujniki |
-
----
-
-## Znane problemy Lenovo Yoga (Fedora)
-
-### 🔊 Brak dźwięku po aktualizacji
-
-**Przyczyna**: Brak lub niekompatybilna wersja `sof-firmware` (Sound Open Firmware)
-
-```bash
-# Diagnoza
-fixfedora scan --audio
-
-# Naprawa
-sudo dnf install sof-firmware
-systemctl --user restart pipewire wireplumber
-```
-
-### 🖼️ Brak podglądów plików
-
-**Przyczyna**: Brak thumbnailerów usuniętych przez aktualizację Fedora
-
-```bash
-# Naprawa
-sudo dnf install ffmpegthumbnailer totem-nautilus gstreamer1-plugins-good
-nautilus -q
-rm -rf ~/.cache/thumbnails/fail/*
-```
+| Moduł | Linux | Windows | macOS | Co sprawdza |
+|:--|:--:|:--:|:--:|:--|
+| `system` | ✅ | ✅ | ✅ | CPU, RAM, dyski, usługi, aktualizacje, firewall |
+| `audio` | ✅ | ✅ | ✅ | ALSA/PipeWire (Linux), WMI Audio (Win), CoreAudio (Mac) |
+| `thumbnails` | ✅ | ➖ | ➖ | ffmpegthumbnailer, cache, GNOME ustawienia |
+| `hardware` | ✅ | ✅ | ✅ | DMI/WMI/system_profiler, BIOS, GPU, czujniki |
 
 ---
 
 ## Zewnętrzne źródła wiedzy (fallback)
 
-Gdy LLM nie zna rozwiązania, fixfedora szuka automatycznie w:
+Gdy LLM nie zna rozwiązania, fixos szuka automatycznie w:
 
 - **Fedora Bugzilla** – baza zgłoszonych błędów
 - **ask.fedoraproject.org** – forum społeczności
@@ -174,7 +158,7 @@ Gdy LLM nie zna rozwiązania, fixfedora szuka automatycznie w:
 
 ```bash
 # Ręczne wyszukiwanie w sesji HITL
-fixfedora [00:58:00] ❯ search sof-firmware lenovo yoga no sound
+fixos [00:58:00] ❯ search sof-firmware lenovo yoga no sound
 ```
 
 ---
@@ -183,7 +167,7 @@ fixfedora [00:58:00] ❯ search sof-firmware lenovo yoga no sound
 
 ```bash
 # Stwórz plik konfiguracyjny
-fixfedora config init
+fixos config init
 
 # Lub ręcznie:
 cp .env.example .env
@@ -218,7 +202,7 @@ pytest tests/e2e/ -v
 pytest tests/e2e/ -v -k "real_llm"
 
 # Pokrycie kodu
-pytest --cov=fixfedora --cov-report=html
+pytest --cov=fixos --cov-report=html
 ```
 
 ### Docker – symulowane środowiska
@@ -244,22 +228,23 @@ docker compose -f docker/docker-compose.yml run e2e-tests
 
 | Obraz | Scenariusz |
 |:--|:--|
-| `fixfedora-broken-audio` | Brak sof-firmware, PipeWire failed, no ALSA cards |
-| `fixfedora-broken-thumbnails` | Brak thumbnailerów, pusty cache, brak GStreamer |
-| `fixfedora-broken-full` | Wszystkie problemy naraz + pending updates + failed services |
+| `fixos-broken-audio` | Brak sof-firmware, PipeWire failed, no ALSA cards |
+| `fixos-broken-thumbnails` | Brak thumbnailerów, pusty cache, brak GStreamer |
+| `fixos-broken-full` | Wszystkie problemy naraz + pending updates + failed services |
 
 ---
 
 ## Struktura projektu
 
 ```
-fixfedora/
-├── fixfedora/
+fixos/
+├── fixos/
 │   ├── __init__.py
 │   ├── cli.py                  # Komendy CLI (Click)
 │   ├── config.py               # Zarządzanie konfiguracją (.env)
+│   ├── platform_utils.py       # Cross-platform utilities (Linux/Win/Mac)
 │   ├── agent/
-│   │   ├── hitl.py             # Human-in-the-Loop
+│   │   ├── hitl.py             # Human-in-the-Loop z menu akcji
 │   │   └── autonomous.py       # Tryb autonomiczny z JSON protokołem
 │   ├── diagnostics/
 │   │   └── system_checks.py    # Moduły: system, audio, thumbnails, hardware
@@ -290,7 +275,7 @@ fixfedora/
 
 ## Licencja
 
-MIT License
+Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ## License
 

@@ -22,7 +22,7 @@ sudo dnf install python3-pip python3-psutil python3-pyyaml
 ### Ze źródeł (zalecane podczas development)
 
 ```bash
-git clone https://github.com/yourusername/fixfedora.git
+git clone https://github.com/wronai/fixfedora.git
 cd fixfedora
 pip install -e ".[dev]"    # z zależnościami testowymi
 # lub

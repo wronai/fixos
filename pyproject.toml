@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fixfedora"
-version = "2.0.4"
+version = "2.0.5"
 description = "AI-powered Fedora Linux diagnostics – audio, thumbnails, hardware (Lenovo Yoga)"
 readme = "README.md"
 license = "Apache-2.0"
@@ -44,8 +44,8 @@ dev = [
 fixfedora = "fixfedora.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/fixfedora"
-"Bug Tracker" = "https://github.com/yourusername/fixfedora/issues"
+Homepage = "https://github.com/wronai/fixfedora"
+"Bug Tracker" = "https://github.com/wronai/fixfedora/issues"
 
 [tool.setuptools.packages.find]
 exclude = ["tests*", "docker*"]

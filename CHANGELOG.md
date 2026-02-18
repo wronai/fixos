@@ -1,3 +1,19 @@
+## [2.0.5] - 2026-02-18
+
+### Summary
+
+refactor(config): docs module improvements
+
+### Docs
+
+- docs: update INSTALL.md
+
+### Build
+
+- update pyproject.toml
+- update setup.py
+
+
 ## [2.0.4] - 2026-02-18
 
 ### Summary

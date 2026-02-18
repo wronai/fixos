@@ -9,7 +9,7 @@ setup(
     description="AI-powered Fedora Linux diagnostics (audio, thumbnails, hardware) with anonymization",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/fixfedora",
+    url="https://github.com/wronai/fixfedora",
     packages=find_packages(exclude=["tests*", "docker*"]),
     python_requires=">=3.10",
     install_requires=[

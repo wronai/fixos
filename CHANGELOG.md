@@ -1,3 +1,18 @@
+## [2.1.13] - 2026-02-22
+
+### Summary
+
+fix(goal): CLI interface improvements
+
+### Build
+
+- update pyproject.toml
+
+### Other
+
+- update fixos/cli.py
+
+
 ## [2.1.12] - 2026-02-22
 
 ### Summary

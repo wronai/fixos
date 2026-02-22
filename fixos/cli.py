@@ -127,10 +127,14 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
         click.echo('    fixos "napraw audio"')
         return
 
-    # Wykonaj polecenie
+    # Wykonaj polecenie - matched_cmd to krotka: (program, [arg1, arg2, ...])
     import subprocess
 
-    cmd_str = " ".join(matched_cmd)
+    cmd_program = matched_cmd[0]  # np. "docker"
+    cmd_args = matched_cmd[1] if len(matched_cmd) > 1 else []  # np. ["ps", "-aq"]
+    cmd_full = [cmd_program] + cmd_args
+    
+    cmd_str = " ".join(cmd_full)
     click.echo(click.style(f"\n🔧 Wykonuję: {cmd_str}", fg="cyan"))
 
     if dry_run:
@@ -138,7 +142,7 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
         return
 
     try:
-        result = subprocess.run(matched_cmd, capture_output=True, text=True, shell=False)
+        result = subprocess.run(cmd_full, capture_output=True, text=True, shell=False)
         if result.stdout:
             click.echo(result.stdout)
         if result.stderr:

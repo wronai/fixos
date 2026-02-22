@@ -19,6 +19,7 @@ setup(
         "pyyaml>=6.0",
         "click>=8.1.0",
         "python-dotenv>=1.0.0",
+        "rich>=13.0",
     ],
     extras_require={
         "dev": [

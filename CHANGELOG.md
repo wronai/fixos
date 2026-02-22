@@ -1,3 +1,14 @@
+## [2.1.12] - 2026-02-22
+
+### Summary
+
+feat(config): core module improvements
+
+### Build
+
+- update setup.py
+
+
 ## [2.1.11] - 2026-02-22
 
 ### Summary

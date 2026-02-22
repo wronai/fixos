@@ -58,7 +58,9 @@ def add_common_options(fn):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-def cli(ctx):
+@click.argument("prompt", required=False)
+@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
+def cli(ctx, prompt, dry_run):
     """
     fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
@@ -70,16 +72,19 @@ def cli(ctx):
 
     \b
     Polecenia w jezyku naturalnym:
-      fixos ask "wylacz wszystkie kontenery docker"
-      fixos ask "zlap bledy w systemie"
-      fixos ask "napraw audio"
+      fixos "wylacz wszystkie kontenery docker"
+      fixos "zlap bledy w systemie"
+      fixos "napraw audio"
 
     \b
     Więcej:
       fixos --help
       fixos fix --help
     """
-    if ctx.invoked_subcommand is None:
+    # Obsluga polecenia w jezyku naturalnym - tylko gdy nie ma podkomendy
+    if prompt and ctx.invoked_subcommand is None:
+        _handle_natural_command(prompt, dry_run)
+    elif ctx.invoked_subcommand is None:
         _print_welcome()
 
 
@@ -93,15 +98,18 @@ def ask(prompt, dry_run):
 
 
 def _handle_natural_command(prompt: str, dry_run: bool = False):
-    """Obsluga polecen w jezyku naturalnym."""
+    """Obsluga polecen w jezyku naturalnym z wyjściem YAML i walidacją LLM."""
     import subprocess
+    import yaml
     
     prompt_lower = prompt.lower()
     
-    # Wykryj akcję (pierwsze dopasowanie)
+    # Wykryj akcję (pierwsze dopasowanie) - heurystyka
+    # Uwaga: "wylacz" = usun (nie tylko stop) żeby wyłączyć WSZYSTKIE kontenery
     action_keywords = {
-        # Docker actions - musi być przed "docker" aby "wylacz kontenery" działało
-        ("wylacz", "stop", "zatrzymaj"): "docker ps -aq | xargs -r docker stop",
+        # Docker actions - "wylacz wszystkie" = usun wszystkie kontenery (zatrzymane też)
+        ("wylacz", "wyłącz"): "docker ps -aq | xargs -r docker rm -f",
+        ("stop", "zatrzymaj"): "docker ps -aq | xargs -r docker stop",
         ("usun", "rm", "remove", "delete", "usuń"): "docker ps -aq | xargs -r docker rm -f",
         
         # System actions
@@ -113,6 +121,9 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
     }
     
     matched_cmd = None
+    used_llm = False
+    llm_provider = None
+    
     for keywords, cmd in action_keywords.items():
         if any(kw in prompt_lower for kw in keywords):
             if cmd is not None:
@@ -135,22 +146,22 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
 
     if not matched_cmd:
         # Nie rozpoznano polecenia - użyj LLM do wygenerowania komendy
-        click.echo(click.style(f"\n🤔 Nie rozpoznałem polecenia: '{prompt}'", fg="yellow"))
-        click.echo(click.style("  Próbuję użyć LLM do wygenerowania odpowiedniej komendy...", fg="cyan"))
-        
-        # Spróbuj użyć LLM
         try:
             cfg = FixOsConfig.load()
             if not cfg.api_key:
-                click.echo(click.style("  ❌ Brak klucza API. Użyj: fixos token set <KLUCZ>", fg="red"))
-                click.echo("  Spróbuj:")
-                click.echo('    fixos ask "wylacz wszystkie kontenery docker"')
-                click.echo('    fixos ask "zlap bledy w systemie"')
-                click.echo('    fixos ask "napraw audio"')
+                output = {
+                    "status": "error",
+                    "reason": "no_api_key",
+                    "message": "Brak klucza API. Użyj: fixos token set <KLUCZ>",
+                    "hint": 'fixos ask "wylacz wszystkie kontenery docker"'
+                }
+                click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
                 return
             
             from .providers.llm import LLMClient
             llm = LLMClient(cfg)
+            used_llm = True
+            llm_provider = f"{cfg.provider}/{cfg.model}"
             
             # Prompt do LLM
             llm_prompt = f"""Jesteś asystentem CLI. Użytkownik wpisał: '{prompt}'
@@ -169,59 +180,202 @@ Przykłady:
             # Usuń backticks jeśli są
             cmd_str = cmd_str.strip('`').strip()
             
-            if cmd_str and len(cmd_str) > 2:
-                click.echo(click.style(f"\n🤖 LLM sugeruje: {cmd_str}", fg="cyan"))
-                
-                if dry_run:
-                    click.echo(click.style("  (dry-run - nie wykonuję)", fg="yellow"))
-                    return
-                
-                # Wykonaj wygenerowaną komendę
-                result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
-                if result.stdout:
-                    click.echo(result.stdout)
-                if result.stderr:
-                    click.echo(click.style(f"  ⚠️  {result.stderr}", fg="yellow"))
-                click.echo(click.style(f"\n✅ Wykonano (exit code: {result.returncode})", fg="green"))
+            if not cmd_str or len(cmd_str) <= 2:
+                output = {
+                    "status": "error",
+                    "reason": "llm_empty_response",
+                    "message": "LLM nie zwrócił komendy"
+                }
+                click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
                 return
+            
+            if dry_run:
+                output = {
+                    "status": "dry_run",
+                    "prompt": prompt,
+                    "source": "llm",
+                    "llm": llm_provider,
+                    "command": cmd_str
+                }
+                click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
+                return
+            
+            # Wykonaj wygenerowaną komendę
+            result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
+            output = {
+                "status": "success" if result.returncode == 0 else "failed",
+                "exit_code": result.returncode,
+                "prompt": prompt,
+                "source": "llm",
+                "llm": llm_provider,
+                "command": cmd_str,
+                "stdout": result.stdout if result.stdout else "",
+                "stderr": result.stderr if result.stderr else ""
+            }
+            click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
+            
+            # Walidacja LLM
+            _validate_result_with_llm(prompt, cmd_str, result, cfg)
+            return
         except Exception as e:
-            click.echo(click.style(f"  ❌ Błąd LLM: {e}", fg="red"))
-        
-        click.echo("  Spróbuj:")
-        click.echo('    fixos ask "wylacz wszystkie kontenery docker"')
-        click.echo('    fixos ask "zlap bledy w systemie"')
-        click.echo('    fixos ask "napraw audio"')
-        return
+            output = {
+                "status": "error",
+                "reason": "llm_error",
+                "message": str(e),
+                "hint": 'fixos ask "wylacz wszystkie kontenery docker"'
+            }
+            click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
+            return
 
     # Wykonaj polecenie - matched_cmd może być stringiem lub krotką
-    import subprocess
-
     if isinstance(matched_cmd, str):
-        # Już gotowy string (np. "docker ps -aq | xargs -r docker stop")
         cmd_str = matched_cmd
     else:
-        # Krotka: (program, [arg1, arg2, ...])
         cmd_program = matched_cmd[0]
         cmd_args = matched_cmd[1] if len(matched_cmd) > 1 else []
         cmd_full = [cmd_program] + cmd_args
         cmd_str = " ".join(cmd_full)
-    
-    click.echo(click.style(f"\n🔧 Wykonuję: {cmd_str}", fg="cyan"))
 
     if dry_run:
-        click.echo(click.style("  (dry-run - nie wykonuję)", fg="yellow"))
+        output = {
+            "status": "dry_run",
+            "prompt": prompt,
+            "source": "heuristics",
+            "llm": None,
+            "command": cmd_str
+        }
+        click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
         return
 
     try:
-        # Użyj shell=True dla poleceń z potokami |
         result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
+        
+        # Buduj dict tylko z niepustymi polami
+        output = {
+            "status": "success" if result.returncode == 0 else "failed",
+            "exit_code": result.returncode,
+            "prompt": prompt,
+            "source": "heuristics",
+            "command": cmd_str,
+        }
         if result.stdout:
-            click.echo(result.stdout)
+            output["stdout"] = result.stdout
         if result.stderr:
-            click.echo(click.style(f"  ⚠️  {result.stderr}", fg="yellow"))
-        click.echo(click.style(f"\n✅ Wykonano (exit code: {result.returncode})", fg="green"))
+            output["stderr"] = result.stderr
+        
+        click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
+        
+        # Walidacja LLM - sprawdź czy wynik odpowiada oczekiwaniom użytkownika
+        try:
+            cfg = FixOsConfig.load()
+            if cfg.api_key:
+                _validate_result_with_llm(prompt, cmd_str, result, cfg)
+        except:
+            pass  # Ignoruj błędy walidacji
     except Exception as e:
-        click.echo(click.style(f"\n❌ Błąd: {e}", fg="red"))
+        output = {
+            "status": "error",
+            "reason": "execution_error",
+            "prompt": prompt,
+            "source": "heuristics",
+            "llm": None,
+            "command": cmd_str,
+            "error": str(e)
+        }
+        click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
+
+
+def _validate_result_with_llm(prompt: str, cmd_str: str, result, cfg):
+    """Waliduje wynik polecenia przez LLM - generuje komende sprawdzającą stan."""
+    import yaml
+    import subprocess
+    from .providers.llm import LLMClient
+    
+    try:
+        llm = LLMClient(cfg)
+        llm_provider = f"{cfg.provider}/{cfg.model}"
+        
+        # Pobierz stdout do walidacji (limit 2000 znaków)
+        stdout_preview = result.stdout[:2000] if result.stdout else "(puste)"
+        
+        # LLM generuje komendę sprawdzającą stan systemu
+        check_prompt = f"""Jesteś asystentem CLI. Użytkownik chciał: "{prompt}"
+Wykonana komenda: {cmd_str}
+Wynik (stdout):
+{stdout_preview}
+
+Wynik (stderr): {result.stderr[:500] if result.stderr else '(brak)'}
+Exit code: {result.returncode}
+
+Wygeneruj komendę Linux która sprawdzi czy oczekiwany efekt został osiągnięty.
+Odpowiedz TYLKO komendą (bez żadnego dodatkowego tekstu).
+Przykłady:
+- "wyłącz docker" → docker ps -a
+- "zatrzymaj usługę" → systemctl status usługa
+- "sprawdź sieć" → ip addr
+- "napraw dźwięk" → pactl info
+"""
+        
+        check_cmd_resp = llm.chat([{"role": "user", "content": check_prompt}], max_tokens=200)
+        check_cmd = check_cmd_resp.strip().split('\n')[0].strip()
+        check_cmd = check_cmd.strip('`').strip()
+        
+        if not check_cmd or len(check_cmd) <= 2:
+            return
+        
+        # Wykonaj komendę sprawdzającą
+        check_result = subprocess.run(check_cmd, capture_output=True, text=True, shell=True)
+        
+        # Teraz oceń wynik
+        validation_prompt = f"""Jesteś walidatorem wyników poleceń systemowych.
+Oczekiwany efekt: "{prompt}"
+Komenda wykonana: {cmd_str}
+Wynik wykonania (stdout): {stdout_preview}
+
+Komenda sprawdzająca: {check_cmd}
+Wynik sprawdzenia (stdout): {check_result.stdout[:2000] if check_result.stdout else '(puste)'}
+Wynik sprawdzenia (stderr): {check_result.stderr[:500] if check_result.stderr else '(brak)'}
+
+Odpowiedz w formacie YAML:
+validation:
+  success: true/false - czy komenda osiągnęła to co użytkownik chciał
+  interpretation: "krótka interpretacja wyniku"
+  user_intent_met: true/false - czy oczekiwania użytkownika zostały spełnione
+  suggestion: "opcjonalna sugestia jeśli coś poszło nie tak"
+"""
+        
+        resp = llm.chat([{"role": "user", "content": validation_prompt}], max_tokens=500)
+        
+        # Spróbuj parsować YAML z odpowiedzi
+        try:
+            yaml_start = resp.find('---')
+            if yaml_start >= 0:
+                yaml_content = resp[yaml_start:]
+            else:
+                yaml_content = resp
+            
+            validation = yaml.safe_load(yaml_content)
+            if validation:
+                # Dodaj info o komendzie sprawdzającej
+                validation['validation']['check_command'] = check_cmd
+                validation['validation']['check_result'] = check_result.stdout[:500] if check_result.stdout else ""
+                validation['validation']['llm_provider'] = llm_provider
+                click.echo(yaml.dump({"validation": validation['validation']}, default_flow_style=False, allow_unicode=True))
+                return
+        except:
+            pass
+        
+        # Fallback: pokaż info o komendzie sprawdzającej
+        click.echo(yaml.dump({
+            "validation": {
+                "llm_provider": llm_provider,
+                "check_command": check_cmd,
+                "check_result": check_result.stdout[:500] if check_result.stdout else "",
+                "raw_response": resp[:500]
+            }
+        }, default_flow_style=False, allow_unicode=True))
+    except Exception as e:
+        pass
 
 
 def _print_welcome():

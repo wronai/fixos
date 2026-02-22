@@ -329,28 +329,64 @@ fixos/
 
 ---
 
-## 🚀 Planowane funkcje (Roadmap)
+## 📋 Roadmap
 
-### v2.3 – Heurystyki bez LLM
-- `fixos quickfix` – natychmiastowe naprawy bez API (baza 30+ znanych bugów)
-- Dopasowanie heurystyczne diagnostyki do znanych wzorców
-- Działa offline, zero tokenów
+Zobacz pełną listę zadań i roadmap w pliku [TODO.md](./TODO.md)
 
-### v2.4 – Raporty i historia
-- `fixos report` – eksport sesji do HTML/PDF/Markdown
-- `fixos history` – historia napraw z wynikami
-- Porównanie stanu przed/po naprawie
+---
 
-### v2.5 – Integracje
-- `fixos watch` – monitoring w tle, powiadomienia przy problemach
-- Webhook do Slack/Discord przy wykryciu błędów krytycznych
-- Integracja z Prometheus/Grafana (metryki diagnostyczne)
+## 🚀 Jak używać fixOS (Prosty przewodnik)
 
-### v3.0 – Multi-agent
-- Równoległe agenty dla różnych modułów (audio, sieć, dysk)
-- Koordynator z priorytetyzacją problemów
-- Uczenie się z historii napraw (fine-tuning lokalnych modeli)
+### Krok 1: Instalacja
+```bash
+pip install -e ".[dev]"
+```
 
+### Krok 2: Konfiguracja
+```bash
+# Utwórz plik .env z szablonu
+fixos config init
+
+# Ustaw klucz API (darmowy Gemini)
+fixos token set AIzaSy...
+
+# Lub wybierz innego providera
+fixos llm --free    # pokaż darmowe providery
+```
+
+### Krok 3: Użycie
+```bash
+# Zobacz dostępne komendy
+fixos
+
+# Diagnostyka systemu (bez AI)
+fixos scan
+
+# Naprawa z AI (pyta o potwierdzenie)
+fixos fix
+
+# Naprawa automatyczna (bez pytania)
+fixos fix --mode autonomous --max-fixes 5
+```
+
+### Przydatne przykłady
+```bash
+# Tylko audio
+fixos fix --modules audio
+
+# Zapisz wynik do pliku
+fixos scan --output raport.json
+
+# Timeout 30 minut
+fixos fix --timeout 1800
+
+# Podgląd orkiestracji
+fixos orchestrate --dry-run
+```
+
+### 🔗 Linki
+- **GitHub**: https://github.com/wronai/fixos
+- **Pełna dokumentacja**: [TODO.md](./TODO.md)
 ---
 
 ## Licencja

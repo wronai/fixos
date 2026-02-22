@@ -4,7 +4,7 @@
 | |_| \ \/ / | | | \___ \
 |  _| |>  <  | |_| |___) |
 |_| |_/_/\_\  \___/|____/
-  AI-powered OS Diagnostics  •  v2.2.0
+AI-powered OS Diagnostics
 ```
 
 # fixOS v2.2 🔧🤖

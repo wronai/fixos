@@ -58,7 +58,9 @@ def add_common_options(fn):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-def cli(ctx):
+@click.argument("prompt", required=False)
+@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
+def cli(ctx, prompt, dry_run):
     """
     fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
@@ -69,12 +71,81 @@ def cli(ctx):
       fixos scan --audio          # tylko skan audio
 
     \b
+    Polecenia w jezyku naturalnym:
+      fixos "wylacz wszystkie kontenery docker"
+      fixos "zlap bledy w systemie"
+      fixos "napraw audio"
+
+    \b
     Więcej:
       fixos --help
       fixos fix --help
     """
-    if ctx.invoked_subcommand is None:
+    # Obsluga polecenia w jezyku naturalnym
+    if prompt:
+        _handle_natural_command(prompt, dry_run)
+    elif ctx.invoked_subcommand is None:
         _print_welcome()
+
+
+def _handle_natural_command(prompt: str, dry_run: bool = False):
+    """Obsluga polecen w jezyku naturalnym."""
+    # Mapa slow kluczowych na komendy
+    command_map = {
+        # Docker
+        ("docker", "kontener", "kontenery", "container"): ("docker", ["ps", "-aq"]),
+        ("wylacz", "stop", "zatrzymaj"): ("docker", ["ps", "-aq", "|", "xargs", "docker", "stop"]),
+        ("usun", "rm", "remove", "delete"): ("docker", ["ps", "-aq", "|", "xargs", "docker", "rm", "-f"]),
+        ("lista", "list", "ps", "pokaz"): ("docker", ["ps", "-a"]),
+
+        # System
+        ("scan", "diagnostyka", "zlap", "bledy", "errors"): ("fixos", ["scan"]),
+        ("fix", "napraw"): ("fixos", ["fix"]),
+        ("siec", "network", "internet"): ("fixos", ["scan", "--modules", "system"]),
+
+        # Audio
+        ("audio", "dzwięk", "sound"): ("fixos", ["fix", "--modules", "audio"]),
+
+        # Security
+        ("bezpieczenstwo", "security"): ("fixos", ["scan", "--modules", "security"]),
+    }
+
+    # Proste dopasowanie slow kluczowych
+    prompt_lower = prompt.lower()
+    matched_cmd = None
+
+    for keywords, cmd in command_map.items():
+        if any(kw in prompt_lower for kw in keywords):
+            matched_cmd = cmd
+            break
+
+    if not matched_cmd:
+        click.echo(click.style(f"\n⚠️  Nie rozpoznałem polecenia: {prompt}", fg="yellow"))
+        click.echo("  Spróbuj:")
+        click.echo('    fixos "wylacz wszystkie kontenery docker"')
+        click.echo('    fixos "zlap bledy w systemie"')
+        click.echo('    fixos "napraw audio"')
+        return
+
+    # Wykonaj polecenie
+    import subprocess
+
+    cmd_str = " ".join(matched_cmd)
+    click.echo(click.style(f"\n🔧 Wykonuję: {cmd_str}", fg="cyan"))
+
+    if dry_run:
+        click.echo(click.style("  (dry-run - nie wykonuję)", fg="yellow"))
+        return
+
+    try:
+        result = subprocess.run(matched_cmd, capture_output=True, text=True, shell=False)
+        if result.stdout:
+            click.echo(result.stdout)
+        if result.stderr:
+            click.echo(click.style(f"  ⚠️  {result.stderr}", fg="yellow"))
+        click.echo(click.style(f"\n✅ Wykonano (exit code: {result.returncode})", fg="green"))
+    except Exception as e:
+        click.echo(click.style(f"\n❌ Błąd: {e}", fg="red"))
 
 
 def _print_welcome():

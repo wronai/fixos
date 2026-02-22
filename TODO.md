@@ -50,6 +50,18 @@
 - [ ] GitHub Actions workflow
 - [ ] Automatyczny release na PyPI
 
+### Nowe funkcje (Docker)
+- [ ] Komenda `fixos docker stop` - zatrzymaj wszystkie kontenery
+- [ ] Komenda `fixos docker rm` - usuń wszystkie kontenery
+- [ ] Komenda `fixos docker ps` - lista kontenerów
+
+### Nowe funkcje (Natural Language)
+- [x] Komenda `fixos ask "polecenie"` - wykonaj polecenie w języku naturalnym
+- [x] Przykład: `fixos ask "wylacz wszystkie kontenery docker"` → wykonuje docker stop
+- [x] Przykład: `fixos ask "zlap bledy w systemie"` → wykonuje fixos scan
+- [x] Mapowanie słów kluczowych na komendy systemowe
+- [ ] Parser LLM do rozumienia bardziej złożonych poleceń
+
 ---
 
 ## 🚀 Szybki start (Quick Start)

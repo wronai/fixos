@@ -1,3 +1,19 @@
+## [2.1.11] - 2026-02-22
+
+### Summary
+
+fix(docs): CLI interface improvements
+
+### Docs
+
+- docs: update README
+- docs: update TODO.md
+
+### Other
+
+- update fixos/cli.py
+
+
 ## [2.1.10] - 2026-02-22
 
 ### Summary

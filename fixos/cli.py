@@ -58,9 +58,7 @@ def add_common_options(fn):
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.argument("prompt", required=False)
-@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
-def cli(ctx, prompt, dry_run):
+def cli(ctx):
     """
     fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
@@ -72,24 +70,32 @@ def cli(ctx, prompt, dry_run):
 
     \b
     Polecenia w jezyku naturalnym:
-      fixos "wylacz wszystkie kontenery docker"
-      fixos "zlap bledy w systemie"
-      fixos "napraw audio"
+      fixos ask "wylacz wszystkie kontenery docker"
+      fixos ask "zlap bledy w systemie"
+      fixos ask "napraw audio"
 
     \b
     Więcej:
       fixos --help
       fixos fix --help
     """
-    # Obsluga polecenia w jezyku naturalnym
-    if prompt:
-        _handle_natural_command(prompt, dry_run)
-    elif ctx.invoked_subcommand is None:
+    if ctx.invoked_subcommand is None:
         _print_welcome()
+
+
+# Osobna komenda dla poleceń naturalnych
+@cli.command("ask")
+@click.argument("prompt")
+@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania")
+def ask(prompt, dry_run):
+    """Wykonaj polecenie w języku naturalnym."""
+    _handle_natural_command(prompt, dry_run)
 
 
 def _handle_natural_command(prompt: str, dry_run: bool = False):
     """Obsluga polecen w jezyku naturalnym."""
+    import subprocess
+    
     prompt_lower = prompt.lower()
     
     # Wykryj akcję (pierwsze dopasowanie)
@@ -128,11 +134,63 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
             matched_cmd = ("fixos", ["scan", "--modules", "security"])
 
     if not matched_cmd:
-        click.echo(click.style(f"\n⚠️  Nie rozpoznałem polecenia: {prompt}", fg="yellow"))
+        # Nie rozpoznano polecenia - użyj LLM do wygenerowania komendy
+        click.echo(click.style(f"\n🤔 Nie rozpoznałem polecenia: '{prompt}'", fg="yellow"))
+        click.echo(click.style("  Próbuję użyć LLM do wygenerowania odpowiedniej komendy...", fg="cyan"))
+        
+        # Spróbuj użyć LLM
+        try:
+            cfg = FixOsConfig.load()
+            if not cfg.api_key:
+                click.echo(click.style("  ❌ Brak klucza API. Użyj: fixos token set <KLUCZ>", fg="red"))
+                click.echo("  Spróbuj:")
+                click.echo('    fixos ask "wylacz wszystkie kontenery docker"')
+                click.echo('    fixos ask "zlap bledy w systemie"')
+                click.echo('    fixos ask "napraw audio"')
+                return
+            
+            from .providers.llm import LLMClient
+            llm = LLMClient(cfg)
+            
+            # Prompt do LLM
+            llm_prompt = f"""Jesteś asystentem CLI. Użytkownik wpisał: '{prompt}'
+Wybierz najlepszą komendę systemową Linux do wykonania.
+Odpowiedz TYLKO komendą (bez żadnego dodatkowego tekstu).
+Przykłady:
+- "wyłącz docker" → docker ps -aq | xargs -r docker stop
+- "pokaż procesy" → ps aux
+- "sprawdź sieć" → ip addr
+- "napraw dźwięk" → fixos fix --modules audio
+- "diagnostyka" → fixos scan
+"""
+            resp = llm.chat([{"role": "user", "content": llm_prompt}], max_tokens=200)
+            cmd_str = resp.strip().split('\n')[0].strip()
+            
+            # Usuń backticks jeśli są
+            cmd_str = cmd_str.strip('`').strip()
+            
+            if cmd_str and len(cmd_str) > 2:
+                click.echo(click.style(f"\n🤖 LLM sugeruje: {cmd_str}", fg="cyan"))
+                
+                if dry_run:
+                    click.echo(click.style("  (dry-run - nie wykonuję)", fg="yellow"))
+                    return
+                
+                # Wykonaj wygenerowaną komendę
+                result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
+                if result.stdout:
+                    click.echo(result.stdout)
+                if result.stderr:
+                    click.echo(click.style(f"  ⚠️  {result.stderr}", fg="yellow"))
+                click.echo(click.style(f"\n✅ Wykonano (exit code: {result.returncode})", fg="green"))
+                return
+        except Exception as e:
+            click.echo(click.style(f"  ❌ Błąd LLM: {e}", fg="red"))
+        
         click.echo("  Spróbuj:")
-        click.echo('    fixos "wylacz wszystkie kontenery docker"')
-        click.echo('    fixos "zlap bledy w systemie"')
-        click.echo('    fixos "napraw audio"')
+        click.echo('    fixos ask "wylacz wszystkie kontenery docker"')
+        click.echo('    fixos ask "zlap bledy w systemie"')
+        click.echo('    fixos ask "napraw audio"')
         return
 
     # Wykonaj polecenie - matched_cmd może być stringiem lub krotką

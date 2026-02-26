@@ -237,7 +237,7 @@ class FixOrchestrator:
                     np.caused_by.append(problem.id)
                     problem.may_cause.append(np.id)
                     self.graph.add(np)
-                    console.print(f"\n  [cyan]🔍 Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
+                    console.print(f"\n  [cyan]Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
 
         return self._session_summary()
 
@@ -373,9 +373,9 @@ class FixOrchestrator:
             return
         console.print()
         if result.success:
-            console.print(f"  [bold green]✅ OK[/bold green]  [cyan]`{result.command}`[/cyan]")
+            console.print(f"  [bold green]OK[/bold green]  [cyan]`{result.command}`[/cyan]")
         else:
-            console.print(f"  [bold red]❌ kod {result.returncode}[/bold red]  [cyan]`{result.command}`[/cyan]")
+            console.print(f"  [bold red]kod {result.returncode}[/bold red]  [cyan]`{result.command}`[/cyan]")
         if result.stdout and not result.stdout.startswith("(już wykonane"):
             print_stdout_box(result.stdout)
         if result.stderr and not result.success:

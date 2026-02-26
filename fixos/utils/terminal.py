@@ -184,20 +184,26 @@ def print_stdout_box(stdout: str, max_lines: int = 30) -> None:
     """Print stdout in a rich Panel."""
     lines = stdout.strip().splitlines()
     shown = lines[:max_lines]
-    body = "\n".join(shown)
+    body = "\\n".join(shown)
     if len(lines) > max_lines:
-        body += f"\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
-    console.print(Panel(Text(body, style="green"), title="[dim]stdout[/dim]", border_style="dim green"))
+        body += f"\\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
+    
+    # Wrap with Syntax for markdown block style
+    syntax = Syntax(body, "bash", theme="monokai", word_wrap=True)
+    console.print(Panel(syntax, title="[dim]stdout[/dim]", border_style="dim green"))
 
 
 def print_stderr_box(stderr: str, max_lines: int = 15) -> None:
     """Print stderr in a rich Panel."""
     lines = stderr.strip().splitlines()
     shown = lines[:max_lines]
-    body = "\n".join(shown)
+    body = "\\n".join(shown)
     if len(lines) > max_lines:
-        body += f"\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
-    console.print(Panel(Text(body, style="red"), title="[dim]stderr[/dim]", border_style="dim red"))
+        body += f"\\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
+    
+    # Wrap with Syntax for markdown block style
+    syntax = Syntax(body, "bash", theme="monokai", word_wrap=True)
+    console.print(Panel(syntax, title="[dim]stderr[/dim]", border_style="dim red"))
 
 
 # ── Problem header ─────────────────────────────────────────────────────────

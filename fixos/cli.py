@@ -406,25 +406,25 @@ def _print_welcome():
 
     cfg = FixOsConfig.load()
     has_key = bool(cfg.api_key)
-    key_status = click.style("✅ skonfigurowany", fg="green") if has_key else click.style("❌ BRAK", fg="red")
+    key_status = click.style("skonfigurowany", fg="green") if has_key else click.style("BRAK", fg="red")
     provider_info = f"{cfg.provider} ({cfg.model})"
 
     click.echo(click.style("═" * 60, fg="cyan"))
-    click.echo(click.style("  📋 DOSTĘPNE KOMENDY", fg="cyan", bold=True))
+    click.echo(click.style("  DOSTĘPNE KOMENDY", fg="cyan", bold=True))
     click.echo(click.style("═" * 60, fg="cyan"))
     click.echo()
 
     commands = [
-        ("fixos fix",         "🔧", "Diagnostyka + sesja naprawcza z AI (HITL)"),
-        ("fixos scan",        "🔍", "Diagnostyka systemu bez AI"),
-        ("fixos orchestrate", "🎼", "Zaawansowana orkiestracja napraw (graf problemów)"),
-        ("fixos llm",         "🤖", "Lista 12 providerów LLM + linki do kluczy API"),
-        ("fixos token set",   "🔑", "Zapisz klucz API (auto-detekcja providera)"),
-        ("fixos token show",  "👁️ ", "Pokaż aktualny token (zamaskowany)"),
-        ("fixos config show", "⚙️ ", "Pokaż konfigurację"),
-        ("fixos config init", "📄", "Utwórz plik .env z szablonu"),
-        ("fixos providers",   "📡", "Lista providerów (skrócona)"),
-        ("fixos test-llm",    "🧪", "Test połączenia z LLM"),
+        ("fixos fix",         "", "Diagnostyka + sesja naprawcza z AI (HITL)"),
+        ("fixos scan",        "", "Diagnostyka systemu bez AI"),
+        ("fixos orchestrate", "", "Zaawansowana orkiestracja napraw (graf problemów)"),
+        ("fixos llm",         "", "Lista 12 providerów LLM + linki do kluczy API"),
+        ("fixos token set",   "", "Zapisz klucz API (auto-detekcja providera)"),
+        ("fixos token show",  " ", "Pokaż aktualny token (zamaskowany)"),
+        ("fixos config show", "", "Pokaż konfigurację"),
+        ("fixos config init", "", "Utwórz plik .env z szablonu"),
+        ("fixos providers",   "", "Lista providerów (skrócona)"),
+        ("fixos test-llm",    "", "Test połączenia z LLM"),
     ]
 
     for cmd, icon, desc in commands:
@@ -436,12 +436,12 @@ def _print_welcome():
     click.echo(click.style("  🔬 MODUŁY DIAGNOSTYKI", fg="cyan"))
     click.echo(click.style("─" * 60, fg="cyan"))
     modules_info = [
-        ("system",     "🖥️ ", "CPU, RAM, dyski, usługi, aktualizacje"),
-        ("audio",      "🔊", "ALSA, PipeWire, SOF firmware, mikrofon"),
-        ("thumbnails", "🖼️ ", "Podglądy plików, cache, GStreamer"),
-        ("hardware",   "🔧", "DMI, GPU, touchpad, kamera, bateria"),
-        ("security",   "🔒", "Firewall, porty, SELinux, SSH, fail2ban"),
-        ("resources",  "📊", "Dysk (co zajmuje), procesy, autostart"),
+        ("system",     " ", "CPU, RAM, dyski, usługi, aktualizacje"),
+        ("audio",      "", "ALSA, PipeWire, SOF firmware, mikrofon"),
+        ("thumbnails", " ", "Podglądy plików, cache, GStreamer"),
+        ("hardware",   "", "DMI, GPU, touchpad, kamera, bateria"),
+        ("security",   "", "Firewall, porty, SELinux, SSH, fail2ban"),
+        ("resources",  "", "Dysk (co zajmuje), procesy, autostart"),
     ]
     for mod, icon, desc in modules_info:
         mod_styled = click.style(f"{mod:<12}", fg="white")
@@ -450,7 +450,7 @@ def _print_welcome():
 
     click.echo()
     click.echo(click.style("─" * 60, fg="cyan"))
-    click.echo(click.style("  ⚙️  AKTUALNY STATUS", fg="cyan"))
+    click.echo(click.style("  AKTUALNY STATUS", fg="cyan"))
     click.echo(click.style("─" * 60, fg="cyan"))
     click.echo(f"  Provider  : {provider_info}")
     click.echo(f"  API Key   : {key_status}")
@@ -458,7 +458,7 @@ def _print_welcome():
     click.echo()
 
     if not has_key:
-        click.echo(click.style("  💡 Szybki start:", fg="yellow", bold=True))
+        click.echo(click.style("  Szybki start:", fg="yellow", bold=True))
         click.echo(click.style("     fixos llm", fg="yellow") + "                    # wybierz provider i pobierz klucz")
         click.echo(click.style("     fixos token set <KLUCZ>", fg="yellow") + "      # zapisz klucz (auto-detekcja providera)")
         click.echo(click.style("     fixos fix", fg="yellow") + "                    # uruchom diagnostykę + naprawę")
@@ -466,7 +466,7 @@ def _print_welcome():
         click.echo(click.style("  ⚡ Lub po prostu:", fg="yellow"))
         click.echo(click.style("     fixos fix", fg="yellow") + "  # zapyta o provider interaktywnie")
     else:
-        click.echo(click.style("  💡 Przykłady użycia:", fg="yellow", bold=True))
+        click.echo(click.style("  Przykłady użycia:", fg="yellow", bold=True))
         click.echo(click.style("     fixos fix", fg="yellow") + "                           # pełna diagnostyka + naprawa")
         click.echo(click.style("     fixos fix --modules security,resources", fg="yellow") + " # bezpieczeństwo + zasoby")
         click.echo(click.style("     fixos scan --modules security", fg="yellow") + "        # tylko skan bezpieczeństwa")
@@ -514,7 +514,7 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
         # Skip heavy system diagnostics if only disk is requested implicitly
         data = {}
     else:
-        click.echo(click.style("🔍 Zbieranie diagnostyki...", fg="yellow"))
+        click.echo(click.style("Zbieranie diagnostyki...", fg="yellow"))
         def progress(name, desc):
             click.echo(f"  → {desc}...")
         data = get_full_diagnostics(selected_modules, progress_callback=progress)
@@ -527,7 +527,7 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
         click.echo(json.dumps(data, indent=2, default=str))
     else:
         # Display regular diagnostic summary
-        click.echo(click.style("✅ Diagnostyka zakończona.", fg="green"))
+        click.echo(click.style("Diagnostyka zakończona.", fg="green"))
         
     if output:
         try:
@@ -536,13 +536,13 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
                 json.dumps(data, ensure_ascii=False, indent=2, default=str),
                 encoding="utf-8"
             )
-            click.echo(click.style(f"💾 Zapisano: {output}", fg="green"))
+            click.echo(click.style(f"Zapisano: {output}", fg="green"))
         except Exception as e:
-            click.echo(f"⚠️  Błąd zapisu: {e}")
+            click.echo(f"Błąd zapisu: {e}")
 
 def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False):
     """Helper for disk analysis logic to avoid duplication between scan and fix"""
-    click.echo(click.style("💾 Analizowanie zajętości dysku...", fg="blue"))
+    click.echo(click.style("Analizowanie zajętości dysku...", fg="blue"))
     try:
         from .diagnostics.disk_analyzer import DiskAnalyzer
         analyzer = DiskAnalyzer()
@@ -565,7 +565,7 @@ def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False)
                 }.get(disk_analysis.get("status", "unknown"), "gray")
                 
                 click.echo(click.style(
-                    f"  📊 Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
+                    f"  Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
                     f"({disk_analysis['used_gb']:.1f}GB / {disk_analysis['total_gb']:.1f}GB)",
                     fg=status_color
                 ))
@@ -577,62 +577,62 @@ def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False)
                     
                     if total_safe_gb > 0.1:
                         click.echo(click.style(
-                            f"  🧹 Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
+                            f"  Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
                             fg="green"
                         ))
             else:
-                click.echo(click.style(f"\n📊 Analiza dysku:", fg="cyan"))
+                click.echo(click.style(f"\nAnaliza dysku:", fg="cyan"))
                 click.echo(f"  📈 Użycie: {disk_analysis['usage_percent']:.1f}%")
-                click.echo(f"  💾 Zajęte: {disk_analysis['used_gb']:.1f} GB")
+                click.echo(f"  Zajęte: {disk_analysis['used_gb']:.1f} GB")
                 click.echo(f"  🆓 Wolne: {disk_analysis['free_gb']:.1f} GB")
                 click.echo(f"  📁 Status: {disk_analysis['status']}")
                 
                 suggestions = disk_analysis.get("suggestions", [])
                 if suggestions:
-                    click.echo(click.style(f"\n🧹 Sugestie czyszczenia:", fg="yellow"))
+                    click.echo(click.style(f"\nSugestie czyszczenia:", fg="yellow"))
                     for suggestion in suggestions[:5]:
-                        safe_icon = "✅" if suggestion.get("safe") else "⚠️"
+                        safe_icon = "" if suggestion.get("safe") else ""
                         click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
         else:
-            click.echo(click.style(f"{'  ' if is_fix_mode else ''}❌ Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
+            click.echo(click.style(f"{'  ' if is_fix_mode else ''}Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
             
     except ImportError:
-        click.echo(click.style(f"{'  ' if is_fix_mode else ''}⚠️  Moduł analizy dysku nie jest dostępny", fg="yellow"))
+        click.echo(click.style(f"{'  ' if is_fix_mode else ''}Moduł analizy dysku nie jest dostępny", fg="yellow"))
     except Exception as e:
-        click.echo(click.style(f"{'  ' if is_fix_mode else ''}⚠️  Błąd podczas analizy dysku: {str(e)}", fg="red"))
+        click.echo(click.style(f"{'  ' if is_fix_mode else ''}Błąd podczas analizy dysku: {str(e)}", fg="red"))
 
 def _print_quick_issues(data: dict):
     """Wyświetla szybki przegląd problemów z zebranych danych."""
-    click.echo(click.style("\n📋 Szybki przegląd problemów:", fg="cyan"))
+    click.echo(click.style("\nSzybki przegląd problemów:", fg="cyan"))
     issues = []
 
     # Sprawdź audio
     audio = data.get("audio", {})
     if "brak" in str(audio.get("alsa_cards", "")).lower() or not audio.get("alsa_cards","").strip() or audio.get("alsa_cards","") == "(brak outputu)":
-        issues.append("🔴 Dźwięk: brak kart ALSA – prawdopodobnie brak sterownika SOF")
+        issues.append("Dźwięk: brak kart ALSA – prawdopodobnie brak sterownika SOF")
     if "failed" in str(audio.get("pipewire_status", "")).lower():
-        issues.append("🔴 PipeWire: usługa failed")
+        issues.append("PipeWire: usługa failed")
     if "failed" in str(audio.get("wireplumber_status", "")).lower():
-        issues.append("🟡 WirePlumber: usługa failed")
+        issues.append("WirePlumber: usługa failed")
 
     # Sprawdź thumbnails
     thumb = data.get("thumbnails", {})
     thumb_count = str(thumb.get("thumbnail_cache_count", "0")).strip()
     if thumb_count == "0":
-        issues.append("🟡 Thumbnails: pusty cache – brak podglądów")
+        issues.append("Thumbnails: pusty cache – brak podglądów")
     if "nie zainstalowany" in str(thumb.get("ffmpegthumbnailer", "")):
-        issues.append("🟡 ffmpegthumbnailer: nie zainstalowany")
+        issues.append("ffmpegthumbnailer: nie zainstalowany")
     if "nie znaleziony" in str(thumb.get("totem_thumb", "")):
-        issues.append("🟡 totem-video-thumbnailer: nie znaleziony")
+        issues.append("totem-video-thumbnailer: nie znaleziony")
 
     # Sprawdź system
     sys_data = data.get("system", {})
     failed = str(sys_data.get("systemctl_failed", "")).strip()
     if failed and failed != "(brak outputu)" and "0 loaded" not in failed:
-        issues.append(f"🔴 systemctl: usługi failed:\n    {failed[:200]}")
+        issues.append(f"systemctl: usługi failed:\n    {failed[:200]}")
 
     if not issues:
-        click.echo("  ✅ Brak oczywistych problemów w zebranych danych.")
+        click.echo("  Brak oczywistych problemów w zebranych danych.")
     else:
         for issue in issues:
             click.echo(f"  {issue}")
@@ -704,25 +704,25 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
     errors = cfg.validate()
     if errors:
         # No API key - propose interactive provider selection
-        click.echo(click.style("\n⚠️  Brak konfiguracji LLM.", fg="yellow"))
+        click.echo(click.style("\nBrak konfiguracji LLM.", fg="yellow"))
         new_cfg = interactive_provider_setup()
         if new_cfg is None:
-            click.echo(click.style("❌ Anulowano. Użyj: fixos llm  aby zobaczyć dostępne providery.", fg="red"))
+            click.echo(click.style("Anulowano. Użyj: fixos llm  aby zobaczyć dostępne providery.", fg="red"))
             sys.exit(1)
         cfg = new_cfg
         errors = cfg.validate()
         if errors:
             for err in errors:
-                click.echo(click.style(f"❌ {err}", fg="red"))
+                click.echo(click.style(f"{err}", fg="red"))
             sys.exit(1)
 
-    click.echo(click.style("\n⚙️  Konfiguracja:", fg="cyan"))
+    click.echo(click.style("\nKonfiguracja:", fg="cyan"))
     click.echo(cfg.summary())
     
     if dry_run:
-        click.echo(click.style("  🔍 Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
+        click.echo(click.style("  Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
     if disc:
-        click.echo(click.style("  💾 Analiza dysku: Włączona", fg="blue"))
+        click.echo(click.style("  Analiza dysku: Włączona", fg="blue"))
 
     # Diagnostics
     selected_modules = modules.split(",") if modules else None
@@ -731,7 +731,7 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
         # Skip heavy system diagnostics if only disk is requested implicitly
         data = {}
     else:
-        click.echo(click.style("\n🔍 Zbieranie diagnostyki...", fg="yellow"))
+        click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
         def progress(name, desc):
             click.echo(f"  → {desc}...")
         data = get_full_diagnostics(selected_modules, progress_callback=progress)
@@ -747,11 +747,11 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
                 json.dumps({"anonymized": anon_str, "raw": data}, ensure_ascii=False, indent=2, default=str),
                 encoding="utf-8"
             )
-            click.echo(click.style(f"💾 Raport: {output}", fg="green"))
+            click.echo(click.style(f"Raport: {output}", fg="green"))
         except Exception as e:
-            click.echo(f"⚠️  Błąd zapisu: {e}")
+            click.echo(f"Błąd zapisu: {e}")
 
-    click.echo(click.style("✅ Diagnostyka gotowa.\n", fg="green"))
+    click.echo(click.style("Diagnostyka gotowa.\n", fg="green"))
 
     # Handle disk analysis mode
     if disc and "disk_analysis" in data:
@@ -780,7 +780,7 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
     
     suggestions = disk_analysis.get("suggestions", [])
     if not suggestions:
-        click.echo(click.style("✅ Brak sugestii czyszczenia dysku.", fg="green"))
+        click.echo(click.style("Brak sugestii czyszczenia dysku.", fg="green"))
         return
     
     # Create cleanup plan
@@ -794,10 +794,10 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
     
     # Display plan summary
     summary = plan["summary"]
-    click.echo(click.style(f"\n📊 Plan czyszczenia dysku:", fg="cyan"))
+    click.echo(click.style(f"\nPlan czyszczenia dysku:", fg="cyan"))
     click.echo(f"  🔢 Akcje: {summary['total_actions']}")
-    click.echo(f"  💾 Miejsce: {summary['total_size_gb']:.1f} GB")
-    click.echo(f"  ✅ Bezpieczne: {summary['safe_size_gb']:.1f} GB")
+    click.echo(f"  Miejsce: {summary['total_size_gb']:.1f} GB")
+    click.echo(f"  Bezpieczne: {summary['safe_size_gb']:.1f} GB")
     click.echo(f"  📂 Kategorie: {summary['categories_count']}")
     
     # Show categories
@@ -805,31 +805,31 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
         info = category_data["info"]
         click.echo(f"\n{info['icon']} {info['name']}:")
         click.echo(f"  📁 Akcje: {category_data['actions_count']}")
-        click.echo(f"  💾 Miejsce: {category_data['total_size_gb']:.1f} GB")
+        click.echo(f"  Miejsce: {category_data['total_size_gb']:.1f} GB")
         
         # Show top actions
         for action in category_data["actions"][:3]:
-            safe_icon = "✅" if action["safe"] else "⚠️"
-            priority_icon = {"critical": "🔴", "high": "🟠", "medium": "🟡", "low": "🟢"}.get(action["priority"], "⚪")
+            safe_icon = "" if action["safe"] else ""
+            priority_icon = {"critical": "", "high": "", "medium": "", "low": ""}.get(action["priority"], "")
             click.echo(f"    {safe_icon} {priority_icon} {action['description']} ({action['size_gb']:.1f}GB)")
     
     # Show recommendations
     recommendations = plan.get("recommendations", [])
     if recommendations:
-        click.echo(click.style(f"\n💡 Rekomendacje:", fg="yellow"))
+        click.echo(click.style(f"\nRekomendacje:", fg="yellow"))
         for rec in recommendations:
             priority_color = {"high": "red", "medium": "yellow", "low": "blue"}.get(rec["priority"], "gray")
             click.echo(click.style(f"  🎯 {rec['title']}", fg=priority_color))
             click.echo(f"     {rec['description']}")
     
     if dry_run:
-        click.echo(click.style("\n🔍 Tryb DRY-RUN - żadne akcje nie zostaną wykonane", fg="yellow"))
+        click.echo(click.style("\nTryb DRY-RUN - żadne akcje nie zostaną wykonane", fg="yellow"))
         return
     
     if interactive:
         selection = planner.interactive_selection(plan)
-        click.echo(click.style(f"\n✅ Wybrano {selection['total_selected']} akcji do wykonania", fg="green"))
-        click.echo(click.style(f"💾 Szacowane miejsce: {selection['estimated_space_gb']:.1f} GB", fg="green"))
+        click.echo(click.style(f"\nWybrano {selection['total_selected']} akcji do wykonania", fg="green"))
+        click.echo(click.style(f"Szacowane miejsce: {selection['estimated_space_gb']:.1f} GB", fg="green"))
         
         # Execute selected actions
         execute_cleanup_actions(selection["selected_actions"], cfg, llm_fallback)
@@ -837,10 +837,10 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
         # Auto-execute safe actions
         safe_actions = [a for a in plan["prioritized_actions"] if a.get("safe", False)]
         if safe_actions:
-            click.echo(click.style(f"\n🤖 Automatyczne wykonanie {len(safe_actions)} bezpiecznych akcji", fg="blue"))
+            click.echo(click.style(f"\nAutomatyczne wykonanie {len(safe_actions)} bezpiecznych akcji", fg="blue"))
             execute_cleanup_actions(safe_actions, cfg, llm_fallback)
         else:
-            click.echo(click.style("\n⚠️  Brak bezpiecznych akcji do automatycznego wykonania", fg="yellow"))
+            click.echo(click.style("\nBrak bezpiecznych akcji do automatycznego wykonania", fg="yellow"))
 
 
 def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
@@ -860,34 +860,34 @@ def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
         click.echo(f"\n[{i}/{len(actions)}] {action['description']}")
         
         if not action.get("safe", False):
-            if not click.confirm(f"⚠️  Ta akcja nie jest bezpieczna. Kontynuować?"):
+            if not click.confirm(f"Ta akcja nie jest bezpieczna. Kontynuować?"):
                 click.echo("⏭️  Pominięto")
                 continue
         
         try:
-            result = executor.execute_command(action["command"], shell=True)
-            if result["exit_code"] == 0:
-                click.echo(click.style(f"✅ Sukces: {action['description']}", fg="green"))
+            result = executor.execute_sync(action["command"])
+            if result.returncode == 0:
+                click.echo(click.style(f"Sukces: {action['description']}", fg="green"))
                 successful.append(action)
             else:
-                click.echo(click.style(f"❌ Błąd: {action['description']}", fg="red"))
-                click.echo(f"   {result.get('stderr', 'Unknown error')}")
+                click.echo(click.style(f"Błąd: {action['description']}", fg="red"))
+                click.echo(f"   {result.stderr or 'Unknown error'}")
                 failed.append(action)
         except Exception as e:
-            click.echo(click.style(f"❌ Wyjątek: {str(e)}", fg="red"))
+            click.echo(click.style(f"Wyjątek: {str(e)}", fg="red"))
             failed.append(action)
     
     # Summary
-    click.echo(click.style(f"\n📊 Podsumowanie:", fg="cyan"))
-    click.echo(f"✅ Sukces: {len(successful)}")
-    click.echo(f"❌ Błędy: {len(failed)}")
+    click.echo(click.style(f"\nPodsumowanie:", fg="cyan"))
+    click.echo(f"Sukces: {len(successful)}")
+    click.echo(f"Błędy: {len(failed)}")
     
     if successful:
         total_freed = sum(a.get("size_gb", 0) for a in successful)
-        click.echo(click.style(f"💾 Zwolniono miejsca: ~{total_freed:.1f} GB", fg="green"))
+        click.echo(click.style(f"Zwolniono miejsca: ~{total_freed:.1f} GB", fg="green"))
     
     if failed and llm_fallback:
-        click.echo(click.style("\n🤖 Próba naprawy błędów za pomocą LLM...", fg="yellow"))
+        click.echo(click.style("\nPróba naprawy błędów za pomocą LLM...", fg="yellow"))
         # Implement LLM fallback for failed actions
         try_llm_fallback_for_failures(failed, cfg)
 
@@ -911,11 +911,11 @@ Respond with JSON format: {{"alternative_commands": ["cmd1", "cmd2"], "explanati
 """
             
             response = llm.chat([{"role": "user", "content": prompt}], max_tokens=200)
-            click.echo(click.style(f"💡 Sugestia LLM dla {action['description']}:", fg="blue"))
+            click.echo(click.style(f"Sugestia LLM dla {action['description']}:", fg="blue"))
             click.echo(f"   {response[:200]}...")
             
     except Exception as e:
-        click.echo(click.style(f"⚠️  LLM fallback nieudany: {str(e)}", fg="red"))
+        click.echo(click.style(f"LLM fallback nieudany: {str(e)}", fg="red"))
 
 #  fixos token
 # ══════════════════════════════════════════════════════════
@@ -986,7 +986,7 @@ def token_set(key, provider, env_file):
     target.chmod(0o600)
 
     masked = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
-    click.echo(click.style(f"✅ Token zapisany: {key_env}={masked}", fg="green"))
+    click.echo(click.style(f"Token zapisany: {key_env}={masked}", fg="green"))
     click.echo(f"   Provider: {provider}")
     click.echo(f"   Plik: {target}")
 
@@ -1002,7 +1002,7 @@ def token_show():
         click.echo(f"  Token    : {masked}")
         click.echo(f"  Env plik : {cfg.env_file_loaded or 'brak'}")
     else:
-        click.echo(click.style("  ❌ Brak tokena. Użyj: fixos token set <KLUCZ>", fg="red"))
+        click.echo(click.style("  Brak tokena. Użyj: fixos token set <KLUCZ>", fg="red"))
 
 
 @token.command("clear")
@@ -1018,7 +1018,7 @@ def token_clear(env_file):
     key_patterns = [f"{p.get('key_env','API_KEY')}=" for p in PROVIDER_DEFAULTS.values()]
     new_lines = [l for l in lines if not any(l.startswith(p) for p in key_patterns)]
     target.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
-    click.echo(click.style("✅ Token usunięty.", fg="green"))
+    click.echo(click.style("Token usunięty.", fg="green"))
 
 
 # ══════════════════════════════════════════════════════════
@@ -1035,11 +1035,11 @@ def config():
 def config_show():
     """Wyświetla aktualną konfigurację."""
     cfg = FixOsConfig.load()
-    click.echo(click.style("\n⚙️  Aktualna konfiguracja:", fg="cyan"))
+    click.echo(click.style("\nAktualna konfiguracja:", fg="cyan"))
     click.echo(cfg.summary())
     errors = cfg.validate()
     if errors:
-        click.echo(click.style("\n⚠️  Błędy konfiguracji:", fg="red"))
+        click.echo(click.style("\nBłędy konfiguracji:", fg="red"))
         for e in errors:
             click.echo(f"  • {e}")
 
@@ -1070,7 +1070,7 @@ def config_init(force):
             encoding="utf-8"
         )
     target.chmod(0o600)
-    click.echo(click.style(f"✅ Utworzono {target}", fg="green"))
+    click.echo(click.style(f"Utworzono {target}", fg="green"))
     click.echo(f"   Edytuj go: nano {target}")
     click.echo(f"   Następnie: fixos token set TWOJ_KLUCZ")
 
@@ -1101,7 +1101,7 @@ def config_set(key, value):
         lines.append(f"{key}={value}")
 
     target.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    click.echo(click.style(f"✅ {key}={value}", fg="green"))
+    click.echo(click.style(f"{key}={value}", fg="green"))
 
 
 # ══════════════════════════════════════════════════════════
@@ -1127,7 +1127,7 @@ def llm_providers(free):
     cfg = FixOsConfig.load()
     current = cfg.provider
 
-    click.echo(click.style("\n🤖 DOSTĘPNI PROVIDERZY LLM", fg="cyan", bold=True))
+    click.echo(click.style("\nDOSTĘPNI PROVIDERZY LLM", fg="cyan", bold=True))
     click.echo(click.style("═" * 72, fg="cyan"))
 
     for i, p in enumerate(providers_data, 1):
@@ -1145,7 +1145,7 @@ def llm_providers(free):
         click.echo()
 
     click.echo(click.style("─" * 72, fg="cyan"))
-    click.echo(click.style("  📋 JAK USTAWIĆ KLUCZ API:", fg="yellow", bold=True))
+    click.echo(click.style("  JAK USTAWIĆ KLUCZ API:", fg="yellow", bold=True))
     click.echo()
     click.echo("  1. Skopiuj URL z kolumny 'Klucz API' i otwórz w przeglądarce")
     click.echo("  2. Zaloguj się i wygeneruj nowy klucz API")
@@ -1158,7 +1158,7 @@ def llm_providers(free):
         cmd = click.style(f"  fixos token set {example_key} --provider {p['name']}", fg="yellow")
         click.echo(cmd)
     click.echo()
-    click.echo(click.style("  💡 Tip: ", fg="cyan") + "fixos llm --free   # pokaż tylko darmowe providery")
+    click.echo(click.style("  Tip: ", fg="cyan") + "fixos llm --free   # pokaż tylko darmowe providery")
     click.echo()
 
 
@@ -1189,7 +1189,7 @@ def _example_key(provider: str) -> str:
 def providers():
     """Lista dostępnych providerów LLM (skrócona). Użyj 'fixos llm' po więcej."""
     providers_data = get_providers_list()
-    click.echo(click.style("\n🤖 Dostępni providerzy LLM:", fg="cyan"))
+    click.echo(click.style("\nDostępni providerzy LLM:", fg="cyan"))
     for p in providers_data:
         free = click.style("FREE", fg="green") if p["free_tier"] else click.style("PAID", fg="yellow")
         click.echo(f"  {p['name']:<12} [{free}]  {p['model']:<45} {p['key_env']}")
@@ -1215,7 +1215,7 @@ def test_llm(provider, token, model, no_banner):
     errors = cfg.validate()
     if errors:
         for err in errors:
-            click.echo(click.style(f"❌ {err}", fg="red"))
+            click.echo(click.style(f"{err}", fg="red"))
         sys.exit(1)
 
     click.echo(f"\n  Testuję: {cfg.provider} / {cfg.model}")
@@ -1228,10 +1228,10 @@ def test_llm(provider, token, model, no_banner):
             [{"role": "user", "content": "Odpowiedz jednym zdaniem po polsku: co to jest Linux, Windows, macOS?"}],
             max_tokens=100,
         )
-        click.echo(click.style(f"\n  ✅ Połączenie działa!", fg="green"))
+        click.echo(click.style(f"\n  Połączenie działa!", fg="green"))
         click.echo(f"  Odpowiedź: {resp[:200]}")
     except Exception as e:
-        click.echo(click.style(f"\n  ❌ Błąd: {e}", fg="red"))
+        click.echo(click.style(f"\n  Błąd: {e}", fg="red"))
         sys.exit(1)
 
 
@@ -1282,32 +1282,32 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
 
     errors = cfg.validate()
     if errors:
-        click.echo(click.style("\n⚠️  Brak konfiguracji LLM.", fg="yellow"))
+        click.echo(click.style("\nBrak konfiguracji LLM.", fg="yellow"))
         new_cfg = interactive_provider_setup()
         if new_cfg is None:
-            click.echo(click.style("❌ Anulowano. Użyj: fixos llm  aby zobaczyć dostępne providery.", fg="red"))
+            click.echo(click.style("Anulowano. Użyj: fixos llm  aby zobaczyć dostępne providery.", fg="red"))
             sys.exit(1)
         cfg = new_cfg
         errors = cfg.validate()
         if errors:
             for err in errors:
-                click.echo(click.style(f"❌ {err}", fg="red"))
+                click.echo(click.style(f"{err}", fg="red"))
             sys.exit(1)
 
-    click.echo(click.style("\n⚙️  Konfiguracja:", fg="cyan"))
+    click.echo(click.style("\nKonfiguracja:", fg="cyan"))
     click.echo(cfg.summary())
     if dry_run:
-        click.echo(click.style("  🔍 Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
+        click.echo(click.style("  Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
 
     # Diagnostyka
     selected_modules = modules.split(",") if modules else None
-    click.echo(click.style("\n🔍 Zbieranie diagnostyki...", fg="yellow"))
+    click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
 
     def progress(name, desc):
         click.echo(f"  → {desc}...")
 
     data = get_full_diagnostics(selected_modules, progress_callback=progress)
-    click.echo(click.style("✅ Diagnostyka gotowa.\n", fg="green"))
+    click.echo(click.style("Diagnostyka gotowa.\n", fg="green"))
 
     # Inicjalizuj orkiestrator
     from .orchestrator import FixOrchestrator
@@ -1325,7 +1325,7 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
     problems = orch.load_from_diagnostics(data)
 
     if not problems:
-        click.echo(click.style("  ✅ LLM nie wykrył problemów wymagających naprawy.", fg="green"))
+        click.echo(click.style("  LLM nie wykrył problemów wymagających naprawy.", fg="green"))
         return
 
     from .utils.terminal import console, render_tree_colored
@@ -1333,7 +1333,7 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
     from rich.panel import Panel
     from rich.text import Text
 
-    console.print(Rule(f"[bold cyan]📊 Graf problemów ({len(problems)} wykrytych)[/bold cyan]", style="cyan"))
+    console.print(Rule(f"[bold cyan]Graf problemów ({len(problems)} wykrytych)[/bold cyan]", style="cyan"))
     console.print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
     console.print()
 
@@ -1348,12 +1348,12 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
     pending  = len(by_status.get("pending", []))
     elapsed  = summary.get("elapsed_seconds", 0)
     summary_text = Text()
-    summary_text.append(f"✅ Naprawiono  : {resolved}\n", style="green")
-    summary_text.append(f"❌ Nieudane    : {failed}\n", style="red")
+    summary_text.append(f"Naprawiono  : {resolved}\n", style="green")
+    summary_text.append(f"Nieudane    : {failed}\n", style="red")
     summary_text.append(f"⏭️  Pominięte   : {skipped}\n", style="yellow")
     summary_text.append(f"⏳ Pozostałe   : {pending}\n", style="dim")
     summary_text.append(f"⏱️  Czas sesji  : {elapsed}s", style="dim")
-    console.print(Panel(summary_text, title="[bold cyan]📊 PODSUMOWANIE SESJI[/bold cyan]", border_style="cyan"))
+    console.print(Panel(summary_text, title="[bold cyan]PODSUMOWANIE SESJI[/bold cyan]", border_style="cyan"))
     console.print()
     console.print("[cyan]  Aktualny stan grafu:[/cyan]")
     console.print(render_tree_colored(orch.graph.nodes, orch.graph.execution_order))
@@ -1368,9 +1368,9 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
                 }, ensure_ascii=False, indent=2, default=str),
                 encoding="utf-8"
             )
-            click.echo(click.style(f"\n💾 Log sesji: {output}", fg="green"))
+            click.echo(click.style(f"\nLog sesji: {output}", fg="green"))
         except Exception as e:
-            click.echo(f"⚠️  Błąd zapisu: {e}")
+            click.echo(f"Błąd zapisu: {e}")
 
 
 # ══════════════════════════════════════════════════════════

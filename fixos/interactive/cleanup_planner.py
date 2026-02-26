@@ -57,49 +57,49 @@ class CleanupPlanner:
                 "name": "Cache Files",
                 "description": "Application cache that can be safely cleared",
                 "color": "blue",
-                "icon": "🗂️"
+                "icon": ""
             },
             "logs": {
                 "name": "Log Files", 
                 "description": "Old system and application logs",
                 "color": "yellow",
-                "icon": "📋"
+                "icon": ""
             },
             "temp": {
                 "name": "Temporary Files",
                 "description": "Temporary files and directories",
                 "color": "orange", 
-                "icon": "🗑️"
+                "icon": ""
             },
             "large_files": {
                 "name": "Large Files",
                 "description": "Large individual files requiring review",
                 "color": "red",
-                "icon": "📦"
+                "icon": ""
             },
             "system": {
                 "name": "System Cleanup",
                 "description": "System-level cleanup operations",
                 "color": "purple",
-                "icon": "⚙️"
+                "icon": ""
             },
             "user": {
                 "name": "User Data",
                 "description": "User-specific cleanup actions",
                 "color": "green",
-                "icon": "👤"
+                "icon": ""
             },
             "docker": {
                 "name": "Docker & Containers",
                 "description": "Unused images, containers, and volumes",
                 "color": "cyan",
-                "icon": "🐳"
+                "icon": ""
             },
             "package_manager": {
                 "name": "Package Cache",
                 "description": "Cached system packages (apt/dnf/pacman)",
                 "color": "magenta",
-                "icon": "📦"
+                "icon": ""
             }
         }
         

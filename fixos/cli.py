@@ -858,10 +858,25 @@ def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
     
     for i, action in enumerate(actions, 1):
         click.echo(f"\n[{i}/{len(actions)}] {action['description']}")
-        
-        if not action.get("safe", False):
-            if not click.confirm(f"Ta akcja nie jest bezpieczna. Kontynuować?"):
-                click.echo("⏭️  Pominięto")
+        # Pokaż podgląd plików do usunięcia (bez sudo)
+        if "preview_command" in action:
+            click.echo(click.style("  Znalezione pliki (podgląd):", fg="blue"))
+            preview = executor.execute_sync(action["preview_command"], add_sudo=False)
+            if preview.stdout:
+                lines = preview.stdout.splitlines()
+                for line in lines[:8]:
+                    click.echo("   - " + line)
+                if len(lines) > 8:
+                    click.echo(click.style(f"   ...i {len(lines)-8} więcej.", fg="dim"))
+            else:
+                click.echo(click.style("   (brak elementów lub brak uprawnień do odczytu bez sudo)", fg="dim"))
+
+        needs_sudo = action.get("command", "").startswith("sudo ") or " sudo " in action.get("command", "")
+        if not action.get("safe", False) or needs_sudo:
+            # Pytaj o potwierdzenie, jeśli wymaga sudo lub nie jest bezpieczne
+            prompt_msg = "Wymagane sudo do usunięcia plików. Kontynuować?" if needs_sudo else "Ta akcja nie jest bezpieczna. Kontynuować?"
+            if not click.confirm(click.style(f"  {prompt_msg}", fg="yellow")):
+                click.echo("  ⏭️  Pominięto")
                 continue
         
         try:
@@ -871,7 +886,11 @@ def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
                 successful.append(action)
             else:
                 click.echo(click.style(f"Błąd: {action['description']}", fg="red"))
-                click.echo(f"   {result.stderr or 'Unknown error'}")
+                from rich.syntax import Syntax
+                from .utils.terminal import console
+                err_text = result.stderr or 'Unknown error'
+                syntax = Syntax(err_text, "bash", theme="monokai", word_wrap=True)
+                console.print(syntax)
                 failed.append(action)
         except Exception as e:
             click.echo(click.style(f"Wyjątek: {str(e)}", fg="red"))

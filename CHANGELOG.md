@@ -1,3 +1,21 @@
+## [2.1.22] - 2026-02-26
+
+### Summary
+
+refactor(docs): code analysis engine
+
+### Docs
+
+- docs: update README
+- docs: update TODO.md
+
+### Other
+
+- update fixos/cli.py
+- update fixos/diagnostics/disk_analyzer.py
+- update fixos/diagnostics/system_checks.py
+
+
 ## [2.1.21] - 2026-02-26
 
 ### Summary
@@ -100,6 +118,8 @@ fix(goal): code analysis engine
 - **feat(interactive):** Kreator czyszczenia dysku (CleanupPlanner) z priorytetami (🔴/🟡/🟢).
 - **feat(llm):** Fallback LLM dla błędów podczas czyszczenia dysku.
 - **fix(cli):** Naprawa parsera grupowego (NaturalLanguageGroup) w celu poprawnego działania komend.
+- **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
+- **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
 ## [2.1.16] - 2026-02-26
 

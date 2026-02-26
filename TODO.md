@@ -34,7 +34,7 @@
 ### Dokumentacja
 - [x] Przenieść roadmap z README do TODO.md
 - [x] Dodać sekcję "Jak używać" do README
-- [ ] Zaktualizować przykłady użycia CLI
+- [x] Zaktualizować przykłady użycia CLI
 - [ ] Dodać FAQ dla nowych użytkowników
 
 ### Rozwój funkcji

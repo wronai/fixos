@@ -96,6 +96,53 @@ fixos fix --provider groq
 fixos fix --timeout 1800
 ```
 
+### Przykładowy widok w terminalu (Czyszczenie dysku)
+
+Wyjście jest zoptymalizowane pod standardowy Markdown bez nadmiernej ilości symboli Unicode, ułatwiając czytelność i wklejanie:
+
+```bash
+$ fixos fix --disk --dry-run
+
+  ___  _       ___  ____
+ / _(_)_  __  / _ \/ ___|
+| |_| \ \/ / | | | \___|
+|  _| |>  <  | |_| |___) |
+|_| |_/_/\_\  \___/|____/
+  AI-powered OS Diagnostics  •  v2.0.0
+
+Konfiguracja:
+  Tryb: DRY-RUN (komendy nie będą wykonywane)
+  Analiza dysku: Włączona
+Analizowanie zajętości dysku...
+  Dysk: 93.9% zajęty (1759.0GB / 1873.7GB)
+  Można bezpiecznie zwolnić: 0.7GB w 3 akcjach
+Diagnostyka gotowa.
+
+Plan czyszczenia dysku:
+  🔢 Akcje: 8
+  Miejsce: 262255.3 GB
+  Bezpieczne: 0.7 GB
+  📂 Kategorie: 6
+
+ Cache Files:
+  📁 Akcje: 1
+  Miejsce: 0.6 GB
+      Clear application cache (0.6GB)
+
+ Temporary Files:
+  📁 Akcje: 1
+  Miejsce: 0.1 GB
+      Clean system_temp temporary files (0.1GB)
+
+Rekomendacje:
+  🎯 Cache Cleanup Recommended
+     Clear application cache to free 0.6 GB
+  🎯 Log Files Can Be Cleaned
+     Clean old logs to free 0.7 GB
+
+Tryb DRY-RUN - żadne akcje nie zostaną wykonane
+```
+
 ---
 
 ## 🤖 Dostępni Providerzy LLM (12)

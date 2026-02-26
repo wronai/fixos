@@ -9,12 +9,19 @@ Diagnostyka systemu – rozszerzona o:
 from __future__ import annotations
 
 import subprocess
-import psutil
+try:
+    import psutil
+except ModuleNotFoundError:  # pragma: no cover
+    psutil = None
 import platform
 from datetime import datetime
 from typing import Any
 
 from ..platform_utils import IS_LINUX as _IS_LINUX, IS_WINDOWS as _IS_WINDOWS, IS_MAC as _IS_MAC, SYSTEM as _SYSTEM
+
+
+def _psutil_required() -> bool:
+    return psutil is not None
 
 
 def _cmd(cmd: str, timeout: int = 20) -> str:
@@ -196,6 +203,10 @@ def diagnose_hardware() -> dict[str, Any]:
 
 def diagnose_system() -> dict[str, Any]:
     """System metrics – cross-platform: CPU, RAM, disks, processes."""
+    if not _psutil_required():
+        return {
+            "error": "psutil is required for system diagnostics but is not installed",
+        }
     vm = psutil.virtual_memory()
     sw = psutil.swap_memory()
     disks = {}
@@ -376,6 +387,10 @@ def diagnose_resources() -> dict[str, Any]:
     Sprawdza: dysk (co zajmuje miejsce), pamięć (co ją żre),
     procesy startujące automatycznie, usługi w tle.
     """
+    if not _psutil_required():
+        return {
+            "error": "psutil is required for resources diagnostics but is not installed",
+        }
     # Top procesów wg CPU i RAM
     top_cpu: list[dict] = []
     top_mem: list[dict] = []

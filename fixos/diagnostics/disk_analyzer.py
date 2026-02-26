@@ -219,7 +219,8 @@ class DiskAnalyzer:
                         "path": cache["path"],
                         "size_gb": cache["size_gb"],
                         "description": f"Clear {cache['cache_type']} cache",
-                        "command": f"rm -rf {cache['path']}",
+                        "command": f"{'sudo ' if cache.get('is_system') else ''}rm -rf {cache['path']}",
+                        "preview_command": f"ls -la {cache['path']} 2>/dev/null",
                         "safe": cache["cache_type"] in ["npm", "pip", "gradle", "maven"],
                         "impact": "high"
                     })
@@ -233,7 +234,8 @@ class DiskAnalyzer:
                         "path": log_dir["path"],
                         "size_gb": log_dir["size_gb"],
                         "description": f"Clean old log files",
-                        "command": f"find {log_dir['path']} -name '*.log' -mtime +30 -delete || rm -rf {log_dir['path']}/*.log",
+                        "command": f"sudo find {log_dir['path']} -name '*.log' -mtime +30 -delete || sudo rm -rf {log_dir['path']}/*.log",
+                        "preview_command": f"find {log_dir['path']} -name '*.log' -mtime +30 2>/dev/null",
                         "safe": True,
                         "impact": "medium"
                     })
@@ -271,7 +273,8 @@ class DiskAnalyzer:
                         "path": temp_dir["path"],
                         "size_gb": temp_dir["size_gb"],
                         "description": f"Clean {temp_dir['temp_type']} temporary files",
-                        "command": f"rm -rf {temp_dir['path']}/*",
+                        "command": f"{'sudo ' if temp_dir.get('is_system') else ''}rm -rf {temp_dir['path']}/*",
+                        "preview_command": f"find {temp_dir['path']} -maxdepth 2 -type f 2>/dev/null",
                         "safe": temp_dir["temp_type"] in ["system_temp", "app_temp"],
                         "impact": "medium"
                     })

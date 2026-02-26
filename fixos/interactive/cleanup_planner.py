@@ -24,6 +24,8 @@ class CleanupType(Enum):
     LARGE_FILE = "large_file"
     SYSTEM = "system_cleanup"
     USER = "user_cleanup"
+    DOCKER = "docker_cleanup"
+    PACKAGE_MGR = "package_cleanup"
 
 
 @dataclass
@@ -86,6 +88,18 @@ class CleanupPlanner:
                 "description": "User-specific cleanup actions",
                 "color": "green",
                 "icon": "👤"
+            },
+            "docker": {
+                "name": "Docker & Containers",
+                "description": "Unused images, containers, and volumes",
+                "color": "cyan",
+                "icon": "🐳"
+            },
+            "package_manager": {
+                "name": "Package Cache",
+                "description": "Cached system packages (apt/dnf/pacman)",
+                "color": "magenta",
+                "icon": "📦"
             }
         }
         
@@ -217,9 +231,22 @@ class CleanupPlanner:
     def _dict_to_action(self, suggestion: Dict) -> CleanupAction:
         """Convert dictionary suggestion to CleanupAction"""
         try:
+            # Need to handle strings if suggestion payload comes in as string not Enum
+            ctype_val = suggestion.get("type", "large_file")
+            try:
+                ctype = CleanupType(ctype_val)
+            except ValueError:
+                ctype = CleanupType.LARGE_FILE
+                
+            prio_val = suggestion.get("priority", "low")
+            try:
+                prio = Priority(prio_val)
+            except ValueError:
+                prio = Priority.LOW
+
             return CleanupAction(
-                type=CleanupType(suggestion.get("type", "large_file")),
-                priority=Priority(suggestion.get("priority", "low")),
+                type=ctype,
+                priority=prio,
                 path=suggestion.get("path", ""),
                 size_gb=float(suggestion.get("size_gb", 0)),
                 description=suggestion.get("description", ""),
@@ -269,6 +296,10 @@ class CleanupPlanner:
             return "temp"
         elif action.type == CleanupType.LARGE_FILE:
             return "large_files"
+        elif action.type.value == "docker_cleanup" or "docker" in action.path.lower():
+            return "docker"
+        elif action.type.value == "package_cleanup" or action.path == "/var/cache":
+            return "package_manager"
         elif "system" in action.path.lower() or action.path.startswith("/"):
             return "system"
         else:

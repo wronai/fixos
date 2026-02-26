@@ -19,7 +19,8 @@ class DiskAnalyzer:
         self.base_path = Path(base_path)
         self.cache_patterns = [
             ".cache", "__pycache__", "node_modules", ".npm", 
-            ".pip", "cache", "Cache", ".gradle", ".maven", ".cargo"
+            ".pip", "cache", "Cache", ".gradle", ".maven", ".cargo",
+            "apt", "dnf", "yum", "pacman", "pkg", "docker/overlay2", "docker/image", "Containers"
         ]
         self.log_patterns = [
             ".log", "logs", "Logs", "*.log", "*.out", "*.err"
@@ -232,10 +233,34 @@ class DiskAnalyzer:
                         "path": log_dir["path"],
                         "size_gb": log_dir["size_gb"],
                         "description": f"Clean old log files",
-                        "command": f"find {log_dir['path']} -name '*.log' -mtime +30 -delete",
+                        "command": f"find {log_dir['path']} -name '*.log' -mtime +30 -delete || rm -rf {log_dir['path']}/*.log",
                         "safe": True,
                         "impact": "medium"
                     })
+            
+            # Docker and Package Manager specific suggestions
+            # These are generated regardless if we found them in cache dirs to guarantee they are surfaced
+            suggestions.append({
+                "type": "docker_cleanup",
+                "priority": "high",
+                "path": "/var/lib/docker",
+                "size_gb": 0.0, # Will be recalculated by planner
+                "description": "Clean unused Docker images, containers, and volumes",
+                "command": "docker system prune -af --volumes",
+                "safe": False,
+                "impact": "high"
+            })
+            
+            suggestions.append({
+                "type": "package_cleanup",
+                "priority": "medium",
+                "path": "/var/cache",
+                "size_gb": 0.0, # Will be recalculated
+                "description": "Clean system package manager cache (apt/dnf/pacman)",
+                "command": "apt-get clean || dnf clean all || pacman -Scc --noconfirm",
+                "safe": True,
+                "impact": "medium"
+            })
             
             # Temp directory cleanup
             for temp_dir in temp_dirs[:3]:
@@ -329,6 +354,10 @@ class DiskAnalyzer:
             return "maven"
         elif "cargo" in name:
             return "cargo"
+        elif "docker" in path_str or "containers" in path_str:
+            return "docker"
+        elif "apt" in path_str or "dnf" in path_str or "yum" in path_str or "pacman" in path_str:
+            return "package_manager"
         elif "browser" in path_str or "chrome" in path_str or "firefox" in path_str:
             return "browser"
         else:

@@ -1,3 +1,26 @@
+## [2.1.18] - 2026-02-26
+
+### Summary
+
+refactor(goal): code analysis engine
+
+### Test
+
+- update test_click.py
+- update test_click2.py
+
+### Other
+
+- update fixos/diagnostics/disk_analyzer.py
+- update fixos/interactive/cleanup_planner.py
+- update patch_cli.py
+- update patch_cli2.py
+- update patch_cli3.py
+- update patch_cli4.py
+- update patch_docs.py
+- update patch_parser.py
+
+
 ## [2.1.17] - 2026-02-26
 
 ### Summary

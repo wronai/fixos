@@ -1,3 +1,19 @@
+## [2.1.20] - 2026-02-26
+
+### Summary
+
+fix(goal): CLI interface improvements
+
+### Test
+
+- update test_kwarg.py
+
+### Other
+
+- update fixos/cli.py
+- update img.png
+
+
 ## [2.1.19] - 2026-02-26
 
 ### Summary

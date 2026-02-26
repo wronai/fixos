@@ -519,42 +519,8 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
             click.echo(f"  → {desc}...")
         data = get_full_diagnostics(selected_modules, progress_callback=progress)
     
-    # Add disk analysis if --disc flag is used
     if disc:
-        click.echo(click.style("💾 Analizowanie zajętości dysku...", fg="blue"))
-        try:
-            from .diagnostics.disk_analyzer import DiskAnalyzer
-            analyzer = DiskAnalyzer()
-            disk_analysis = analyzer.analyze_disk_usage()
-            
-            if "error" not in disk_analysis:
-                data["disk_analysis"] = disk_analysis
-                
-                if json_output:
-                    import json
-                    click.echo(json.dumps(disk_analysis, indent=2, default=str))
-                else:
-                    # Display disk analysis summary
-                    click.echo(click.style(f"\n📊 Analiza dysku:", fg="cyan"))
-                    click.echo(f"  📈 Użycie: {disk_analysis['usage_percent']:.1f}%")
-                    click.echo(f"  💾 Zajęte: {disk_analysis['used_gb']:.1f} GB")
-                    click.echo(f"  🆓 Wolne: {disk_analysis['free_gb']:.1f} GB")
-                    click.echo(f"  📁 Status: {disk_analysis['status']}")
-                    
-                    # Show top cleanup suggestions
-                    suggestions = disk_analysis.get("suggestions", [])
-                    if suggestions:
-                        click.echo(click.style(f"\n🧹 Sugestie czyszczenia:", fg="yellow"))
-                        for suggestion in suggestions[:5]:
-                            safe_icon = "✅" if suggestion.get("safe") else "⚠️"
-                            click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
-            else:
-                click.echo(click.style(f"❌ Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
-                
-        except ImportError:
-            click.echo(click.style("⚠️  Moduł analizy dysku nie jest dostępny", fg="yellow"))
-        except Exception as e:
-            click.echo(click.style(f"⚠️  Błąd podczas analizy dysku: {str(e)}", fg="red"))
+        _run_disk_analysis(data, json_output=json_output, is_fix_mode=False)
 
     if show_raw:
         import json
@@ -573,6 +539,67 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
             click.echo(click.style(f"💾 Zapisano: {output}", fg="green"))
         except Exception as e:
             click.echo(f"⚠️  Błąd zapisu: {e}")
+
+def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False):
+    """Helper for disk analysis logic to avoid duplication between scan and fix"""
+    click.echo(click.style("💾 Analizowanie zajętości dysku...", fg="blue"))
+    try:
+        from .diagnostics.disk_analyzer import DiskAnalyzer
+        analyzer = DiskAnalyzer()
+        disk_analysis = analyzer.analyze_disk_usage()
+        
+        if "error" not in disk_analysis:
+            data["disk_analysis"] = disk_analysis
+            
+            if json_output and not is_fix_mode:
+                import json
+                click.echo(json.dumps(disk_analysis, indent=2, default=str))
+                return
+                
+            if is_fix_mode:
+                status_color = {
+                    "critical": "red",
+                    "warning": "yellow", 
+                    "moderate": "blue",
+                    "healthy": "green"
+                }.get(disk_analysis.get("status", "unknown"), "gray")
+                
+                click.echo(click.style(
+                    f"  📊 Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
+                    f"({disk_analysis['used_gb']:.1f}GB / {disk_analysis['total_gb']:.1f}GB)",
+                    fg=status_color
+                ))
+                
+                suggestions = disk_analysis.get("suggestions", [])
+                if suggestions:
+                    safe_suggestions = [s for s in suggestions if s.get("safe", False)]
+                    total_safe_gb = sum(s.get("size_gb", 0) for s in safe_suggestions)
+                    
+                    if total_safe_gb > 0.1:
+                        click.echo(click.style(
+                            f"  🧹 Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
+                            fg="green"
+                        ))
+            else:
+                click.echo(click.style(f"\n📊 Analiza dysku:", fg="cyan"))
+                click.echo(f"  📈 Użycie: {disk_analysis['usage_percent']:.1f}%")
+                click.echo(f"  💾 Zajęte: {disk_analysis['used_gb']:.1f} GB")
+                click.echo(f"  🆓 Wolne: {disk_analysis['free_gb']:.1f} GB")
+                click.echo(f"  📁 Status: {disk_analysis['status']}")
+                
+                suggestions = disk_analysis.get("suggestions", [])
+                if suggestions:
+                    click.echo(click.style(f"\n🧹 Sugestie czyszczenia:", fg="yellow"))
+                    for suggestion in suggestions[:5]:
+                        safe_icon = "✅" if suggestion.get("safe") else "⚠️"
+                        click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
+        else:
+            click.echo(click.style(f"{'  ' if is_fix_mode else ''}❌ Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
+            
+    except ImportError:
+        click.echo(click.style(f"{'  ' if is_fix_mode else ''}⚠️  Moduł analizy dysku nie jest dostępny", fg="yellow"))
+    except Exception as e:
+        click.echo(click.style(f"{'  ' if is_fix_mode else ''}⚠️  Błąd podczas analizy dysku: {str(e)}", fg="red"))
 
 def _print_quick_issues(data: dict):
     """Wyświetla szybki przegląd problemów z zebranych danych."""
@@ -711,47 +738,7 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
     
     # Add disk analysis if --disc flag is used
     if disc:
-        click.echo(click.style("💾 Analizowanie zajętości dysku...", fg="blue"))
-        try:
-            from .diagnostics.disk_analyzer import DiskAnalyzer
-            analyzer = DiskAnalyzer()
-            disk_analysis = analyzer.analyze_disk_usage()
-            
-            if "error" not in disk_analysis:
-                data["disk_analysis"] = disk_analysis
-                
-                # Show disk status
-                status_color = {
-                    "critical": "red",
-                    "warning": "yellow", 
-                    "moderate": "blue",
-                    "healthy": "green"
-                }.get(disk_analysis.get("status", "unknown"), "gray")
-                
-                click.echo(click.style(
-                    f"  📊 Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
-                    f"({disk_analysis['used_gb']:.1f}GB / {disk_analysis['total_gb']:.1f}GB)",
-                    fg=status_color
-                ))
-                
-                # Show cleanup suggestions
-                suggestions = disk_analysis.get("suggestions", [])
-                if suggestions:
-                    safe_suggestions = [s for s in suggestions if s.get("safe", False)]
-                    total_safe_gb = sum(s.get("size_gb", 0) for s in safe_suggestions)
-                    
-                    if total_safe_gb > 0.1:
-                        click.echo(click.style(
-                            f"  🧹 Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
-                            fg="green"
-                        ))
-            else:
-                click.echo(click.style(f"  ⚠️  Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
-                
-        except ImportError:
-            click.echo(click.style("  ⚠️  Moduł analizy dysku nie jest dostępny", fg="yellow"))
-        except Exception as e:
-            click.echo(click.style(f"  ⚠️  Błąd podczas analizy dysku: {str(e)}", fg="red"))
+        _run_disk_analysis(data, json_output=json_output, is_fix_mode=True)
 
     if output:
         anon_str, _ = anonymize(str(data))

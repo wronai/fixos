@@ -42,6 +42,7 @@ class CleanupAction:
     category: str = ""
     estimated_time: str = ""
     dependencies: List[str] = None
+    preview_command: str = ""
     
     def __post_init__(self):
         if self.dependencies is None:
@@ -255,7 +256,8 @@ class CleanupPlanner:
                 impact=suggestion.get("impact", "low"),
                 category=suggestion.get("category", ""),
                 estimated_time=suggestion.get("estimated_time", ""),
-                dependencies=suggestion.get("dependencies", [])
+                dependencies=suggestion.get("dependencies", []),
+                preview_command=suggestion.get("preview_command", "")
             )
         except Exception as e:
             # Create default action for invalid suggestions
@@ -283,7 +285,8 @@ class CleanupPlanner:
             "impact": action.impact,
             "category": action.category,
             "estimated_time": action.estimated_time,
-            "dependencies": action.dependencies
+            "dependencies": action.dependencies,
+            "preview_command": action.preview_command
         }
     
     def _get_category_for_action(self, action: CleanupAction) -> str:

@@ -1,3 +1,15 @@
+## [2.1.23] - 2026-02-26
+
+### Summary
+
+refactor(goal): CLI interface improvements
+
+### Other
+
+- update fixos/cli.py
+- update fixos/interactive/cleanup_planner.py
+
+
 ## [2.1.22] - 2026-02-26
 
 ### Summary

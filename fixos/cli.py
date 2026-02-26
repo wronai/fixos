@@ -858,23 +858,41 @@ def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
     
     for i, action in enumerate(actions, 1):
         click.echo(f"\n[{i}/{len(actions)}] {action['description']}")
-        # Pokaż podgląd plików do usunięcia (bez sudo)
+        
+        # Pokaż podgląd plików do usunięcia przed prośbą o sudo
         if "preview_command" in action:
-            click.echo(click.style("  Znalezione pliki (podgląd):", fg="blue"))
+            click.echo(click.style("  Pliki do usunięcia:", fg="blue"))
+            
+            # Najpierw spróbuj bez sudo
             preview = executor.execute_sync(action["preview_command"], add_sudo=False)
-            if preview.stdout:
+            if preview.stdout and preview.stdout.strip():
                 lines = preview.stdout.splitlines()
                 for line in lines[:8]:
                     click.echo("   - " + line)
                 if len(lines) > 8:
-                    click.echo(click.style(f"   ...i {len(lines)-8} więcej.", fg="dim"))
+                    click.echo(click.style(f"   ...i {len(lines)-8} więcej.", fg="bright_black"))
             else:
-                click.echo(click.style("   (brak elementów lub brak uprawnień do odczytu bez sudo)", fg="dim"))
+                # Jeśli bez sudo nie działa, poinformuj użytkownika że potrzebne są uprawnienia
+                click.echo(click.style("   (Wymaga uprawnień sudo do wyświetlenia listy plików)", fg="yellow"))
+                
+                # Pytaj o potwierdzenie przed użyciem sudo do podglądu
+                if click.confirm(click.style("  Pokazać listę plików z użyciem sudo?", fg="yellow")):
+                    preview_with_sudo = executor.execute_sync(action["preview_command"], add_sudo=True)
+                    if preview_with_sudo.stdout and preview_with_sudo.stdout.strip():
+                        lines = preview_with_sudo.stdout.splitlines()
+                        for line in lines[:8]:
+                            click.echo("   - " + line)
+                        if len(lines) > 8:
+                            click.echo(click.style(f"   ...i {len(lines)-8} więcej.", fg="bright_black"))
+                    else:
+                        click.echo(click.style("   (nie znaleziono plików)", fg="bright_black"))
+                else:
+                    click.echo("   (pominięto podgląd plików)")
 
         needs_sudo = action.get("command", "").startswith("sudo ") or " sudo " in action.get("command", "")
         if not action.get("safe", False) or needs_sudo:
-            # Pytaj o potwierdzenie, jeśli wymaga sudo lub nie jest bezpieczne
-            prompt_msg = "Wymagane sudo do usunięcia plików. Kontynuować?" if needs_sudo else "Ta akcja nie jest bezpieczna. Kontynuować?"
+            # Pytaj o potwierdzenie wykonania akcji
+            prompt_msg = "Wykonać tę akcję?" if needs_sudo else "Ta akcja nie jest bezpieczna. Kontynuować?"
             if not click.confirm(click.style(f"  {prompt_msg}", fg="yellow")):
                 click.echo("  ⏭️  Pominięto")
                 continue

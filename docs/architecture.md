@@ -1,6 +1,6 @@
 # fixOS — Architecture
 
-> 47 modules | 275 functions | 49 classes
+> 48 modules | 291 functions | 52 classes
 
 ## How It Works
 
@@ -41,7 +41,7 @@ graph TD
     Other["Other<br/>35 modules"]
     API___CLI["API / CLI<br/>1 modules"]
     Config["Config<br/>1 modules"]
-    Analysis["Analysis<br/>3 modules"]
+    Analysis["Analysis<br/>4 modules"]
     Core["Core<br/>7 modules"]
     Other --> API___CLI
     API___CLI --> Config
@@ -98,6 +98,7 @@ graph TD
 ### Analysis
 
 - `fixos.diagnostics.disk_analyzer`
+- `fixos.diagnostics.flatpak_analyzer`
 - `fixos.diagnostics.service_scanner`
 - `fixos.providers.llm_analyzer`
 
@@ -131,7 +132,7 @@ classDiagram
         -_get_service_details(self, service_type, path) None
         -_get_conda_details(self) None
         -_get_docker_details(self) None
-        ... +9 more
+        ... +11 more
     }
     class DiskAnalyzer {
         -__init__(self, base_path) None
@@ -154,6 +155,17 @@ classDiagram
         -_parse_json(self, raw) None
         -_log(self, event, data) None
         ... +3 more
+    }
+    class FlatpakAnalyzer {
+        -__init__(self) None
+        +analyze(self) None
+        -_run_flatpak_command(self, args) None
+        -_parse_size(self, size_str) None
+        -_format_size(self, size_bytes) None
+        -_load_installed_refs(self) None
+        -_find_unused_runtimes(self) None
+        -_find_leftover_data(self) None
+        ... +2 more
     }
     class CleanupPlanner {
         -__init__(self) None
@@ -198,15 +210,6 @@ classDiagram
         +execute_sync(self, command, timeout) None
         +execute(self, command, timeout) None
     }
-    class LLMAnalyzer {
-        -__init__(self, llm_client) None
-        +analyze_disk_issues(self, disk_data) None
-        +analyze_failed_action(self, action, error) None
-        +analyze_complex_pattern(self, pattern_data) None
-        -_sanitize_suggestion(self, suggestion) None
-        -_create_fallback_analysis(self, error_message) None
-        +enhance_heuristics_with_llm(self, heuristic_suggestions, disk_data) None
-    }
     class LLMClient {
         -__init__(self, config) None
         +chat(self, messages) None
@@ -216,6 +219,15 @@ classDiagram
         -_extract_json(text) None
         +ping(self) None
     }
+    class LLMAnalyzer {
+        -__init__(self, llm_client) None
+        +analyze_disk_issues(self, disk_data) None
+        +analyze_failed_action(self, action, error) None
+        +analyze_complex_pattern(self, pattern_data) None
+        -_sanitize_suggestion(self, suggestion) None
+        -_create_fallback_analysis(self, error_message) None
+        +enhance_heuristics_with_llm(self, heuristic_suggestions, disk_data) None
+    }
     class Plugin {
         +diagnose(self) None
         -_check_cpu(self) None
@@ -223,6 +235,14 @@ classDiagram
         -_check_top_processes(self) None
         -_check_zombies(self) None
         -_check_swap(self) None
+    }
+    class RollbackSession {
+        +record(self, command, rollback_cmd) None
+        +get_rollback_commands(self) None
+        +rollback_last(self, n, dry_run) None
+        -_save(self) None
+        +load(cls, session_id) None
+        +list_sessions(cls, limit) None
     }
     class Plugin {
         +diagnose(self) None
@@ -240,27 +260,12 @@ classDiagram
         -_check_camera(self) None
         -_check_dmi(self) None
     }
-    class RollbackSession {
-        +record(self, command, rollback_cmd) None
-        +get_rollback_commands(self) None
-        +rollback_last(self, n, dry_run) None
-        -_save(self) None
-        +load(cls, session_id) None
-        +list_sessions(cls, limit) None
-    }
     class WatchDaemon {
         -__init__(self, interval, modules) None
         +run(self) None
         +stop(self) None
         -_check_for_new_issues(self, results) None
         -_notify(message) None
-    }
-    class Plugin {
-        +diagnose(self) None
-        -_check_alsa(self) None
-        -_check_pipewire(self) None
-        -_check_wireplumber(self) None
-        -_check_sof(self) None
     }
 ```
 
@@ -279,7 +284,6 @@ classDiagram
 - `fixos.diagnostics.system_checks.diagnose_security` — Diagnostyka bezpieczeństwa systemu i sieci.
 - `fixos.diagnostics.system_checks.diagnose_resources` — Diagnostyka zasobów systemowych.
 - `fixos.diagnostics.system_checks.get_full_diagnostics` — Zbiera diagnostykę z wybranych modułów.
-- `fixos.diagnostics.disk_analyzer.main` — Test the disk analyzer
 - `fixos.cli.add_common_options`
 - `fixos.cli.add_shared_options` — Shared options for both scan and fix commands
 - `fixos.cli.ask` — Wykonaj polecenie w języku naturalnym.
@@ -310,11 +314,13 @@ classDiagram
 - `fixos.cli.report` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
 - `fixos.cli.history` — Historia napraw fixOS.
 - `fixos.cli.main`
+- `fixos.diagnostics.disk_analyzer.main` — Test the disk analyzer
 - `fixos.config.detect_provider_from_key` — Wykrywa provider na podstawie prefiksu klucza API.
+- `fixos.diagnostics.flatpak_analyzer.analyze_flatpak_for_cleanup` — Convenience function to run full Flatpak analysis
 - `fixos.providers.llm_analyzer.main` — Test the LLM analyzer
-- `fixos.utils.anonymizer.anonymize` — Anonimizuje wrażliwe dane.
-- `fixos.utils.timeout.timeout_handler` — Signal handler dla SIGALRM — rzuca SessionTimeout.
 - `fixos.diagnostics.service_scanner.main` — Test the service data scanner
+- `fixos.utils.timeout.timeout_handler` — Signal handler dla SIGALRM — rzuca SessionTimeout.
+- `fixos.utils.anonymizer.anonymize` — Anonimizuje wrażliwe dane.
 - `fixos.utils.terminal.colorize` — Return line unchanged – rich handles markup in render_md().
 - `fixos.utils.terminal.render_md` — Print LLM markdown reply to terminal via rich.
 - `fixos.interactive.cleanup_planner.main` — Test the cleanup planner
@@ -323,10 +329,10 @@ classDiagram
 
 | Metric | Value |
 |--------|-------|
-| Modules | 47 |
-| Functions | 275 |
-| Classes | 49 |
-| CFG Nodes | 1684 |
+| Modules | 48 |
+| Functions | 291 |
+| Classes | 52 |
+| CFG Nodes | 1808 |
 | Patterns | 1 |
-| Avg Complexity | 5.6 |
-| Analysis Time | 4.1s |
+| Avg Complexity | 5.7 |
+| Analysis Time | 4.27s |

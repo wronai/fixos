@@ -89,7 +89,8 @@ class NaturalLanguageGroup(click.Group):
 @click.group(cls=NaturalLanguageGroup, invoke_without_command=True)
 @click.pass_context
 @click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
-def cli(ctx, dry_run):
+@click.option("--version", "-v", is_flag=True, default=False, help="Pokaż wersję fixos")
+def cli(ctx, dry_run, version):
     """
     fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
@@ -110,6 +111,10 @@ def cli(ctx, dry_run):
       fixos --help
       fixos fix --help
     """
+    if version:
+        click.echo("fixos v2.0.0")
+        return
+    
     if ctx.invoked_subcommand is None:
         _print_welcome()
 
@@ -1432,6 +1437,199 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
             click.echo(f"Błąd zapisu: {e}")
 
 
+def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
+    """
+    Detailed interactive Flatpak cleanup showing unused runtimes, 
+    leftover data, and orphaned apps for user selection.
+    """
+    from .diagnostics.flatpak_analyzer import FlatpakAnalyzer
+    
+    analyzer = FlatpakAnalyzer()
+    analysis = analyzer.analyze()
+    
+    # JSON output mode
+    if json_output:
+        import json
+        click.echo(json.dumps(analysis, indent=2, default=str))
+        return
+    
+    # Interactive mode
+    click.echo(click.style("\n=== Analiza Flatpak ===", fg="cyan", bold=True))
+    click.echo(click.style("═" * 60, fg="cyan"))
+    
+    if dry_run:
+        click.echo(click.style("[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
+    
+    # Collect all removable items
+    all_items = []
+    
+    # Unused runtimes
+    if analysis.get("unused_runtimes"):
+        click.echo(click.style("\nNieużywane runtimes:", fg="yellow", bold=True))
+        for i, rt in enumerate(analysis["unused_runtimes"], 1):
+            size = rt.get("size_human", "?")
+            name = rt.get("name", "unknown")
+            ref = rt.get("ref", "")
+            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
+            click.echo(f"      Ref: {ref}")
+            all_items.append({
+                "type": "runtime",
+                "name": name,
+                "ref": ref,
+                "size_human": size,
+                "cleanup_command": f"flatpak uninstall {ref} -y"
+            })
+    
+    # Leftover data from uninstalled apps
+    if analysis.get("leftover_data"):
+        click.echo(click.style("\nPozostałości po odinstalowanych aplikacjach:", fg="yellow", bold=True))
+        offset = len(all_items)
+        for i, data in enumerate(analysis["leftover_data"], offset + 1):
+            size = data.get("size_human", "?")
+            name = data.get("name", "unknown")
+            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
+            click.echo(f"      Ścieżka: ~/.var/app/{name}")
+            all_items.append({
+                "type": "data",
+                "name": name,
+                "ref": data.get("ref", ""),
+                "size_human": size,
+                "cleanup_command": f"rm -rf ~/.var/app/{name}"
+            })
+    
+    # Orphaned apps
+    if analysis.get("orphaned_apps"):
+        click.echo(click.style("\nOsierocone aplikacje (niedostępny remote):", fg="red", bold=True))
+        offset = len(all_items)
+        for i, app in enumerate(analysis["orphaned_apps"], offset + 1):
+            size = app.get("size_human", "?")
+            name = app.get("name", "unknown")
+            origin = app.get("origin", "unknown")
+            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
+            click.echo(f"      Origin: {origin} (niedostępny)")
+            all_items.append({
+                "type": "orphan",
+                "name": name,
+                "ref": app.get("ref", ""),
+                "size_human": size,
+                "cleanup_command": f"flatpak uninstall {app.get('ref', '')} -y"
+            })
+    
+    if not all_items:
+        click.echo(click.style("\nBrak elementów do wyczyszczenia!", fg="green"))
+        return
+    
+    # Show summary
+    total_items = len(all_items)
+    total_bytes = (
+        analysis.get("total_unused_bytes", 0) + 
+        analysis.get("total_leftover_bytes", 0) + 
+        analysis.get("total_orphaned_bytes", 0)
+    )
+    total_gb = total_bytes / (1024**3)
+    
+    click.echo(click.style(f"\n═" * 60, fg="cyan"))
+    click.echo(f"Znaleziono {total_items} elementów do usunięcia ({total_gb:.2f} GB)")
+    click.echo()
+    
+    # Interactive selection
+    click.echo("Wybierz elementy do usunięcia:")
+    click.echo("  - Wpisz numery rozdzielone przecinkami (np. 1,3,5)")
+    click.echo("  - Wpisz 'all' aby usunąć wszystko")
+    click.echo("  - Wciśnij Enter aby pominąć")
+    
+    selection = click.prompt("Wybór", default="", show_default=False)
+    
+    if not selection:
+        click.echo(click.style("Anulowano.", fg="yellow"))
+        return
+    
+    # Parse selection
+    selected_indices = []
+    if selection.strip().lower() == "all":
+        selected_indices = list(range(len(all_items)))
+    else:
+        try:
+            selected_indices = [
+                int(x.strip()) - 1 
+                for x in selection.split(",") 
+                if x.strip().isdigit()
+            ]
+            selected_indices = [i for i in selected_indices if 0 <= i < len(all_items)]
+        except ValueError:
+            click.echo(click.style("Nieprawidłowy wybór.", fg="red"))
+            return
+    
+    if not selected_indices:
+        click.echo(click.style("Nie wybrano żadnych elementów.", fg="yellow"))
+        return
+    
+    # Execute cleanup
+    click.echo()
+    freed_total = 0
+    
+    for idx in selected_indices:
+        item = all_items[idx]
+        item_type = item["type"]
+        name = item["name"]
+        cmd = item["cleanup_command"]
+        
+        click.echo(f"Czyszczenie: {name} ({item_type})")
+        
+        if dry_run:
+            click.echo(click.style(f"  [DRY-RUN] {cmd}", fg="cyan"))
+            continue
+        
+        try:
+            result = subprocess.run(
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            
+            if result.returncode == 0:
+                click.echo(click.style("  OK", fg="green"))
+                # Parse size
+                size_str = item.get("size_human", "0")
+                freed_total += _parse_size_to_gb(size_str)
+            else:
+                click.echo(click.style(f"  Błąd: {result.stderr[:100]}", fg="red"))
+        except Exception as e:
+            click.echo(click.style(f"  Błąd: {e}", fg="red"))
+    
+    click.echo()
+    if dry_run:
+        click.echo(click.style(f"[DRY-RUN] Zwolniono by: {freed_total:.2f} GB", fg="cyan"))
+    else:
+        click.echo(click.style(f"Zwolniono: {freed_total:.2f} GB", fg="green"))
+
+
+def _parse_size_to_gb(size_str: str) -> float:
+    """Parse human-readable size to GB"""
+    size_str = size_str.strip().upper()
+    multipliers = {
+        'B': 1 / (1024**3),
+        'KB': 1 / (1024**2),
+        'MB': 1 / 1024,
+        'GB': 1,
+        'TB': 1024,
+    }
+    
+    for suffix, mult in sorted(multipliers.items(), key=lambda x: -len(x[0])):
+        if size_str.endswith(suffix):
+            try:
+                return float(size_str[:-len(suffix)].strip()) * mult
+            except ValueError:
+                return 0
+    
+    try:
+        return float(size_str) / (1024**3)
+    except ValueError:
+        return 0
+
+
 # ══════════════════════════════════════════════════════════
 #  fixos cleanup-services
 # ══════════════════════════════════════════════════════════
@@ -1494,6 +1692,11 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
 
     # Handle specific cleanup
     if cleanup:
+        # Special handling for flatpak - show detailed breakdown
+        if cleanup == "flatpak":
+            _cleanup_flatpak_detailed(scanner, json_output, dry_run)
+            return
+            
         if json_output:
             result = scanner.cleanup_service(cleanup, dry_run=dry_run)
             import json

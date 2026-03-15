@@ -38,10 +38,10 @@ fixOS ./path/to/your/project --readme-only
 ### Python API
 
 ```python
-from fixos.agent.autonomous import run_autonomous_session
+from fixos.diagnostics.flatpak_analyzer import analyze_flatpak_for_cleanup
 
-# Uruchamia autonomiczny tryb agenta.
-result = run_autonomous_session("diagnostics", config=..., show_data=...)
+# Convenience function to run full Flatpak analysis
+result = analyze_flatpak_for_cleanup()
 ```
 
 ## What's Next

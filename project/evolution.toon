@@ -1,13 +1,13 @@
-# code2llm/evolution | 275 func | 32f | 2026-03-15
+# code2llm/evolution | 291 func | 33f | 2026-03-15
 
 NEXT[10] (ranked by impact):
   [1] !! SPLIT           fixos/cli.py
-      WHY: 2048L, 1 classes, max CC=37
-      EFFORT: ~4h  IMPACT: 75776
+      WHY: 2251L, 1 classes, max CC=37
+      EFFORT: ~4h  IMPACT: 83287
 
   [2] !! SPLIT           fixos/diagnostics/service_scanner.py
-      WHY: 895L, 3 classes, max CC=18
-      EFFORT: ~4h  IMPACT: 16110
+      WHY: 987L, 3 classes, max CC=18
+      EFFORT: ~4h  IMPACT: 17766
 
   [3] !! SPLIT-FUNC      run_hitl_session  CC=34  fan=42
       WHY: CC=34 exceeds 15
@@ -17,42 +17,42 @@ NEXT[10] (ranked by impact):
       WHY: CC=37 exceeds 15
       EFFORT: ~1h  IMPACT: 666
 
-  [5] !  SPLIT-FUNC      run_autonomous_session  CC=21  fan=28
+  [5] !! SPLIT-FUNC      cleanup_services  CC=34  fan=18
+      WHY: CC=34 exceeds 15
+      EFFORT: ~1h  IMPACT: 612
+
+  [6] !  SPLIT-FUNC      run_autonomous_session  CC=21  fan=28
       WHY: CC=21 exceeds 15
       EFFORT: ~1h  IMPACT: 588
-
-  [6] !! SPLIT-FUNC      cleanup_services  CC=33  fan=17
-      WHY: CC=33 exceeds 15
-      EFFORT: ~1h  IMPACT: 561
 
   [7] !  SPLIT-FUNC      interactive_provider_setup  CC=24  fan=23
       WHY: CC=24 exceeds 15
       EFFORT: ~1h  IMPACT: 552
 
-  [8] !  SPLIT-FUNC      execute_cleanup_actions  CC=24  fan=21
+  [8] !  SPLIT-FUNC      _cleanup_flatpak_detailed  CC=23  fan=24
+      WHY: CC=23 exceeds 15
+      EFFORT: ~1h  IMPACT: 552
+
+  [9] !  SPLIT-FUNC      execute_cleanup_actions  CC=24  fan=21
       WHY: CC=24 exceeds 15
       EFFORT: ~1h  IMPACT: 504
 
-  [9] !  SPLIT-FUNC      token_set  CC=18  fan=23
+  [10] !  SPLIT-FUNC      token_set  CC=18  fan=23
       WHY: CC=18 exceeds 15
       EFFORT: ~1h  IMPACT: 414
 
-  [10] !  SPLIT-FUNC      fix  CC=18  fan=21
-      WHY: CC=18 exceeds 15
-      EFFORT: ~1h  IMPACT: 378
-
 
 RISKS[3]:
-  ⚠ Splitting fixos/cli.py may break 41 import paths
-  ⚠ Splitting fixos/diagnostics/service_scanner.py may break 18 import paths
+  ⚠ Splitting fixos/cli.py may break 43 import paths
+  ⚠ Splitting fixos/diagnostics/service_scanner.py may break 20 import paths
   ⚠ Splitting tests/e2e/test_anonymization_layers.py may break 0 import paths
 
 METRICS-TARGET:
-  CC̄:          5.6 → ≤3.9
+  CC̄:          5.7 → ≤4.0
   max-CC:      37 → ≤18
   god-modules: 4 → 0
-  high-CC(≥15): 20 → ≤10
+  high-CC(≥15): 22 → ≤11
   hub-types:   0 → ≤0
 
 HISTORY:
-  prev CC̄=5.6 → now CC̄=5.6
+  prev CC̄=5.7 → now CC̄=5.7

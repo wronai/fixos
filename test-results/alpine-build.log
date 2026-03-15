@@ -5,7 +5,7 @@
 #1 DONE 0.0s
 
 #2 [internal] load metadata for docker.io/library/alpine:3.19
-#2 DONE 0.5s
+#2 DONE 0.9s
 
 #3 [internal] load .dockerignore
 #3 transferring context: 141B done
@@ -15,8 +15,8 @@
 #4 DONE 0.0s
 
 #5 [internal] load build context
-#5 transferring context: 4.89MB 0.4s done
-#5 DONE 0.5s
+#5 transferring context: 1.85MB 0.4s done
+#5 DONE 0.4s
 
 #6 [2/5] RUN apk add --no-cache     python3     py3-pip     py3-psutil     procps     util-linux-misc     alsa-utils     pipewire     wireplumber     findutils     lsof     dbus     sudo     bash     curl
 #6 CACHED
@@ -25,15 +25,15 @@
 #7 CACHED
 
 #8 [4/5] COPY . /app
-#8 DONE 1.5s
+#8 DONE 1.4s
 
 #9 [5/5] RUN pip3 install -e ".[dev]" --quiet --break-system-packages
-#9 19.56 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
-#9 DONE 20.2s
+#9 20.91 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#9 DONE 21.6s
 
 #10 exporting to image
 #10 exporting layers
-#10 exporting layers 1.7s done
-#10 writing image sha256:f5f6607f95afb79c7a04f9b0f4d9a00ac06bb4959d5733ac0ee3532f0ed7b8bc done
+#10 exporting layers 2.3s done
+#10 writing image sha256:602b617441ff5155605aa662de35eb315145bc14d851b0097fe9e136c30e222f done
 #10 naming to docker.io/library/fixos-test:alpine done
-#10 DONE 1.7s
+#10 DONE 2.3s

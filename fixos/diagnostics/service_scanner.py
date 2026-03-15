@@ -13,6 +13,13 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 
+# Import enhanced Flatpak analyzer
+try:
+    from .flatpak_analyzer import FlatpakAnalyzer, FlatpakItemType
+    _HAS_FLATPAK_ANALYZER = True
+except ImportError:
+    _HAS_FLATPAK_ANALYZER = False
+
 
 class ServiceType(Enum):
     DOCKER = "docker"
@@ -435,6 +442,8 @@ class ServiceDataScanner:
             details.update(self._get_package_cache_details(path))
         elif service_type == ServiceType.CONDA:
             details.update(self._get_conda_details())
+        elif service_type == ServiceType.FLATPAK and _HAS_FLATPAK_ANALYZER:
+            details.update(self._get_flatpak_details())
             
         return details
     
@@ -557,6 +566,89 @@ class ServiceDataScanner:
             pass
             
         return details
+    
+    def _get_flatpak_details(self) -> Dict[str, Any]:
+        """Get detailed Flatpak analysis including unused runtimes and leftover data"""
+        details = {
+            "items_count": 0,
+            "unused_runtimes": [],
+            "leftover_data": [],
+            "orphaned_apps": [],
+            "installed_apps": [],
+            "installed_runtimes": [],
+            "has_detailed_analysis": True,
+        }
+        
+        if not _HAS_FLATPAK_ANALYZER:
+            return details
+        
+        try:
+            analyzer = FlatpakAnalyzer()
+            analysis = analyzer.analyze()
+            
+            # Add detailed breakdown
+            details["unused_runtimes"] = analysis.get("unused_runtimes", [])
+            details["leftover_data"] = analysis.get("leftover_data", [])
+            details["orphaned_apps"] = analysis.get("orphaned_apps", [])
+            details["installed_apps"] = analysis.get("installed_apps", [])
+            details["installed_runtimes"] = analysis.get("installed_runtimes", [])
+            
+            # Calculate totals
+            total_unused = sum(
+                self._parse_size_bytes(rt.get("size_human", "0")) 
+                for rt in details["unused_runtimes"]
+            )
+            total_leftover = sum(
+                self._parse_size_bytes(d.get("size_human", "0")) 
+                for d in details["leftover_data"]
+            )
+            total_orphaned = sum(
+                self._parse_size_bytes(a.get("size_human", "0")) 
+                for a in details["orphaned_apps"]
+            )
+            
+            details["total_unused_bytes"] = total_unused
+            details["total_leftover_bytes"] = total_leftover
+            details["total_orphaned_bytes"] = total_orphaned
+            details["total_reclaimable_bytes"] = total_unused + total_leftover + total_orphaned
+            
+            # Total items for count
+            details["items_count"] = (
+                len(details["unused_runtimes"]) + 
+                len(details["leftover_data"]) + 
+                len(details["orphaned_apps"])
+            )
+            
+            # Summary for display
+            details["summary"] = analyzer.get_cleanup_summary()
+            
+        except Exception as e:
+            details["error"] = str(e)
+            
+        return details
+    
+    def _parse_size_bytes(self, size_str: str) -> int:
+        """Parse human-readable size to bytes"""
+        size_str = size_str.strip().upper()
+        multipliers = {
+            'B': 1,
+            'KB': 1024,
+            'MB': 1024 ** 2,
+            'GB': 1024 ** 3,
+            'TB': 1024 ** 4,
+        }
+        
+        for suffix, mult in sorted(multipliers.items(), key=lambda x: -len(x[0])):
+            if size_str.endswith(suffix):
+                try:
+                    return int(float(size_str[:-len(suffix)].strip()) * mult)
+                except ValueError:
+                    return 0
+        
+        try:
+            return int(size_str)
+        except ValueError:
+            return 0
     
     def _get_service_description(self, service_type: ServiceType) -> str:
         """Get description for service type"""

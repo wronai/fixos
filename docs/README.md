@@ -1,7 +1,7 @@
 <!-- code2docs:start --># fixOS
 
-![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-275-green)
-> **275** functions | **49** classes | **47** files | CC̄ = 5.6
+![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-291-green)
+> **291** functions | **52** classes | **48** files | CC̄ = 5.7
 
 > Auto-generated project documentation from source code analysis.
 
@@ -146,54 +146,57 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 fixOS/
-├── setup    ├── watch    ├── platform_utils├── fixos/    ├── system_checks    ├── anonymizer    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── hitl    ├── cli    ├── agent/        ├── base        ├── registry    ├── plugins/    ├── config        ├── llm_analyzer        ├── autonomous    ├── providers/    ├── utils/        ├── llm        ├── anonymizer        ├── timeout        ├── service_scanner    ├── fixes/    ├── orchestrator/        ├── web_search        ├── terminal        ├── executor        ├── orchestrator        ├── graph    ├── interactive/    ├── profiles/            ├── resources            ├── audio            ├── security        ├── builtin/            ├── hardware            ├── disk            ├── thumbnails        ├── quickstart        ├── advanced_usage├── project        ├── rollback        ├── cleanup_planner        ├── schemas```
+├── setup    ├── watch    ├── platform_utils├── fixos/    ├── anonymizer    ├── system_checks    ├── llm_shell        ├── system_checks    ├── diagnostics/    ├── cli        ├── disk_analyzer    ├── config        ├── autonomous    ├── agent/        ├── flatpak_analyzer        ├── registry    ├── plugins/        ├── llm        ├── llm_analyzer        ├── base    ├── providers/    ├── utils/        ├── service_scanner        ├── timeout        ├── web_search        ├── anonymizer    ├── fixes/    ├── orchestrator/        ├── hitl        ├── terminal        ├── orchestrator        ├── graph        ├── cleanup_planner    ├── interactive/    ├── profiles/            ├── resources            ├── audio        ├── rollback        ├── builtin/            ├── security            ├── hardware            ├── disk        ├── quickstart        ├── advanced_usage├── project            ├── thumbnails        ├── executor        ├── schemas```
 
 ## API Overview
 
 ### Classes
 
 - **`WatchDaemon`** — Daemon wykonujący cykliczną diagnostykę z powiadomieniami.
-- **`DiskAnalyzer`** — Analyzes disk usage and provides cleanup suggestions
-- **`CmdResult`** — —
 - **`NaturalLanguageGroup`** — —
+- **`DiskAnalyzer`** — Analyzes disk usage and provides cleanup suggestions
+- **`FixOsConfig`** — —
+- **`FixAction`** — —
+- **`AgentReport`** — —
+- **`FlatpakItemType`** — —
+- **`FlatpakItemInfo`** — Detailed info about a Flatpak item (app, runtime, or data)
+- **`FlatpakAnalyzer`** — Advanced analyzer for Flatpak cleanup decisions
+- **`PluginRegistry`** — Registry for diagnostic plugins with autodiscovery.
+- **`LLMError`** — Błąd komunikacji z LLM.
+- **`LLMClient`** — Wrapper nad openai.OpenAI kompatybilny z wieloma providerami.
+- **`LLMAnalysis`** — Result of LLM analysis
+- **`LLMAnalyzer`** — Uses LLM to analyze disk issues when heuristics aren't sufficient
 - **`Severity`** — Severity level for diagnostic findings.
 - **`Finding`** — Single finding from a diagnostic plugin.
 - **`DiagnosticResult`** — Result of a diagnostic plugin run.
 - **`DiagnosticPlugin`** — Bazowa klasa dla pluginów diagnostycznych fixOS.
-- **`PluginRegistry`** — Registry for diagnostic plugins with autodiscovery.
-- **`FixOsConfig`** — —
-- **`LLMAnalysis`** — Result of LLM analysis
-- **`LLMAnalyzer`** — Uses LLM to analyze disk issues when heuristics aren't sufficient
-- **`FixAction`** — —
-- **`AgentReport`** — —
-- **`LLMError`** — Błąd komunikacji z LLM.
-- **`LLMClient`** — Wrapper nad openai.OpenAI kompatybilny z wieloma providerami.
-- **`AnonymizationReport`** — Raport anonimizacji – co zostało zmaskowane.
-- **`SessionTimeout`** — Wyjątek rzucany po przekroczeniu limitu czasu sesji.
 - **`ServiceType`** — —
 - **`ServiceDataInfo`** — Information about service data
 - **`ServiceDataScanner`** — Scans for large service data directories and allows cleanup
+- **`SessionTimeout`** — Wyjątek rzucany po przekroczeniu limitu czasu sesji.
 - **`SearchResult`** — —
-- **`DangerousCommandError`** — —
-- **`CommandTimeoutError`** — —
-- **`ExecutionResult`** — —
-- **`CommandExecutor`** — Bezpieczny executor komend z:
+- **`AnonymizationReport`** — Raport anonimizacji – co zostało zmaskowane.
+- **`CmdResult`** — —
 - **`FixOrchestrator`** — Orkiestrator napraw systemowych.
 - **`Problem`** — —
 - **`ProblemGraph`** — DAG problemów systemowych z topological sort do wyznaczania kolejności napraw.
-- **`Profile`** — Profil diagnostyczny z zestawem modułów i progów.
-- **`Plugin`** — —
-- **`Plugin`** — —
-- **`Plugin`** — —
-- **`Plugin`** — —
-- **`Plugin`** — —
-- **`Plugin`** — —
-- **`RollbackEntry`** — Single recorded operation with its rollback command.
-- **`RollbackSession`** — A session of recorded operations that can be rolled back.
 - **`Priority`** — —
 - **`CleanupType`** — —
 - **`CleanupAction`** — Represents a cleanup action
 - **`CleanupPlanner`** — Interactive cleanup planning and grouping system
+- **`Profile`** — Profil diagnostyczny z zestawem modułów i progów.
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`RollbackEntry`** — Single recorded operation with its rollback command.
+- **`RollbackSession`** — A session of recorded operations that can be rolled back.
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`DangerousCommandError`** — —
+- **`CommandTimeoutError`** — —
+- **`ExecutionResult`** — —
+- **`CommandExecutor`** — Bezpieczny executor komend z:
 - **`RiskLevel`** — —
 - **`FixSuggestion`** — Pojedyncza sugestia naprawy od LLM.
 - **`LLMDiagnosticResponse`** — Strukturalna odpowiedź LLM na dane diagnostyczne.
@@ -211,6 +214,8 @@ fixOS/
 - `install_package_cmd(package)` — Returns the install command for the detected package manager.
 - `setup_signal_timeout(seconds, handler)` — Sets up a timeout signal. Returns True if supported (POSIX only).
 - `cancel_signal_timeout()` — Cancels the timeout signal (POSIX only).
+- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
+- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `run_cmd(cmd, timeout)` — Uruchamia komendę shell i zwraca output. Bezpieczny fallback przy błędzie.
 - `get_cpu_info()` — Metryki CPU.
 - `get_memory_info()` — Metryki RAM i SWAP.
@@ -219,8 +224,6 @@ fixOS/
 - `get_top_processes(n)` — Lista TOP N procesów według zużycia CPU.
 - `get_fedora_specific()` — Komendy specyficzne dla system: dnf, journalctl, systemctl.
 - `get_full_diagnostics()` — Zbiera kompletne dane diagnostyczne systemu system.
-- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
-- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `format_time(seconds)` — —
 - `execute_command(cmd)` — Wykonuje komendę systemową z potwierdzeniem użytkownika.
 - `run_llm_shell(diagnostics_data, token, model, timeout)` — Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
@@ -231,11 +234,9 @@ fixOS/
 - `diagnose_security()` — Diagnostyka bezpieczeństwa systemu i sieci.
 - `diagnose_resources()` — Diagnostyka zasobów systemowych.
 - `get_full_diagnostics(modules, progress_callback)` — Zbiera diagnostykę z wybranych modułów.
-- `main()` — Test the disk analyzer
-- `run_hitl_session(diagnostics, config, show_data)` — Runs interactive HITL session with full transparency.
 - `add_common_options(fn)` — —
 - `add_shared_options(func)` — Shared options for both scan and fix commands
-- `cli(ctx, dry_run)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
+- `cli(ctx, dry_run, version)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 - `ask(prompt, dry_run)` — Wykonaj polecenie w języku naturalnym.
 - `scan(modules, output, show_raw, no_banner)` — Przeprowadza diagnostykę systemu.
 - `fix(provider, token, model, no_banner)` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
@@ -267,15 +268,15 @@ fixOS/
 - `report(output_format, output, modules, profile)` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
 - `history(limit, json_output)` — Historia napraw fixOS.
 - `main()` — —
+- `main()` — Test the disk analyzer
 - `detect_provider_from_key(key)` — Wykrywa provider na podstawie prefiksu klucza API.
 - `interactive_provider_setup()` — Interaktywny wybór providera gdy brak konfiguracji.
 - `get_providers_list()` — Zwraca listę providerów jako listę słowników.
-- `main()` — Test the LLM analyzer
 - `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Uruchamia autonomiczny tryb agenta.
-- `anonymize(data_str)` — Anonimizuje wrażliwe dane.
-- `display_anonymized_preview(data_str, report, max_lines)` — Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.
-- `timeout_handler(signum, frame)` — Signal handler dla SIGALRM — rzuca SessionTimeout.
+- `analyze_flatpak_for_cleanup()` — Convenience function to run full Flatpak analysis
+- `main()` — Test the LLM analyzer
 - `main()` — Test the service data scanner
+- `timeout_handler(signum, frame)` — Signal handler dla SIGALRM — rzuca SessionTimeout.
 - `search_fedora_bugzilla(query, max_results)` — Szuka w Linux Bugzilla przez REST API.
 - `search_ask_fedora(query, max_results)` — Szuka w Linux forums przez Discourse API.
 - `search_arch_wiki(query, max_results)` — Arch Wiki – doskonałe źródło dla problemów Linux (nie tylko Arch).
@@ -284,6 +285,9 @@ fixOS/
 - `search_ddg(query, max_results)` — DuckDuckGo Instant Answer API (bez klucza, ograniczone).
 - `search_all(query, serpapi_key, max_per_source)` — Przeszukuje wszystkie dostępne źródła wiedzy.
 - `format_results_for_llm(results)` — Formatuje wyniki wyszukiwania do wklejenia w prompt LLM.
+- `anonymize(data_str)` — Anonimizuje wrażliwe dane.
+- `display_anonymized_preview(data_str, report, max_lines)` — Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.
+- `run_hitl_session(diagnostics, config, show_data)` — Runs interactive HITL session with full transparency.
 - `colorize(line)` — Return line unchanged – rich handles markup in render_md().
 - `render_md(text)` — Print LLM markdown reply to terminal via rich.
 - `print_cmd_block(cmd, comment, dry_run)` — Print a framed command preview panel.
@@ -303,11 +307,12 @@ fixOS/
 📄 `fixos.agent.autonomous` (7 functions, 2 classes)
 📄 `fixos.agent.hitl` (10 functions, 1 classes)
 📄 `fixos.anonymizer` (2 functions)
-📄 `fixos.cli` (41 functions, 1 classes)
+📄 `fixos.cli` (43 functions, 1 classes)
 📄 `fixos.config` (7 functions, 1 classes)
 📦 `fixos.diagnostics`
 📄 `fixos.diagnostics.disk_analyzer` (15 functions, 1 classes)
-📄 `fixos.diagnostics.service_scanner` (18 functions, 3 classes)
+📄 `fixos.diagnostics.flatpak_analyzer` (12 functions, 3 classes)
+📄 `fixos.diagnostics.service_scanner` (20 functions, 3 classes)
 📄 `fixos.diagnostics.system_checks` (9 functions)
 📦 `fixos.fixes`
 📦 `fixos.interactive`

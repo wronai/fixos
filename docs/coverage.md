@@ -1,11 +1,11 @@
 # fixOS — Docstring Coverage
 
-🟡 **Overall coverage: 70.4%**
+🟡 **Overall coverage: 71.1%**
 
 | Category | Documented | Total | Coverage |
 |----------|-----------|-------|----------|
-| Functions | 199 | 275 | 72.4% |
-| Classes | 29 | 49 | 59.2% |
+| Functions | 213 | 291 | 73.2% |
+| Classes | 31 | 52 | 59.6% |
 
 ## Per-Module Breakdown
 
@@ -18,10 +18,11 @@
 | `fixos.agent.autonomous` | 5/6 | 0/2 | 🟡 62% |
 | `fixos.agent.hitl` | 8/10 | 0/1 | 🟡 73% |
 | `fixos.anonymizer` | 2/2 | 0/0 | 🟢 100% |
-| `fixos.cli` | 38/40 | 0/1 | 🟢 93% |
+| `fixos.cli` | 40/42 | 0/1 | 🟢 93% |
 | `fixos.config` | 4/4 | 0/1 | 🟢 80% |
 | `fixos.diagnostics` | 0/0 | 0/0 | 🟢 100% |
 | `fixos.diagnostics.disk_analyzer` | 1/1 | 1/1 | 🟢 100% |
+| `fixos.diagnostics.flatpak_analyzer` | 1/1 | 2/3 | 🟡 75% |
 | `fixos.diagnostics.service_scanner` | 1/1 | 2/3 | 🟡 75% |
 | `fixos.diagnostics.system_checks` | 8/9 | 0/0 | 🟢 89% |
 | `fixos.fixes` | 0/0 | 0/0 | 🟢 100% |
@@ -62,14 +63,15 @@
 ## Undocumented Items
 
 - `fixos.cli.add_common_options` (/home/tom/github/wronai/fixOS/fixos/cli.py:50)
-- `fixos.cli.main` (/home/tom/github/wronai/fixOS/fixos/cli.py:2043)
+- `fixos.cli.main` (/home/tom/github/wronai/fixOS/fixos/cli.py:2246)
 - `fixos.llm_shell.format_time` (/home/tom/github/wronai/fixOS/fixos/llm_shell.py:58)
 - `fixos.agent.autonomous.AgentReport` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous.py:77)
 - `fixos.agent.autonomous.FixAction` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous.py:68)
 - `fixos.agent.hitl.CmdResult` (/home/tom/github/wronai/fixOS/fixos/agent/hitl.py:75)
 - `fixos.cli.NaturalLanguageGroup` (/home/tom/github/wronai/fixOS/fixos/cli.py:81)
 - `fixos.config.FixOsConfig` (/home/tom/github/wronai/fixOS/fixos/config.py:156)
-- `fixos.diagnostics.service_scanner.ServiceType` (/home/tom/github/wronai/fixOS/fixos/diagnostics/service_scanner.py:17)
+- `fixos.diagnostics.flatpak_analyzer.FlatpakItemType` (/home/tom/github/wronai/fixOS/fixos/diagnostics/flatpak_analyzer.py:21)
+- `fixos.diagnostics.service_scanner.ServiceType` (/home/tom/github/wronai/fixOS/fixos/diagnostics/service_scanner.py:24)
 - `fixos.interactive.cleanup_planner.CleanupType` (/home/tom/github/wronai/fixOS/fixos/interactive/cleanup_planner.py:20)
 - `fixos.interactive.cleanup_planner.Priority` (/home/tom/github/wronai/fixOS/fixos/interactive/cleanup_planner.py:13)
 - `fixos.orchestrator.executor.CommandTimeoutError` (/home/tom/github/wronai/fixOS/fixos/orchestrator/executor.py:23)

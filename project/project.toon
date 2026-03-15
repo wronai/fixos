@@ -1,6 +1,6 @@
-# fixOS | 63f 13170L | python:63
+# fixOS | 64f 13798L | python:64
 # Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
-M[63]:
+M[64]:
   docs/examples/advanced_usage.py,6
   docs/examples/quickstart.py,7
   fixos/__init__.py,2
@@ -8,11 +8,12 @@ M[63]:
   fixos/agent/autonomous.py,280
   fixos/agent/hitl.py,388
   fixos/anonymizer.py,64
-  fixos/cli.py,1618
+  fixos/cli.py,1778
   fixos/config.py,355
   fixos/diagnostics/__init__.py,2
   fixos/diagnostics/disk_analyzer.py,353
-  fixos/diagnostics/service_scanner.py,748
+  fixos/diagnostics/flatpak_analyzer.py,275
+  fixos/diagnostics/service_scanner.py,821
   fixos/diagnostics/system_checks.py,383
   fixos/fixes/__init__.py,3
   fixos/interactive/__init__.py,0
@@ -99,7 +100,7 @@ D:
     NaturalLanguageGroup: resolve_command(2)
     add_common_options(fn)
     add_shared_options(func)
-    cli(ctx;dry_run)
+    cli(ctx;dry_run;version)
     ask(prompt;dry_run)
     _handle_natural_command(prompt:str;dry_run:bool=False)
     _validate_result_with_llm(prompt:str;cmd_str:str;result;cfg)
@@ -118,6 +119,13 @@ D:
     e: DiskAnalyzer,main
     DiskAnalyzer: __init__(1),analyze_disk_usage(1),_get_disk_status(1),get_large_files(3),get_cache_dirs(2)  # Analyzes disk usage and provides clea...
     main()
+  fixos/diagnostics/flatpak_analyzer.py:
+    i: json,subprocess,dataclasses.{dataclass,field},enum.Enum,typing.{Any,Dict,List,Optional}
+    e: FlatpakItemType,FlatpakItemInfo,FlatpakAnalyzer,analyze_flatpak_for_cleanup
+    FlatpakItemType: 
+    FlatpakItemInfo: to_dict(0)  # Detailed info about a Flatpak item (a...
+    FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1)  # Advanced analyzer for Flatpak cleanup...
+    analyze_flatpak_for_cleanup()->Dict[str, Any]
   fixos/diagnostics/service_scanner.py:
     i: os,shutil,json,subprocess,pathlib.Path,typing.{Any,Dict,List,Optional,Tuple}
     e: ServiceType,ServiceDataInfo,ServiceDataScanner,main

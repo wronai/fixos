@@ -4,18 +4,18 @@
 
 - **Project**: fixOS
 - **Language**: python
-- **Files**: 32
-- **Lines**: 13224
-- **Functions**: 275
-- **Classes**: 49
-- **Avg CC**: 5.6
-- **Critical (CC≥10)**: 50
+- **Files**: 33
+- **Lines**: 13851
+- **Functions**: 291
+- **Classes**: 52
+- **Avg CC**: 5.7
+- **Critical (CC≥10)**: 53
 
 ## Architecture
 
-### fixos/ (8 files, 3258L, 77 functions)
+### fixos/ (8 files, 3461L, 79 functions)
 
-- `cli.py` — 2048L, 41 methods, CC↑37
+- `cli.py` — 2251L, 43 methods, CC↑37
 - `config.py` — 422L, 7 methods, CC↑24
 - `llm_shell.py` — 240L, 4 methods, CC↑15
 - `watch.py` — 120L, 5 methods, CC↑12
@@ -28,10 +28,11 @@
 - `autonomous.py` — 349L, 7 methods, CC↑21
 - `__init__.py` — 3L, 0 methods, CC↑0
 
-### fixos/diagnostics/ (4 files, 1828L, 42 functions)
+### fixos/diagnostics/ (5 files, 2252L, 56 functions)
 
-- `service_scanner.py` — 895L, 18 methods, CC↑18
+- `service_scanner.py` — 987L, 20 methods, CC↑18
 - `disk_analyzer.py` — 419L, 15 methods, CC↑17
+- `flatpak_analyzer.py` — 332L, 12 methods, CC↑15
 - `system_checks.py` — 512L, 9 methods, CC↑14
 - `__init__.py` — 2L, 0 methods, CC↑0
 
@@ -97,13 +98,13 @@
 - **fix** (function, CC=18) ⚠ split
 - **execute_cleanup_actions** (function, CC=24) ⚠ split
 - **token_set** (function, CC=18) ⚠ split
-- **cleanup_services** (function, CC=33) ⚠ split
+- **cleanup_services** (function, CC=34) ⚠ split
 - **report** (function, CC=16) ⚠ split
 - **run_hitl_session** (function, CC=34) ⚠ split
 - **FixOsConfig** (class, CC̄=8.3)
 - **interactive_provider_setup** (function, CC=24) ⚠ split
 - **run_autonomous_session** (function, CC=21) ⚠ split
-- **ServiceDataScanner** (class, CC̄=5.0)
+- **ServiceDataScanner** (class, CC̄=5.2)
   - `_get_docker_details` CC=18 ⚠ split
 - **CleanupPlanner** (class, CC̄=6.9)
   - `_generate_recommendations` CC=18 ⚠ split
@@ -115,6 +116,8 @@
 - **Plugin** (class, CC̄=7.7)
   - `diagnose` CC=16 ⚠ split
 - **render_md** (function, CC=16) ⚠ split
+- **FlatpakAnalyzer** (class, CC̄=7.0)
+  - `_find_leftover_data` CC=15 ⚠ split
 - **run_llm_shell** (function, CC=15) ⚠ split
 - **LLMClient** (class, CC̄=5.5)
   - `chat` CC=15 ⚠ split
@@ -131,6 +134,8 @@
 Różnica od 'fix':
   - Bud
 - **run_autonomous_session** — fan-out=28: Uruchamia autonomiczny tryb agenta.
+- **_cleanup_flatpak_detailed** — fan-out=24: Detailed interactive Flatpak cleanup showing unused runtimes, 
+leftover data, an
 - **run_llm_shell** — fan-out=23: Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
 
 Args:
@@ -142,11 +147,6 @@ Wyświetla numerowaną listę p
 
 Przykłady:
   fixos token set AIzaSy...     
-- **report** — fan-out=22: Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
-
-
-Przykłady:
-  fixos
 
 ## Refactoring Priorities
 
@@ -154,14 +154,14 @@ Przykłady:
 |---|--------|--------|--------|
 | 1 | Split run_hitl_session (CC=34 → target CC<10) | high | low |
 | 2 | Split _handle_natural_command (CC=37 → target CC<10) | high | low |
-| 3 | Split cleanup_services (CC=33 → target CC<10) | high | low |
-| 4 | Split god module fixos/cli.py (2048L, 1 classes) | high | high |
-| 5 | Split god module fixos/diagnostics/service_scanner.py (895L, 3 classes) | high | high |
+| 3 | Split cleanup_services (CC=34 → target CC<10) | high | low |
+| 4 | Split god module fixos/cli.py (2251L, 1 classes) | high | high |
+| 5 | Split god module fixos/diagnostics/service_scanner.py (987L, 3 classes) | high | high |
 | 6 | Split god module fixos/diagnostics/system_checks.py (512L, 0 classes) | high | high |
 | 7 | Split run_llm_shell (CC=15 → target CC<10) | medium | low |
-| 8 | Split DiskAnalyzer._identify_cache_type (CC=17 → target CC<10) | medium | low |
-| 9 | Split interactive_provider_setup (CC=24 → target CC<10) | medium | low |
-| 10 | Split run_autonomous_session (CC=21 → target CC<10) | medium | low |
+| 8 | Split interactive_provider_setup (CC=24 → target CC<10) | medium | low |
+| 9 | Split DiskAnalyzer._identify_cache_type (CC=17 → target CC<10) | medium | low |
+| 10 | Split FlatpakAnalyzer._find_leftover_data (CC=15 → target CC<10) | medium | low |
 
 ## Context for LLM
 

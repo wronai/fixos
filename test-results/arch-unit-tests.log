@@ -43,4 +43,4 @@ E   ModuleNotFoundError: No module named 'rich'
 =========================== short test summary info ============================
 ERROR tests/unit/test_anonymizer.py
 !!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
-=============================== 1 error in 0.14s ===============================
+=============================== 1 error in 0.19s ===============================

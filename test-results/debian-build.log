@@ -33,3 +33,7 @@
 
 #10 exporting to image
 #10 exporting layers
+#10 exporting layers 1.9s done
+#10 writing image sha256:1573acd6b98206a17a31c8484c1bdc1e5d20591e2ff873f397be9be476511b2a done
+#10 naming to docker.io/library/fixos-test:debian done
+#10 DONE 1.9s

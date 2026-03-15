@@ -146,7 +146,7 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 fixOS/
-├── setup    ├── cli/    ├── platform_utils    ├── system_checks├── fixos/    ├── watch    ├── anonymizer    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── service_cleanup        ├── service_details        ├── hitl        ├── autonomous    ├── agent/    ├── config        ├── flatpak_analyzer        ├── catalog        ├── hitl_session        ├── service_scanner    ├── features/        ├── renderer        ├── profiles        ├── autonomous_session        ├── profile_cmd        ├── installer        ├── quickfix_cmd        ├── auditor        ├── scan_cmd        ├── orchestrate_cmd        ├── report_cmd        ├── rollback_cmd        ├── ask_cmd        ├── history_cmd        ├── cleanup_cmd        ├── watch_cmd        ├── main        ├── token_cmd        ├── features_cmd        ├── config_cmd        ├── provider_cmd        ├── fix_cmd    ├── plugins/        ├── registry        ├── llm        ├── llm_analyzer    ├── providers/    ├── utils/        ├── base        ├── timeout        ├── anonymizer        ├── web_search    ├── fixes/    ├── orchestrator/        ├── terminal        ├── executor        ├── orchestrator        ├── shared        ├── graph    ├── interactive/    ├── profiles/        ├── cleanup_planner            ├── resources            ├── audio        ├── builtin/            ├── hardware            ├── security        ├── rollback        ├── quickstart            ├── disk        ├── advanced_usage├── project            ├── thumbnails        ├── schemas```
+├── setup    ├── cli/    ├── watch├── fixos/    ├── platform_utils    ├── anonymizer    ├── system_checks    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── service_cleanup        ├── service_details        ├── hitl        ├── autonomous    ├── agent/    ├── config        ├── hitl_session        ├── flatpak_analyzer        ├── service_scanner        ├── catalog        ├── renderer        ├── autonomous_session        ├── profiles        ├── profile_cmd    ├── features/        ├── quickfix_cmd        ├── installer        ├── auditor        ├── scan_cmd        ├── orchestrate_cmd        ├── report_cmd        ├── rollback_cmd        ├── ask_cmd        ├── history_cmd        ├── cleanup_cmd        ├── watch_cmd        ├── fix_cmd        ├── token_cmd        ├── main        ├── config_cmd        ├── features_cmd        ├── registry    ├── plugins/        ├── provider_cmd        ├── llm        ├── llm_analyzer    ├── providers/    ├── utils/        ├── base        ├── timeout        ├── anonymizer        ├── web_search    ├── fixes/    ├── orchestrator/        ├── terminal        ├── executor        ├── shared        ├── orchestrator        ├── graph    ├── interactive/        ├── cleanup_planner    ├── profiles/            ├── audio            ├── resources        ├── builtin/            ├── hardware            ├── security            ├── disk        ├── quickstart        ├── advanced_usage├── project            ├── thumbnails        ├── rollback        ├── schemas```
 
 ## API Overview
 
@@ -157,24 +157,24 @@ fixOS/
 - **`ServiceCleaner`** — Plans and executes cleanup of service data.
 - **`ServiceDetailsProvider`** — Provides detailed information about service data.
 - **`FixOsConfig`** — —
+- **`CmdResult`** — —
+- **`HITLSession`** — Interactive Human-in-the-Loop diagnostic and repair session.
 - **`FlatpakItemType`** — —
 - **`FlatpakItemInfo`** — Detailed info about a Flatpak item (app, runtime, or data)
 - **`FlatpakAnalyzer`** — Advanced analyzer for Flatpak cleanup decisions
-- **`PackageInfo`** — Information about a single package.
-- **`PackageCategory`** — A category of packages (e.g., core_utils, dev_tools).
-- **`PackageCatalog`** — Manages the package database.
-- **`CmdResult`** — —
-- **`HITLSession`** — Interactive Human-in-the-Loop diagnostic and repair session.
 - **`ServiceType`** — Service types that can be scanned and cleaned.
 - **`ServiceDataInfo`** — Information about service data.
 - **`ServiceDataScanner`** — Scans for large service data directories and allows cleanup.
-- **`SystemInfo`** — Complete system information snapshot.
-- **`SystemDetector`** — Detects system parameters.
+- **`PackageInfo`** — Information about a single package.
+- **`PackageCategory`** — A category of packages (e.g., core_utils, dev_tools).
+- **`PackageCatalog`** — Manages the package database.
 - **`FeatureRenderer`** — Renders audit results for terminal display.
-- **`UserProfile`** — A user profile defining what packages/features they want.
 - **`FixAction`** — —
 - **`AgentReport`** — —
 - **`AutonomousSession`** — Self-directed autonomous diagnostic and repair session.
+- **`UserProfile`** — A user profile defining what packages/features they want.
+- **`SystemInfo`** — Complete system information snapshot.
+- **`SystemDetector`** — Detects system parameters.
 - **`FeatureInstaller`** — Safely installs packages using native package manager or other backends.
 - **`AuditResult`** — Result of feature audit - what's installed, what's missing.
 - **`FeatureAuditor`** — Compares installed packages with profile requirements.
@@ -194,23 +194,23 @@ fixOS/
 - **`CommandTimeoutError`** — —
 - **`ExecutionResult`** — —
 - **`CommandExecutor`** — Bezpieczny executor komend z:
-- **`FixOrchestrator`** — Orkiestrator napraw systemowych.
 - **`NaturalLanguageGroup`** — Click group that routes unknown commands to 'ask' command.
+- **`FixOrchestrator`** — Orkiestrator napraw systemowych.
 - **`Problem`** — —
 - **`ProblemGraph`** — DAG problemów systemowych z topological sort do wyznaczania kolejności napraw.
-- **`Profile`** — Profil diagnostyczny z zestawem modułów i progów.
 - **`Priority`** — —
 - **`CleanupType`** — —
 - **`CleanupAction`** — Represents a cleanup action
 - **`CleanupPlanner`** — Interactive cleanup planning and grouping system
+- **`Profile`** — Profil diagnostyczny z zestawem modułów i progów.
+- **`Plugin`** — —
+- **`Plugin`** — —
 - **`Plugin`** — —
 - **`Plugin`** — —
 - **`Plugin`** — —
 - **`Plugin`** — —
 - **`RollbackEntry`** — Single recorded operation with its rollback command.
 - **`RollbackSession`** — A session of recorded operations that can be rolled back.
-- **`Plugin`** — —
-- **`Plugin`** — —
 - **`RiskLevel`** — —
 - **`FixSuggestion`** — Pojedyncza sugestia naprawy od LLM.
 - **`LLMDiagnosticResponse`** — Strukturalna odpowiedź LLM na dane diagnostyczne.
@@ -228,6 +228,8 @@ fixOS/
 - `install_package_cmd(package)` — Returns the install command for the detected package manager.
 - `setup_signal_timeout(seconds, handler)` — Sets up a timeout signal. Returns True if supported (POSIX only).
 - `cancel_signal_timeout()` — Cancels the timeout signal (POSIX only).
+- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
+- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `run_cmd(cmd, timeout)` — Uruchamia komendę shell i zwraca output. Bezpieczny fallback przy błędzie.
 - `get_cpu_info()` — Metryki CPU.
 - `get_memory_info()` — Metryki RAM i SWAP.
@@ -236,8 +238,6 @@ fixOS/
 - `get_top_processes(n)` — Lista TOP N procesów według zużycia CPU.
 - `get_fedora_specific()` — Komendy specyficzne dla system: dnf, journalctl, systemctl.
 - `get_full_diagnostics()` — Zbiera kompletne dane diagnostyczne systemu system.
-- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
-- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `format_time(seconds)` — —
 - `execute_command(cmd)` — Wykonuje komendę systemową z potwierdzeniem użytkownika.
 - `run_llm_shell(diagnostics_data, token, model, timeout)` — Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
@@ -254,8 +254,8 @@ fixOS/
 - `detect_provider_from_key(key)` — Wykrywa provider na podstawie prefiksu klucza API.
 - `interactive_provider_setup()` — Interaktywny wybór providera gdy brak konfiguracji.
 - `get_providers_list()` — Zwraca listę providerów jako listę słowników.
-- `analyze_flatpak_for_cleanup()` — Convenience function to run full Flatpak analysis
 - `run_hitl_session(diagnostics, config, show_data)` — Run interactive HITL session (backward compatible wrapper).
+- `analyze_flatpak_for_cleanup()` — Convenience function to run full Flatpak analysis
 - `main()` — Test the service data scanner.
 - `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Run autonomous session (backward compatible wrapper).
 - `profile()` — Zarządzanie profilami diagnostycznymi.
@@ -273,28 +273,28 @@ fixOS/
 - `history(limit, json_output)` — Historia napraw fixOS.
 - `cleanup_services(threshold, services, json_output, cleanup)` — Skanuje i czyści dane usług przekraczające próg.
 - `watch(interval, modules, alert_on, max_iterations)` — Monitorowanie systemu w tle z powiadomieniami.
-- `cli(ctx, dry_run, version)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
-- `main()` — Entry point for fixOS CLI.
+- `fix(provider, token, model, no_banner)` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
+- `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive)` — Handle disk cleanup mode with interactive planning
+- `execute_cleanup_actions(actions, cfg, llm_fallback)` — Execute cleanup actions with safety checks
+- `try_llm_fallback_for_failures(failed_actions, cfg)` — Try to fix failed actions using LLM
 - `token()` — Zarządzanie tokenem API.
 - `token_set(key, provider, env_file)` — Zapisz token API do pliku .env.
 - `token_show()` — Pokaż obecny token (masked).
 - `token_clear(env_file)` — Usuń token z pliku .env.
+- `cli(ctx, dry_run, version)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
+- `main()` — Entry point for fixOS CLI.
+- `config()` — Zarządzanie konfiguracją fixOS.
+- `config_show()` — Pokaż aktualną konfigurację.
+- `config_init(force)` — Zainicjalizuj plik konfiguracyjny .env.
+- `config_set(key, value)` — Ustaw wartość konfiguracyjną w .env.
 - `features()` — Zarządzanie pakietami komfortu systemu.
 - `features_audit(profile, json_output)` — Sprawdź brakujące pakiety dla profilu.
 - `features_install(profile, dry_run, yes, category)` — Zainstaluj brakujące pakiety dla profilu.
 - `features_profiles()` — Lista dostępnych profili.
 - `features_system()` — Pokaż wykryty system.
-- `config()` — Zarządzanie konfiguracją fixOS.
-- `config_show()` — Pokaż aktualną konfigurację.
-- `config_init(force)` — Zainicjalizuj plik konfiguracyjny .env.
-- `config_set(key, value)` — Ustaw wartość konfiguracyjną w .env.
 - `llm_providers(free)` — Lista dostępnych providerów LLM.
 - `providers()` — Lista providerów LLM z oznaczeniem FREE/PAID.
 - `test_llm(provider, token, model, no_banner)` — Test połączenia z LLM.
-- `fix(provider, token, model, no_banner)` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
-- `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive)` — Handle disk cleanup mode with interactive planning
-- `execute_cleanup_actions(actions, cfg, llm_fallback)` — Execute cleanup actions with safety checks
-- `try_llm_fallback_for_failures(failed_actions, cfg)` — Try to fix failed actions using LLM
 - `main()` — Test the LLM analyzer
 - `timeout_handler(signum, frame)` — Signal handler dla SIGALRM — rzuca SessionTimeout.
 - `anonymize(data_str)` — Anonimizuje wrażliwe dane.

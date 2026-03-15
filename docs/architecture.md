@@ -331,8 +331,8 @@ classDiagram
 - `fixos.diagnostics.system_checks.get_full_diagnostics` — Zbiera diagnostykę z wybranych modułów.
 - `fixos.diagnostics.disk_analyzer.main` — Test the disk analyzer
 - `fixos.config.get_providers_list` — Zwraca listę providerów jako listę słowników.
-- `fixos.diagnostics.flatpak_analyzer.analyze_flatpak_for_cleanup` — Convenience function to run full Flatpak analysis
 - `fixos.agent.hitl_session.run_hitl_session` — Run interactive HITL session (backward compatible wrapper).
+- `fixos.diagnostics.flatpak_analyzer.analyze_flatpak_for_cleanup` — Convenience function to run full Flatpak analysis
 - `fixos.diagnostics.service_scanner.main` — Test the service data scanner.
 - `fixos.agent.autonomous_session.run_autonomous_session` — Run autonomous session (backward compatible wrapper).
 - `fixos.cli.profile_cmd.profile` — Zarządzanie profilami diagnostycznymi.
@@ -350,24 +350,24 @@ classDiagram
 - `fixos.cli.history_cmd.history` — Historia napraw fixOS.
 - `fixos.cli.cleanup_cmd.cleanup_services` — Skanuje i czyści dane usług przekraczające próg.
 - `fixos.cli.watch_cmd.watch` — Monitorowanie systemu w tle z powiadomieniami.
-- `fixos.cli.main.main` — Entry point for fixOS CLI.
+- `fixos.cli.fix_cmd.fix` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 - `fixos.cli.token_cmd.token` — Zarządzanie tokenem API.
 - `fixos.cli.token_cmd.token_set` — Zapisz token API do pliku .env.
 - `fixos.cli.token_cmd.token_show` — Pokaż obecny token (masked).
 - `fixos.cli.token_cmd.token_clear` — Usuń token z pliku .env.
+- `fixos.cli.main.main` — Entry point for fixOS CLI.
+- `fixos.cli.config_cmd.config` — Zarządzanie konfiguracją fixOS.
+- `fixos.cli.config_cmd.config_show` — Pokaż aktualną konfigurację.
+- `fixos.cli.config_cmd.config_init` — Zainicjalizuj plik konfiguracyjny .env.
+- `fixos.cli.config_cmd.config_set` — Ustaw wartość konfiguracyjną w .env.
 - `fixos.cli.features_cmd.features` — Zarządzanie pakietami komfortu systemu.
 - `fixos.cli.features_cmd.features_audit` — Sprawdź brakujące pakiety dla profilu.
 - `fixos.cli.features_cmd.features_install` — Zainstaluj brakujące pakiety dla profilu.
 - `fixos.cli.features_cmd.features_profiles` — Lista dostępnych profili.
 - `fixos.cli.features_cmd.features_system` — Pokaż wykryty system.
-- `fixos.cli.config_cmd.config` — Zarządzanie konfiguracją fixOS.
-- `fixos.cli.config_cmd.config_show` — Pokaż aktualną konfigurację.
-- `fixos.cli.config_cmd.config_init` — Zainicjalizuj plik konfiguracyjny .env.
-- `fixos.cli.config_cmd.config_set` — Ustaw wartość konfiguracyjną w .env.
 - `fixos.cli.provider_cmd.llm_providers` — Lista dostępnych providerów LLM.
 - `fixos.cli.provider_cmd.providers` — Lista providerów LLM z oznaczeniem FREE/PAID.
 - `fixos.cli.provider_cmd.test_llm` — Test połączenia z LLM.
-- `fixos.cli.fix_cmd.fix` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 - `fixos.providers.llm_analyzer.main` — Test the LLM analyzer
 - `fixos.utils.timeout.timeout_handler` — Signal handler dla SIGALRM — rzuca SessionTimeout.
 - `fixos.utils.anonymizer.anonymize` — Anonimizuje wrażliwe dane.
@@ -388,4 +388,4 @@ classDiagram
 | CFG Nodes | 2363 |
 | Patterns | 1 |
 | Avg Complexity | 5.0 |
-| Analysis Time | 4.13s |
+| Analysis Time | 4.09s |

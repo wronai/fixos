@@ -3,7 +3,7 @@ project:
   name: fixOS
   repo: /home/tom/github/wronai/fixOS
   language: python
-  analyzed_at: '2026-03-15T13:22:18Z'
+  analyzed_at: '2026-03-15T13:36:59Z'
   tool: code2llm
   stats:
     files: 59
@@ -1394,26 +1394,26 @@ refactoring:
     impact: medium
     effort: low
     module: config.py
-  - action: Split HITLSession._process_turn (CC=20 → target CC<10)
-    impact: medium
-    effort: low
-    module: hitl_session.py
   - action: Split FlatpakAnalyzer._find_leftover_data (CC=15 → target CC<10)
     impact: medium
     effort: low
     module: flatpak_analyzer.py
+  - action: Split HITLSession._process_turn (CC=20 → target CC<10)
+    impact: medium
+    effort: low
+    module: hitl_session.py
   - action: Split SystemDetector._detect_de (CC=15 → target CC<10)
     impact: medium
     effort: low
     module: __init__.py
-  - action: Split _run_disk_analysis (CC=18 → target CC<10)
-    impact: medium
-    effort: low
-    module: scan_cmd.py
   - action: Split report (CC=16 → target CC<10)
     impact: medium
     effort: low
     module: report_cmd.py
+  - action: Split _run_disk_analysis (CC=18 → target CC<10)
+    impact: medium
+    effort: low
+    module: scan_cmd.py
   - action: Split _match_heuristic_command (CC=18 → target CC<10)
     impact: medium
     effort: low

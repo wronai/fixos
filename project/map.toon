@@ -286,15 +286,15 @@ Tryby:
     _cmd_exists(cmd)
     setup_signal_timeout(seconds;handler)
     cancel_signal_timeout()
+  fixos/features/renderer.py:
+    e: FeatureRenderer
+    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
   fixos/agent/autonomous_session.py:
     e: FixAction,AgentReport,AutonomousSession,run_autonomous_session
     FixAction:
     AgentReport: summary(0)
     AutonomousSession: __init__(4),_setup_timeout(0),_clear_timeout(0),_confirm_start(0),_initialize_messages(0),_get_remaining_time(0),_check_timeout(0),_query_llm(0),_handle_llm_error(0),_parse_action(1),_is_forbidden(1),_add_sudo(1),_execute_command(1),_handle_search(1),_handle_exec(1),_handle_skip(1),_handle_done(0),_process_turn(0),run(0),_print_report(0)  # Self-directed autonomous diagnostic and repair session...
     run_autonomous_session(diagnostics;config;show_data;max_fixes)
-  fixos/features/renderer.py:
-    e: FeatureRenderer
-    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
   fixos/features/profiles.py:
     e: UserProfile
     UserProfile: load(2),list_available(1),resolve_packages(2),to_dict(0)  # A user profile defining what packages/features they want...
@@ -390,8 +390,8 @@ Aby stworz...
     e: SessionTimeout,timeout_handler
     SessionTimeout(Exception):  # Wyjątek rzucany po przekroczeniu limitu czasu sesji...
     timeout_handler(signum;frame)
-  setup.py:
   fixos/cli/__init__.py:
+  setup.py:
   fixos/__init__.py:
   fixos/diagnostics/__init__.py:
   fixos/agent/__init__.py:

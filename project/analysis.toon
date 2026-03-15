@@ -10,14 +10,14 @@ HEALTH[20]:
   🟡 CC    _process_turn CC=20 (limit:15)
   🟡 CC    _detect_de CC=15 (limit:15)
   🟡 CC    _install_package CC=27 (limit:15)
-  🟡 CC    _run_disk_analysis CC=18 (limit:15)
   🟡 CC    report CC=16 (limit:15)
+  🟡 CC    _run_disk_analysis CC=18 (limit:15)
   🟡 CC    _match_heuristic_command CC=18 (limit:15)
   🟡 CC    cleanup_services CC=15 (limit:15)
   🟡 CC    _cleanup_flatpak_detailed CC=23 (limit:15)
   🟡 CC    features_install CC=15 (limit:15)
-  🟡 CC    chat CC=15 (limit:15)
   🟡 CC    fix CC=18 (limit:15)
+  🟡 CC    chat CC=15 (limit:15)
   🟡 CC    anonymize CC=15 (limit:15)
   🟡 CC    _dict_to_markdown CC=18 (limit:15)
   🟡 CC    render_md CC=16 (limit:15)
@@ -40,9 +40,9 @@ COUPLING:
   HUB: fixos.utils/ (fan-in=18)
   HUB: fixos.features/ (fan-in=12)
   SMELL: fixos.agent/ fan-out=29 → split needed
-  SMELL: fixos.cli/ fan-out=38 → split needed
-  SMELL: fixos.plugins/ fan-out=32 → split needed
   SMELL: fixos.orchestrator/ fan-out=8 → split needed
+  SMELL: fixos.plugins/ fan-out=32 → split needed
+  SMELL: fixos.cli/ fan-out=38 → split needed
 
 LAYERS:
   fixos/                          CC̄=5.0    ←in:71  →out:0
@@ -162,8 +162,8 @@ FUNCTIONS (CC≥10, 56 of 379):
    13.0  _load_env_files                            12n   3exit  loops+cond+ret
    13.0  SystemDetector._detect_gpu_vendor           3n   2exit  ret
    13.0  orchestrate                                18n   2exit  loops+cond+ret
-   13.0  LLMAnalyzer.enhance_heuristics_with_llm     8n   3exit  cond+ret
    13.0  handle_disk_cleanup_mode                   20n   4exit  loops+cond+ret
+   13.0  LLMAnalyzer.enhance_heuristics_with_llm     8n   3exit  cond+ret
    13.0  ProblemGraph._recalculate_order            10n   1exit  loops+cond
    12.0  WatchDaemon.run                             2n   1exit  
    12.0  quickfix                                    8n   1exit  loops+cond
@@ -214,8 +214,8 @@ CLASSES:
   LLMClient                      ███████                    6m  CC̄=5.5   max=15    !!
   Plugin                         ███████                    6m  CC̄=4.7   max=14  
   RollbackSession                ███████                    6m  CC̄=3.7   max=7   
-  Plugin                         ███████                    6m  CC̄=7.7   max=16    !!
   Plugin                         ███████                    6m  CC̄=5.2   max=12  
+  Plugin                         ███████                    6m  CC̄=7.7   max=16    !!
   WatchDaemon                    ██████                     5m  CC̄=4.6   max=12  
   PackageCatalog                 ██████                     5m  CC̄=2.6   max=7   
   Plugin                         ██████                     5m  CC̄=4.4   max=10  
@@ -234,29 +234,29 @@ CLASSES:
   AgentReport                    █                          1m  CC̄=4.0   max=4   
   AuditResult                    █                          1m  CC̄=4.0   max=4   
   DiagnosticResult               █                          1m  CC̄=2.0   max=2   
+  NaturalLanguageGroup           █                          1m  CC̄=6.0   max=6   
   DangerousCommandError          █                          1m  CC̄=2.0   max=2   
   CommandTimeoutError            █                          1m  CC̄=1.0   max=1   
   ExecutionResult                █                          1m  CC̄=1.0   max=1   
-  NaturalLanguageGroup           █                          1m  CC̄=6.0   max=6   
   CleanupAction                  █                          1m  CC̄=2.0   max=2   
   FlatpakItemType                                           0m  CC̄=0.0   max=0.0 
   PackageCategory                                           0m  CC̄=0.0   max=0.0 
   CmdResult                                                 0m  CC̄=0.0   max=0.0 
-  FixAction                                                 0m  CC̄=0.0   max=0.0 
   ServiceType                                               0m  CC̄=0.0   max=0.0 
   ServiceDataInfo                                           0m  CC̄=0.0   max=0.0 
+  FixAction                                                 0m  CC̄=0.0   max=0.0 
   SystemInfo                                                0m  CC̄=0.0   max=0.0 
-  Severity                                                  0m  CC̄=0.0   max=0.0 
-  Finding                                                   0m  CC̄=0.0   max=0.0 
   LLMError                                                  0m  CC̄=0.0   max=0.0 
   LLMAnalysis                                               0m  CC̄=0.0   max=0.0 
   SessionTimeout                                            0m  CC̄=0.0   max=0.0 
+  Severity                                                  0m  CC̄=0.0   max=0.0 
+  Finding                                                   0m  CC̄=0.0   max=0.0 
   SearchResult                                              0m  CC̄=0.0   max=0.0 
   _C                                                        0m  CC̄=0.0   max=0.0 
   _SkipAll                                                  0m  CC̄=0.0   max=0.0 
-  RollbackEntry                                             0m  CC̄=0.0   max=0.0 
   Priority                                                  0m  CC̄=0.0   max=0.0 
   CleanupType                                               0m  CC̄=0.0   max=0.0 
+  RollbackEntry                                             0m  CC̄=0.0   max=0.0 
   RiskLevel                                                 0m  CC̄=0.0   max=0.0 
   FixSuggestion                                             0m  CC̄=0.0   max=0.0 
   LLMDiagnosticResponse                                     0m  CC̄=0.0   max=0.0 
@@ -544,6 +544,11 @@ Tryby:
     _cmd_exists(cmd)
     setup_signal_timeout(seconds,handler)
     cancel_signal_timeout()
+  fixos/features/renderer.py:
+    e: FeatureRenderer
+    FeatureRenderer  # Renders audit results for terminal display....
+      render_audit(0)  CC=8.0
+        → _get_source_info(1)  CC=7.0
   fixos/agent/autonomous_session.py:
     e: FixAction,AgentReport,AutonomousSession,run_autonomous_session
     FixAction
@@ -553,11 +558,6 @@ Tryby:
       __init__(4)  CC=1.0
         → _setup_timeout(0)  CC=1.0
     run_autonomous_session(diagnostics,config,show_data,max_fixes)
-  fixos/features/renderer.py:
-    e: FeatureRenderer
-    FeatureRenderer  # Renders audit results for terminal display....
-      render_audit(0)  CC=8.0
-        → _get_source_info(1)  CC=7.0
   fixos/features/profiles.py:
     e: UserProfile
     UserProfile  # A user profile defining what packages/features they want....
@@ -666,8 +666,8 @@ Aby stworz...
     e: SessionTimeout,timeout_handler
     SessionTimeout  # Wyjątek rzucany po przekroczeniu limitu czasu sesji....
     timeout_handler(signum,frame)
-  setup.py:
   fixos/cli/__init__.py:
+  setup.py:
   fixos/__init__.py:
   fixos/diagnostics/__init__.py:
   fixos/agent/__init__.py:

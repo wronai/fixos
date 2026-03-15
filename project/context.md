@@ -189,8 +189,8 @@ Tryby:
 | 5 | Split DiskAnalyzer._identify_cache_type (CC=17 → target CC<10) | medium | low |
 | 6 | Split ServiceDetailsProvider._docker (CC=17 → target CC<10) | medium | low |
 | 7 | Split interactive_provider_setup (CC=24 → target CC<10) | medium | low |
-| 8 | Split HITLSession._process_turn (CC=20 → target CC<10) | medium | low |
-| 9 | Split FlatpakAnalyzer._find_leftover_data (CC=15 → target CC<10) | medium | low |
+| 8 | Split FlatpakAnalyzer._find_leftover_data (CC=15 → target CC<10) | medium | low |
+| 9 | Split HITLSession._process_turn (CC=20 → target CC<10) | medium | low |
 | 10 | Split SystemDetector._detect_de (CC=15 → target CC<10) | medium | low |
 
 ## Context for LLM

@@ -1,87 +1,116 @@
-# code2llm | 46f 10573L | python:45,shell:1 | 2026-03-15
-# CC̄=5.7 | critical:53/291 | dups:0 | cycles:1
+# code2llm | 73f 11965L | python:72,shell:1 | 2026-03-15
+# CC̄=5.0 | critical:56/379 | dups:0 | cycles:0
 
 HEALTH[20]:
   🟡 CC    run_llm_shell CC=15 (limit:15)
-  🟡 CC    interactive_provider_setup CC=24 (limit:15)
   🟡 CC    _identify_cache_type CC=17 (limit:15)
+  🟡 CC    _docker CC=17 (limit:15)
+  🟡 CC    interactive_provider_setup CC=24 (limit:15)
   🟡 CC    _find_leftover_data CC=15 (limit:15)
-  🟡 CC    run_hitl_session CC=34 (limit:15)
-  🟡 CC    run_autonomous_session CC=21 (limit:15)
+  🟡 CC    _process_turn CC=20 (limit:15)
+  🟡 CC    _detect_de CC=15 (limit:15)
+  🟡 CC    _install_package CC=27 (limit:15)
+  🟡 CC    _run_disk_analysis CC=18 (limit:15)
+  🟡 CC    report CC=16 (limit:15)
+  🟡 CC    _match_heuristic_command CC=18 (limit:15)
+  🟡 CC    cleanup_services CC=15 (limit:15)
+  🟡 CC    _cleanup_flatpak_detailed CC=23 (limit:15)
+  🟡 CC    features_install CC=15 (limit:15)
   🟡 CC    chat CC=15 (limit:15)
-  🟡 CC    _get_docker_details CC=18 (limit:15)
+  🟡 CC    fix CC=18 (limit:15)
   🟡 CC    anonymize CC=15 (limit:15)
   🟡 CC    _dict_to_markdown CC=18 (limit:15)
   🟡 CC    render_md CC=16 (limit:15)
   🟡 CC    run_sync CC=17 (limit:15)
-  🟡 CC    _generate_recommendations CC=18 (limit:15)
-  🟡 CC    diagnose CC=16 (limit:15)
-  🟡 CC    _handle_natural_command CC=37 (limit:15)
-  🟡 CC    _run_disk_analysis CC=18 (limit:15)
-  🟡 CC    fix CC=18 (limit:15)
-  🟡 CC    execute_cleanup_actions CC=24 (limit:15)
-  🟡 CC    token_set CC=18 (limit:15)
-  🟡 CC    _cleanup_flatpak_detailed CC=23 (limit:15)
 
-REFACTOR[2]:
+REFACTOR[1]:
   1. split 20 high-CC methods  (CC>15)
-  2. break 1 circular dependencies
 
 COUPLING:
-                                   fixos       fixos.plugins         fixos.agent         fixos.utils  fixos.orchestrator
-               fixos                  ──                 ←32                   2                   2                   4  hub
-       fixos.plugins                  32                  ──                                                              !! fan-out
-         fixos.agent                  15                                      ──                  14                      !! fan-out
-         fixos.utils                  ←2                                     ←14                  ──                  ←4  hub
-  fixos.orchestrator                   4                                                           4                  ──  !! fan-out
-  CYCLES: 1
-  HUB: fixos.utils/ (fan-in=20)
-  HUB: fixos/ (fan-in=51)
-  SMELL: fixos.plugins/ fan-out=32 → split needed
+                                   fixos           fixos.cli       fixos.plugins         fixos.agent         fixos.utils      fixos.features  fixos.orchestrator
+               fixos                  ──                 ←20                 ←32                 ←15                                                          ←4  hub
+           fixos.cli                  20                  ──                                       2                                      12                   4  !! fan-out
+       fixos.plugins                  32                                      ──                                                                                  !! fan-out
+         fixos.agent                  15                  ←2                                      ──                  14                                          !! fan-out
+         fixos.utils                                                                             ←14                  ──                                      ←4  hub
+      fixos.features                                     ←12                                                                              ──                      hub
+  fixos.orchestrator                   4                  ←4                                                           4                                      ──  !! fan-out
+  CYCLES: none
+  HUB: fixos/ (fan-in=71)
+  HUB: fixos.utils/ (fan-in=18)
+  HUB: fixos.features/ (fan-in=12)
   SMELL: fixos.agent/ fan-out=29 → split needed
-  SMELL: fixos/ fan-out=8 → split needed
+  SMELL: fixos.cli/ fan-out=38 → split needed
+  SMELL: fixos.plugins/ fan-out=32 → split needed
   SMELL: fixos.orchestrator/ fan-out=8 → split needed
 
 LAYERS:
-  fixos/                          CC̄=5.7    ←in:51  →out:8  !! split
-  │ !! cli                       2251L  1C   43m  CC=37     ←0
-  │ !! service_scanner            987L  3C   20m  CC=18     ←0
+  fixos/                          CC̄=5.0    ←in:71  →out:0
   │ !! system_checks              512L  0C    9m  CC=14     ←0
-  │ !! hitl                       461L  1C   10m  CC=34     ←1
-  │ !! config                     422L  1C    7m  CC=24     ←1
+  │ !! hitl_session               509L  2C   20m  CC=20     ←0
+  │ autonomous_session         429L  3C   22m  CC=8      ←0
+  │ !! config                     422L  1C    7m  CC=24     ←7
   │ !! disk_analyzer              419L  1C   15m  CC=17     ←0
   │ !! cleanup_planner            417L  4C   12m  CC=18     ←0
   │ !! orchestrator               382L  2C   11m  CC=17     ←0
-  │ !! autonomous                 349L  2C    7m  CC=21     ←1
+  │ !! cleanup_cmd                371L  0C    8m  CC=23     ←0
+  │ !  service_cleanup            355L  1C    8m  CC=14     ←1
+  │ !! ask_cmd                    354L  0C    8m  CC=18     ←0
   │ !  llm_analyzer               333L  2C    8m  CC=13     ←0
   │ !! flatpak_analyzer           332L  3C   12m  CC=15     ←0
-  │ !! terminal                   316L  1C    8m  CC=16     ←3
+  │ !! terminal                   316L  1C    8m  CC=16     ←2
   │ !! anonymizer                 299L  1C    9m  CC=18     ←2
+  │ !! fix_cmd                    282L  0C    4m  CC=18     ←0
   │ !  executor                   272L  4C   11m  CC=11     ←0
+  │ !! __init__                   267L  2C   12m  CC=15     ←0
   │ web_search                 254L  1C    9m  CC=9      ←2
+  │ provider_cmd               250L  0C    3m  CC=9      ←0
+  │ service_scanner            249L  3C    8m  CC=7      ←0
+  │ !! service_details            242L  1C    7m  CC=17     ←0
   │ !! llm_shell                  240L  0C    4m  CC=15     ←0
   │ !! llm                        206L  2C    6m  CC=15     ←0
+  │ !! installer                  202L  1C   11m  CC=27     ←0
+  │ !! scan_cmd                   187L  0C    3m  CC=18     ←1
   │ platform_utils             184L  0C   10m  CC=8      ←7
+  │ !! features_cmd               176L  0C    6m  CC=15     ←0
   │ !! security                   171L  1C    6m  CC=16     ←0
   │ !  graph                      163L  2C   11m  CC=13     ←0
-  │ rollback                   162L  2C    6m  CC=7      ←1
-  │ system_checks              156L  0C    8m  CC=6      ←1
+  │ rollback                   162L  2C    6m  CC=7      ←2
+  │ main                       158L  0C    3m  CC=6      ←0
+  │ system_checks              156L  0C    8m  CC=6      ←2
   │ !  resources                  137L  1C    6m  CC=14     ←0
+  │ !  orchestrate_cmd            132L  0C    1m  CC=13     ←0
   │ !  hardware                   129L  1C    6m  CC=12     ←0
+  │ !  auditor                    127L  2C    5m  CC=10     ←0
   │ registry                   127L  1C    8m  CC=7      ←0
+  │ renderer                   124L  1C    4m  CC=8      ←1
+  │ token_cmd                  124L  0C    4m  CC=7      ←0
   │ !  watch                      120L  1C    5m  CC=12     ←0
+  │ catalog                    119L  3C    7m  CC=7      ←1
   │ !  thumbnails                 118L  1C    5m  CC=10     ←0
+  │ !! report_cmd                 115L  0C    1m  CC=16     ←0
   │ !  disk                       113L  1C    4m  CC=12     ←0
   │ !  audio                      107L  1C    5m  CC=10     ←0
   │ base                        99L  4C    4m  CC=2      ←0
+  │ rollback_cmd                90L  0C    4m  CC=7      ←0
+  │ profiles                    88L  1C    4m  CC=8      ←1
   │ anonymizer                  86L  0C    2m  CC=5      ←5
+  │ config_cmd                  83L  0C    4m  CC=4      ←0
+  │ !  quickfix_cmd                76L  0C    1m  CC=12     ←0
   │ schemas                     71L  5C    0m  CC=0.0    ←0
-  │ __init__                    65L  1C    3m  CC=4      ←1
+  │ __init__                    65L  1C    3m  CC=4      ←2
+  │ shared                      62L  1C    3m  CC=6      ←0
+  │ profile_cmd                 59L  0C    3m  CC=4      ←0
+  │ autonomous                  49L  0C    1m  CC=1      ←1
+  │ history_cmd                 49L  0C    1m  CC=5      ←0
+  │ watch_cmd                   49L  0C    1m  CC=2      ←0
+  │ hitl                        36L  0C    1m  CC=1      ←1
+  │ __init__                    22L  0C    0m  CC=0.0    ←0
   │ timeout                     17L  1C    1m  CC=1      ←0
   │ __init__                    11L  0C    0m  CC=0.0    ←0
   │ __init__                     9L  0C    0m  CC=0.0    ←0
+  │ __init__                     8L  0C    0m  CC=0.0    ←0
   │ __init__                     4L  0C    0m  CC=0.0    ←0
-  │ __init__                     3L  0C    0m  CC=0.0    ←0
   │ __init__                     3L  0C    0m  CC=0.0    ←0
   │ __init__                     2L  0C    0m  CC=0.0    ←0
   │ __init__                     2L  0C    0m  CC=0.0    ←0
@@ -98,122 +127,136 @@ LAYERS:
 
 DUPLICATES[0]: none
 
-FUNCTIONS (CC≥10, 53 of 291):
-   37.0  _handle_natural_command                    16n   2exit  loops+cond+ret  !! split
-   34.0  run_hitl_session                            7n   2exit  cond+ret  !! split
-   34.0  cleanup_services                           44n   5exit  loops+cond+ret  !! split
+FUNCTIONS (CC≥10, 56 of 379):
+   27.0  FeatureInstaller._install_package          22n   4exit  loops+cond+ret  !! split
    24.0  interactive_provider_setup                 26n   5exit  loops+cond+ret  !! split
-   24.0  execute_cleanup_actions                    20n   1exit  loops+cond  !! split
    23.0  _cleanup_flatpak_detailed                  32n   5exit  loops+cond+ret  !! split
-   21.0  run_autonomous_session                      8n   3exit  cond+ret  !! split
-   18.0  ServiceDataScanner._get_docker_details      3n   2exit  ret  !! split
+   20.0  HITLSession._process_turn                  42n  12exit  loops+cond+ret  !! split
+   18.0  _run_disk_analysis                          2n   1exit    !! split
+   18.0  _match_heuristic_command                   24n   8exit  loops+cond+ret  !! split
+   18.0  fix                                        28n   2exit  loops+cond+ret  !! split
    18.0  _dict_to_markdown                          12n   2exit  loops+cond+ret  !! split
    18.0  CleanupPlanner._generate_recommendations   15n   2exit  cond+ret  !! split
-   18.0  _run_disk_analysis                          2n   1exit    !! split
-   18.0  fix                                        28n   2exit  loops+cond+ret  !! split
-   18.0  token_set                                  21n   1exit  loops+cond  !! split
    17.0  DiskAnalyzer._identify_cache_type          16n   5exit  cond+ret  !! split
+   17.0  ServiceDetailsProvider._docker              3n   2exit  ret  !! split
    17.0  FixOrchestrator.run_sync                   18n   2exit  loops+cond+ret  !! split
+   16.0  report                                     17n   1exit  loops+cond  !! split
    16.0  render_md                                  27n   1exit  loops+cond  !! split
    16.0  Plugin.diagnose                            23n   2exit  cond+ret  !! split
-   16.0  report                                     17n   1exit  loops+cond  !! split
    15.0  run_llm_shell                               4n   1exit  cond  !! split
    15.0  FlatpakAnalyzer._find_leftover_data         2n   1exit    !! split
+   15.0  SystemDetector._detect_de                  20n   7exit  cond+ret  !! split
+   15.0  cleanup_services                           22n   5exit  loops+cond+ret  !! split
+   15.0  features_install                           22n   3exit  loops+cond+ret  !! split
    15.0  LLMClient.chat                              3n   1exit  loops  !! split
    15.0  anonymize                                  31n   2exit  cond+ret  !! split
    14.0  diagnose_system                            20n   3exit  loops+cond+ret
+   14.0  ServiceCleaner.get_cleanup_plan             5n   2exit  cond+ret
    14.0  FixOsConfig.load                            7n   2exit  cond+ret
    14.0  FlatpakAnalyzer._find_unused_runtimes      13n   1exit  loops+cond
-   14.0  ServiceDataScanner.get_cleanup_plan         5n   2exit  cond+ret
-   14.0  Plugin.diagnose                            17n   2exit  cond+ret
    14.0  _print_quick_issues                        19n   1exit  loops+cond
+   14.0  _validate_result_with_llm                   2n   1exit  
+   14.0  Plugin.diagnose                            17n   2exit  cond+ret
    13.0  diagnose_resources                         13n   3exit  loops+cond+ret
-   13.0  _load_env_files                            12n   3exit  loops+cond+ret
    13.0  DiskAnalyzer.suggest_cleanup_actions        3n   2exit  ret
+   13.0  _load_env_files                            12n   3exit  loops+cond+ret
+   13.0  SystemDetector._detect_gpu_vendor           3n   2exit  ret
+   13.0  orchestrate                                18n   2exit  loops+cond+ret
    13.0  LLMAnalyzer.enhance_heuristics_with_llm     8n   3exit  cond+ret
-   13.0  ProblemGraph._recalculate_order            10n   1exit  loops+cond
-   13.0  _validate_result_with_llm                   2n   1exit  
    13.0  handle_disk_cleanup_mode                   20n   4exit  loops+cond+ret
-   13.0  orchestrate                                20n   2exit  loops+cond+ret
+   13.0  ProblemGraph._recalculate_order            10n   1exit  loops+cond
    12.0  WatchDaemon.run                             2n   1exit  
+   12.0  quickfix                                    8n   1exit  loops+cond
+   12.0  scan                                       14n   1exit  cond
    12.0  LLMAnalyzer._sanitize_suggestion            2n   1exit  
    12.0  CleanupPlanner.create_cleanup_plan          4n   2exit  loops+ret
-   12.0  Plugin.diagnose                            18n   2exit  loops+cond+ret
    12.0  Plugin.diagnose                            17n   2exit  cond+ret
-   12.0  scan                                       14n   1exit  cond
-   12.0  quickfix                                    8n   1exit  loops+cond
+   12.0  Plugin.diagnose                            18n   2exit  loops+cond+ret
+   11.0  _display_service_item                      10n   1exit  cond
+   11.0  _interactive_profile_select                17n   4exit  loops+cond+ret
    11.0  CommandExecutor.execute_sync               13n   2exit  cond+ret
    11.0  CleanupPlanner.prioritize_actions           6n   2exit  loops+ret
    11.0  CleanupPlanner._get_category_for_action    16n   5exit  cond+ret
    10.0  execute_command                             7n   2exit  cond+ret
-   10.0  DiskAnalyzer.get_cache_dirs                 3n   2exit  ret
-   10.0  _extract_fixes                             15n   2exit  loops+cond+ret
-   10.0  FixOrchestrator._evaluate_and_rediagnose    2n   1exit  
 
   summary:
-    critical(≥10): 53 | high(5-10): 78 | medium(2-5): 95 | low(<2): 65
-    18% CC≥10  45% CC≥5
+    critical(≥10): 56 | high(5-10): 98 | medium(2-5): 133 | low(<2): 92
+    15% CC≥10  41% CC≥5
 
 HOTSPOTS:
-  #1  run_hitl_session                     fan=42   "calls 42 functions"
-  #2  orchestrate                          fan=30   "calls 30 functions"
-  #3  run_autonomous_session               fan=28   "calls 28 functions"
-  #4  _cleanup_flatpak_detailed            fan=24   "calls 24 functions"
-  #5  run_llm_shell                        fan=23   "calls 23 functions"
-  #6  interactive_provider_setup           fan=23   "calls 23 functions"
-  #7  token_set                            fan=23   "calls 23 functions"
-  #8  report                               fan=22   "calls 22 functions"
-  #9  fix                                  fan=21   "calls 21 functions"
-  #10 execute_cleanup_actions              fan=21   "calls 21 functions"
+  #1  HITLSession._process_turn            fan=28   "analysis pipeline, 28 stages"
+  #2  orchestrate                          fan=24   "calls 24 functions"
+  #3  _cleanup_flatpak_detailed            fan=24   "calls 24 functions"
+  #4  run_llm_shell                        fan=23   "calls 23 functions"
+  #5  interactive_provider_setup           fan=23   "calls 23 functions"
+  #6  report                               fan=22   "calls 22 functions"
+  #7  fix                                  fan=21   "calls 21 functions"
+  #8  diagnose_system                      fan=19   "calls 19 functions"
+  #9  render_md                            fan=19   "calls 19 functions"
+  #10 token_set                            fan=18   "calls 18 functions"
 
 CLASSES:
-  ServiceDataScanner             ████████████████████████  19m  CC̄=5.2   max=18    !!
-  DiskAnalyzer                   █████████████████         14m  CC̄=7.5   max=17    !!
+  AutonomousSession              ████████████████████████  20m  CC̄=2.9   max=8   
+  HITLSession                    ██████████████████████    19m  CC̄=4.3   max=20    !!
+  DiskAnalyzer                   ████████████████          14m  CC̄=7.5   max=17    !!
+  SystemDetector                 ██████████████            12m  CC̄=5.8   max=15    !!
+  FeatureInstaller               █████████████             11m  CC̄=4.9   max=27    !!
   FixOrchestrator                █████████████             11m  CC̄=5.2   max=17    !!
   FlatpakAnalyzer                ████████████              10m  CC̄=7.0   max=15    !!
   CleanupPlanner                 ████████████              10m  CC̄=6.9   max=18    !!
-  ProblemGraph                   ███████████                9m  CC̄=4.0   max=13  
-  PluginRegistry                 ██████████                 8m  CC̄=2.9   max=7   
-  CommandExecutor                ██████████                 8m  CC̄=4.9   max=11  
+  ProblemGraph                   ██████████                 9m  CC̄=4.0   max=13  
+  ServiceCleaner                 █████████                  8m  CC̄=3.0   max=14  
+  PluginRegistry                 █████████                  8m  CC̄=2.9   max=7   
+  CommandExecutor                █████████                  8m  CC̄=4.9   max=11  
+  ServiceDetailsProvider         ████████                   7m  CC̄=6.9   max=17    !!
+  ServiceDataScanner             ████████                   7m  CC̄=3.4   max=7   
   LLMAnalyzer                    ████████                   7m  CC̄=5.9   max=13  
   LLMClient                      ███████                    6m  CC̄=5.5   max=15    !!
-  RollbackSession                ███████                    6m  CC̄=3.7   max=7   
   Plugin                         ███████                    6m  CC̄=4.7   max=14  
+  RollbackSession                ███████                    6m  CC̄=3.7   max=7   
   Plugin                         ███████                    6m  CC̄=7.7   max=16    !!
   Plugin                         ███████                    6m  CC̄=5.2   max=12  
   WatchDaemon                    ██████                     5m  CC̄=4.6   max=12  
+  PackageCatalog                 ██████                     5m  CC̄=2.6   max=7   
   Plugin                         ██████                     5m  CC̄=4.4   max=10  
   Plugin                         ██████                     5m  CC̄=4.6   max=10  
-  Plugin                         █████                      4m  CC̄=7.2   max=12  
+  FeatureRenderer                ████                       4m  CC̄=5.0   max=8   
+  UserProfile                    ████                       4m  CC̄=4.0   max=8   
+  FeatureAuditor                 ████                       4m  CC̄=5.2   max=10  
+  Plugin                         ████                       4m  CC̄=7.2   max=12  
   FixOsConfig                    ███                        3m  CC̄=8.3   max=14  
   DiagnosticPlugin               ███                        3m  CC̄=1.0   max=1   
   Profile                        ███                        3m  CC̄=2.7   max=4   
+  PackageInfo                    ██                         2m  CC̄=4.0   max=6   
   AnonymizationReport            ██                         2m  CC̄=2.0   max=3   
   Problem                        ██                         2m  CC̄=1.5   max=2   
   FlatpakItemInfo                █                          1m  CC̄=1.0   max=1   
   AgentReport                    █                          1m  CC̄=4.0   max=4   
+  AuditResult                    █                          1m  CC̄=4.0   max=4   
   DiagnosticResult               █                          1m  CC̄=2.0   max=2   
   DangerousCommandError          █                          1m  CC̄=2.0   max=2   
   CommandTimeoutError            █                          1m  CC̄=1.0   max=1   
   ExecutionResult                █                          1m  CC̄=1.0   max=1   
-  CleanupAction                  █                          1m  CC̄=2.0   max=2   
   NaturalLanguageGroup           █                          1m  CC̄=6.0   max=6   
+  CleanupAction                  █                          1m  CC̄=2.0   max=2   
   FlatpakItemType                                           0m  CC̄=0.0   max=0.0 
+  PackageCategory                                           0m  CC̄=0.0   max=0.0 
   CmdResult                                                 0m  CC̄=0.0   max=0.0 
   FixAction                                                 0m  CC̄=0.0   max=0.0 
-  LLMError                                                  0m  CC̄=0.0   max=0.0 
   ServiceType                                               0m  CC̄=0.0   max=0.0 
   ServiceDataInfo                                           0m  CC̄=0.0   max=0.0 
-  LLMAnalysis                                               0m  CC̄=0.0   max=0.0 
+  SystemInfo                                                0m  CC̄=0.0   max=0.0 
   Severity                                                  0m  CC̄=0.0   max=0.0 
   Finding                                                   0m  CC̄=0.0   max=0.0 
+  LLMError                                                  0m  CC̄=0.0   max=0.0 
+  LLMAnalysis                                               0m  CC̄=0.0   max=0.0 
   SessionTimeout                                            0m  CC̄=0.0   max=0.0 
   SearchResult                                              0m  CC̄=0.0   max=0.0 
   _C                                                        0m  CC̄=0.0   max=0.0 
   _SkipAll                                                  0m  CC̄=0.0   max=0.0 
+  RollbackEntry                                             0m  CC̄=0.0   max=0.0 
   Priority                                                  0m  CC̄=0.0   max=0.0 
   CleanupType                                               0m  CC̄=0.0   max=0.0 
-  RollbackEntry                                             0m  CC̄=0.0   max=0.0 
   RiskLevel                                                 0m  CC̄=0.0   max=0.0 
   FixSuggestion                                             0m  CC̄=0.0   max=0.0 
   LLMDiagnosticResponse                                     0m  CC̄=0.0   max=0.0 
@@ -221,66 +264,10 @@ CLASSES:
   CommandValidation                                         0m  CC̄=0.0   max=0.0 
 
 D:
-  fixos/cli.py:
-    e: NaturalLanguageGroup,add_common_options,add_shared_options,cli,ask,_handle_natural_command,_validate_result_with_llm,_print_welcome,scan,_run_disk_analysis,_print_quick_issues,fix,handle_disk_cleanup_mode,execute_cleanup_actions,try_llm_fallback_for_failures,token,token_set,token_show,token_clear,config,config_show,config_init,config_set,llm_providers,_example_key,providers,test_llm,orchestrate,_cleanup_flatpak_detailed,_parse_size_to_gb,cleanup_services,rollback,rollback_list,rollback_show,rollback_undo,watch,profile,profile_list,profile_show,quickfix,report,history,main
-    NaturalLanguageGroup
-      resolve_command(2)  CC=6.0
-        → resolve_command(2)  CC=6.0
-    add_common_options(fn)
-    add_shared_options(func)
-    cli(ctx,dry_run,version)
-    ask(prompt,dry_run)
-    _handle_natural_command(prompt,dry_run)
-    _validate_result_with_llm(prompt,cmd_str,result,cfg)
-    _print_welcome()
-    scan(modules,output,show_raw,no_banner,disc,dry_run,interactive,json_output,llm_fallback,profile)
-    _run_disk_analysis(data,json_output,is_fix_mode)
-    _print_quick_issues(data)
-    fix(provider,token,model,no_banner,mode,timeout,modules,no_show_data,output,max_fixes,disc,dry_run,interactive,json_output,llm_fallback)
-    handle_disk_cleanup_mode(disk_analysis,cfg,dry_run,interactive,json_output,llm_fallback)
-    execute_cleanup_actions(actions,cfg,llm_fallback)
-    try_llm_fallback_for_failures(failed_actions,cfg)
-    token()
-    token_set(key,provider,env_file)
-    token_show()
-    token_clear(env_file)
-    config()
-    config_show()
-    config_init(force)
-    config_set(key,value)
-    llm_providers(free)
-    _example_key(provider)
-    providers()
-    test_llm(provider,token,model,no_banner)
-    orchestrate(provider,token,model,no_banner,mode,modules,dry_run,max_iterations,output)
-    _cleanup_flatpak_detailed(scanner,json_output,dry_run)
-    _parse_size_to_gb(size_str)
-    cleanup_services(threshold,services,json_output,cleanup,dry_run,list_only)
-    rollback()
-    rollback_list(limit)
-    rollback_show(session_id)
-    rollback_undo(session_id,last,dry_run)
-    watch(interval,modules,alert_on,max_iterations)
-    profile()
-    profile_list()
-    profile_show(name)
-    quickfix(dry_run,modules)
-    report(output_format,output,modules,profile)
-    history(limit,json_output)
-    main()
-  fixos/agent/hitl.py:
-    e: CmdResult,_timeout,_sep,_print_cmd_preview,_print_cmd_result,_run_cmd,_extract_fixes,_print_action_menu,_ask_user_problem,run_hitl_session,_extract_search_topic
-    CmdResult
-    _timeout(signum,frame)
-    _sep(char,width)
-    _print_cmd_preview(cmd,comment)
-    _print_cmd_result(result)
-    _run_cmd(cmd,comment)
-    _extract_fixes(reply)
-    _print_action_menu(fixes,rem_time,tokens)
-    _ask_user_problem()
-    run_hitl_session(diagnostics,config,show_data)
-    _extract_search_topic(llm_reply)
+  fixos/features/installer.py:
+    e: FeatureInstaller
+    FeatureInstaller  # Safely installs packages using native package manager or oth...
+      __init__(2)  CC=1.0
   fixos/config.py:
     e: FixOsConfig,_load_env_files,detect_provider_from_key,interactive_provider_setup,get_providers_list
     FixOsConfig
@@ -289,24 +276,44 @@ D:
     detect_provider_from_key(key)
     interactive_provider_setup()
     get_providers_list()
-  fixos/agent/autonomous.py:
-    e: FixAction,AgentReport,_timeout_handler,_is_forbidden,_add_sudo,_execute,run_autonomous_session,_parse_agent_json
-    FixAction
-    AgentReport
-      summary(0)  CC=4.0
-    _timeout_handler(signum,frame)
-    _is_forbidden(cmd)
-    _add_sudo(cmd)
-    _execute(cmd)
-    run_autonomous_session(diagnostics,config,show_data,max_fixes)
-    _parse_agent_json(text)
-  fixos/diagnostics/service_scanner.py:
-    e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
-    ServiceType
-    ServiceDataInfo  # Information about service data...
-    ServiceDataScanner  # Scans for large service data directories and allows cleanup...
-      __init__(1)  CC=2.0
-    main()
+  fixos/cli/cleanup_cmd.py:
+    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_parse_size_to_gb
+    cleanup_services(threshold,services,json_output,cleanup,dry_run,list_only)
+    _display_cleanup_summary(plan,threshold)
+    _display_service_item(svc)
+    _execute_safe_cleanup(services,scanner)
+    _display_unsafe_services(services)
+    _cleanup_single_service(service_name,scanner,json_output,dry_run)
+    _cleanup_flatpak_detailed(scanner,json_output,dry_run)
+    _parse_size_to_gb(size_str)
+  fixos/agent/hitl_session.py:
+    e: CmdResult,HITLSession,run_hitl_session
+    CmdResult
+    HITLSession  # Interactive Human-in-the-Loop diagnostic and repair session....
+      __init__(3)  CC=2.0
+        → _setup_timeout(0)  CC=1.0
+    run_hitl_session(diagnostics,config,show_data)
+  fixos/cli/scan_cmd.py:
+    e: scan,_run_disk_analysis,_print_quick_issues
+    scan(modules,output,show_raw,no_banner,disc,dry_run,interactive,json_output,llm_fallback,profile)
+    _run_disk_analysis(data,json_output,is_fix_mode)
+    _print_quick_issues(data)
+  fixos/cli/ask_cmd.py:
+    e: ask,_match_heuristic_command,_format_command,_build_output_dict,_execute_heuristic_command,_execute_with_llm,_handle_natural_command,_validate_result_with_llm
+    ask(prompt,dry_run)
+    _match_heuristic_command(prompt_lower)
+    _format_command(matched_cmd)
+    _build_output_dict(status,prompt,source,command,exit_code,stdout,stderr,llm,reason,message,error)
+    _execute_heuristic_command(cmd_str,prompt,dry_run,cfg)
+    _execute_with_llm(prompt,dry_run,cfg)
+    _handle_natural_command(prompt,dry_run)
+    _validate_result_with_llm(prompt,cmd_str,result,cfg)
+  fixos/cli/fix_cmd.py:
+    e: fix,handle_disk_cleanup_mode,execute_cleanup_actions,try_llm_fallback_for_failures
+    fix(provider,token,model,no_banner,mode,timeout,modules,no_show_data,output,max_fixes,disc,dry_run,interactive,json_output,llm_fallback)
+    handle_disk_cleanup_mode(disk_analysis,cfg,dry_run,interactive,json_output,llm_fallback)
+    execute_cleanup_actions(actions,cfg,llm_fallback)
+    try_llm_fallback_for_failures(failed_actions,cfg)
   fixos/utils/anonymizer.py:
     e: AnonymizationReport,_get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_dict_to_markdown,_format_key_title
     AnonymizationReport  # Raport anonimizacji – co zostało zmaskowane....
@@ -332,6 +339,11 @@ D:
     DiskAnalyzer  # Analyzes disk usage and provides cleanup suggestions...
       __init__(1)  CC=1.0
     main()
+  fixos/diagnostics/service_details.py:
+    e: ServiceDetailsProvider
+    ServiceDetailsProvider  # Provides detailed information about service data....
+      get_details(2)  CC=3.0
+        → _package_cache(1)  CC=5.0
   fixos/orchestrator/orchestrator.py:
     e: _SkipAll,FixOrchestrator
     _SkipAll  # Rzucany gdy user wpisuje 's' – pomija wszystkie komendy bież...
@@ -340,6 +352,9 @@ D:
 Tryby:
 - hitl: każda komen...
       __init__(3)  CC=2.0
+  fixos/cli/report_cmd.py:
+    e: report
+    report(output_format,output,modules,profile)
   fixos/utils/terminal.py:
     e: _C,colorize,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap
     _C  # No-op stubs – kept so existing callers don't break at import...
@@ -374,6 +389,30 @@ Tryby:
     FlatpakAnalyzer  # Advanced analyzer for Flatpak cleanup decisions...
       __init__(0)  CC=1.0
     analyze_flatpak_for_cleanup()
+  fixos/features/__init__.py:
+    e: SystemInfo,SystemDetector
+    SystemInfo  # Complete system information snapshot....
+    SystemDetector  # Detects system parameters....
+      detect(0)  CC=3.0
+        → _detect_id_like(0)  CC=4.0
+        → _detect_de(0)  CC=15.0  !
+        → _detect_display_server(0)  CC=3.0
+        → _detect_gpu_vendor(0)  CC=13.0
+        → _detect_gpu_model(0)  CC=5.0
+        → _detect_pkg_manager(0)  CC=3.0
+        → _get_installed_packages(1)  CC=7.0
+        → _get_installed_flatpaks(0)  CC=4.0
+        → _detect_os_family(0)  CC=4.0
+        → _detect_distro(0)  CC=4.0
+        → _detect_distro_version(0)  CC=4.0
+  fixos/cli/features_cmd.py:
+    e: features,features_audit,features_install,features_profiles,features_system,_interactive_profile_select
+    features()
+    features_audit(profile,json_output)
+    features_install(profile,dry_run,yes,category)
+    features_profiles()
+    features_system()
+    _interactive_profile_select()
   fixos/providers/llm.py:
     e: LLMError,LLMClient
     LLMError  # Błąd komunikacji z LLM....
@@ -390,6 +429,10 @@ Tryby:
     diagnose_security()
     diagnose_resources()
     get_full_diagnostics(modules,progress_callback)
+  fixos/diagnostics/service_cleanup.py:
+    e: ServiceCleaner
+    ServiceCleaner  # Plans and executes cleanup of service data....
+      __init__(1)  CC=1.0
   fixos/plugins/builtin/resources.py:
     e: Plugin
     Plugin
@@ -399,6 +442,9 @@ Tryby:
         → _check_top_processes(0)  CC=2.0
         → _check_zombies(0)  CC=3.0
         → _check_swap(0)  CC=2.0
+  fixos/cli/orchestrate_cmd.py:
+    e: orchestrate
+    orchestrate(provider,token,model,no_banner,mode,modules,dry_run,max_iterations,output)
   fixos/providers/llm_analyzer.py:
     e: LLMAnalysis,LLMAnalyzer,main
     LLMAnalysis  # Result of LLM analysis...
@@ -415,13 +461,9 @@ Tryby:
     e: WatchDaemon
     WatchDaemon  # Daemon wykonujący cykliczną diagnostykę z powiadomieniami....
       __init__(4)  CC=1.0
-  fixos/plugins/builtin/disk.py:
-    e: Plugin
-    Plugin
-      diagnose(0)  CC=12.0
-        → _check_usage(0)  CC=6.0
-        → _check_inodes(0)  CC=6.0
-        → _check_readonly(0)  CC=5.0
+  fixos/cli/quickfix_cmd.py:
+    e: quickfix
+    quickfix(dry_run,modules)
   fixos/plugins/builtin/hardware.py:
     e: Plugin
     Plugin
@@ -431,6 +473,13 @@ Tryby:
         → _check_touchpad(0)  CC=2.0
         → _check_camera(0)  CC=3.0
         → _check_dmi(0)  CC=3.0
+  fixos/plugins/builtin/disk.py:
+    e: Plugin
+    Plugin
+      diagnose(0)  CC=12.0
+        → _check_usage(0)  CC=6.0
+        → _check_inodes(0)  CC=6.0
+        → _check_readonly(0)  CC=5.0
   fixos/orchestrator/executor.py:
     e: DangerousCommandError,CommandTimeoutError,ExecutionResult,CommandExecutor
     DangerousCommandError
@@ -444,6 +493,12 @@ Tryby:
     CommandExecutor  # Bezpieczny executor komend z:
 - walidacją niebezpiecznych wz...
       __init__(3)  CC=1.0
+  fixos/features/auditor.py:
+    e: AuditResult,FeatureAuditor
+    AuditResult  # Result of feature audit - what's installed, what's missing....
+      to_dict(0)  CC=4.0
+    FeatureAuditor  # Compares installed packages with profile requirements....
+      __init__(2)  CC=1.0
   fixos/plugins/builtin/audio.py:
     e: Plugin
     Plugin
@@ -460,6 +515,11 @@ Tryby:
         → _check_ffmpegthumbnailer(0)  CC=2.0
         → _check_totem(0)  CC=2.0
         → _check_gstreamer(0)  CC=4.0
+  fixos/cli/provider_cmd.py:
+    e: llm_providers,providers,test_llm
+    llm_providers(free)
+    providers()
+    test_llm(provider,token,model,no_banner)
   fixos/utils/web_search.py:
     e: SearchResult,_http_get,search_fedora_bugzilla,search_ask_fedora,search_arch_wiki,search_github_issues,search_serpapi,search_ddg,search_all,format_results_for_llm
     SearchResult
@@ -484,6 +544,50 @@ Tryby:
     _cmd_exists(cmd)
     setup_signal_timeout(seconds,handler)
     cancel_signal_timeout()
+  fixos/agent/autonomous_session.py:
+    e: FixAction,AgentReport,AutonomousSession,run_autonomous_session
+    FixAction
+    AgentReport
+      summary(0)  CC=4.0
+    AutonomousSession  # Self-directed autonomous diagnostic and repair session....
+      __init__(4)  CC=1.0
+        → _setup_timeout(0)  CC=1.0
+    run_autonomous_session(diagnostics,config,show_data,max_fixes)
+  fixos/features/renderer.py:
+    e: FeatureRenderer
+    FeatureRenderer  # Renders audit results for terminal display....
+      render_audit(0)  CC=8.0
+        → _get_source_info(1)  CC=7.0
+  fixos/features/profiles.py:
+    e: UserProfile
+    UserProfile  # A user profile defining what packages/features they want....
+      load(2)  CC=3.0
+  fixos/features/catalog.py:
+    e: PackageInfo,PackageCategory,PackageCatalog
+    PackageInfo  # Information about a single package....
+      get_distro_name(1)  CC=2.0
+    PackageCategory  # A category of packages (e.g., core_utils, dev_tools)....
+    PackageCatalog  # Manages the package database....
+      __init__(0)  CC=1.0
+  fixos/diagnostics/service_scanner.py:
+    e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
+    ServiceType  # Service types that can be scanned and cleaned....
+    ServiceDataInfo  # Information about service data....
+    ServiceDataScanner  # Scans for large service data directories and allows cleanup....
+      __init__(1)  CC=2.0
+    main()
+  fixos/cli/rollback_cmd.py:
+    e: rollback,rollback_list,rollback_show,rollback_undo
+    rollback()
+    rollback_list(limit)
+    rollback_show(session_id)
+    rollback_undo(session_id,last,dry_run)
+  fixos/cli/token_cmd.py:
+    e: token,token_set,token_show,token_clear
+    token()
+    token_set(key,provider,env_file)
+    token_show()
+    token_clear(env_file)
   fixos/plugins/registry.py:
     e: PluginRegistry
     PluginRegistry  # Registry for diagnostic plugins with autodiscovery....
@@ -504,15 +608,44 @@ Tryby:
     get_top_processes(n)
     get_fedora_specific()
     get_full_diagnostics()
+  fixos/cli/main.py:
+    e: cli,_print_welcome,main
+    cli(ctx,dry_run,version)
+    _print_welcome()
+    main()
+  fixos/cli/shared.py:
+    e: NaturalLanguageGroup,add_common_options,add_shared_options
+    NaturalLanguageGroup  # Click group that routes unknown commands to 'ask' command....
+      resolve_command(2)  CC=6.0
+        → resolve_command(2)  CC=6.0
+    add_common_options(fn)
+    add_shared_options(func)
   fixos/anonymizer.py:
     e: get_sensitive_values,anonymize
     get_sensitive_values()
     anonymize(data_str)
+  fixos/cli/history_cmd.py:
+    e: history
+    history(limit,json_output)
+  fixos/cli/profile_cmd.py:
+    e: profile,profile_list,profile_show
+    profile()
+    profile_list()
+    profile_show(name)
+  fixos/cli/config_cmd.py:
+    e: config,config_show,config_init,config_set
+    config()
+    config_show()
+    config_init(force)
+    config_set(key,value)
   fixos/profiles/__init__.py:
     e: Profile
     Profile  # Profil diagnostyczny z zestawem modułów i progów....
       load(1)  CC=3.0
         → list_available(0)  CC=4.0
+  fixos/cli/watch_cmd.py:
+    e: watch
+    watch(interval,modules,alert_on,max_iterations)
   fixos/plugins/base.py:
     e: Severity,Finding,DiagnosticResult,DiagnosticPlugin
     Severity  # Severity level for diagnostic findings....
@@ -523,11 +656,18 @@ Tryby:
 
 Aby stworz...
       diagnose(0)  CC=1.0
+  fixos/agent/hitl.py:
+    e: run_hitl_session
+    run_hitl_session(diagnostics,config,show_data)
+  fixos/agent/autonomous.py:
+    e: run_autonomous_session
+    run_autonomous_session(diagnostics,config,show_data,max_fixes)
   fixos/utils/timeout.py:
     e: SessionTimeout,timeout_handler
     SessionTimeout  # Wyjątek rzucany po przekroczeniu limitu czasu sesji....
     timeout_handler(signum,frame)
   setup.py:
+  fixos/cli/__init__.py:
   fixos/__init__.py:
   fixos/diagnostics/__init__.py:
   fixos/agent/__init__.py:

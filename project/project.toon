@@ -1,20 +1,48 @@
-# fixOS | 64f 13798L | python:64
+# fixOS | 92f 15314L | python:92
 # Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
-M[64]:
+M[92]:
   docs/examples/advanced_usage.py,6
   docs/examples/quickstart.py,7
   fixos/__init__.py,2
-  fixos/agent/__init__.py,3
-  fixos/agent/autonomous.py,280
-  fixos/agent/hitl.py,388
+  fixos/agent/__init__.py,21
+  fixos/agent/autonomous.py,42
+  fixos/agent/autonomous_session.py,361
+  fixos/agent/hitl.py,29
+  fixos/agent/hitl_session.py,436
   fixos/anonymizer.py,64
-  fixos/cli.py,1778
+  fixos/cli.py,78
+  fixos/cli/__init__.py,6
+  fixos/cli/ask_cmd.py,277
+  fixos/cli/cleanup_cmd.py,290
+  fixos/cli/config_cmd.py,56
+  fixos/cli/features_cmd.py,135
+  fixos/cli/fix_cmd.py,219
+  fixos/cli/history_cmd.py,42
+  fixos/cli/main.py,137
+  fixos/cli/orchestrate_cmd.py,102
+  fixos/cli/profile_cmd.py,49
+  fixos/cli/provider_cmd.py,218
+  fixos/cli/quickfix_cmd.py,66
+  fixos/cli/report_cmd.py,103
+  fixos/cli/rollback_cmd.py,76
+  fixos/cli/scan_cmd.py,154
+  fixos/cli/shared.py,53
+  fixos/cli/token_cmd.py,93
+  fixos/cli/watch_cmd.py,43
   fixos/config.py,355
   fixos/diagnostics/__init__.py,2
   fixos/diagnostics/disk_analyzer.py,353
   fixos/diagnostics/flatpak_analyzer.py,275
-  fixos/diagnostics/service_scanner.py,821
+  fixos/diagnostics/service_cleanup.py,273
+  fixos/diagnostics/service_details.py,197
+  fixos/diagnostics/service_scanner.py,226
   fixos/diagnostics/system_checks.py,383
+  fixos/features/__init__.py,229
+  fixos/features/auditor.py,92
+  fixos/features/catalog.py,93
+  fixos/features/installer.py,154
+  fixos/features/profiles.py,70
+  fixos/features/renderer.py,94
   fixos/fixes/__init__.py,3
   fixos/interactive/__init__.py,0
   fixos/interactive/cleanup_planner.py,344
@@ -67,45 +95,140 @@ M[64]:
   tests/unit/test_orchestrator.py,245
 D:
   fixos/agent/autonomous.py:
-    i: re,signal,subprocess,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.anonymize
-    e: FORBIDDEN_COMMANDS,SUDO_PREFIXES,SYSTEM_PROMPT_AUTONOMOUS,FixAction,AgentReport,run_autonomous_session
+    i: autonomous_session
+    e: run_autonomous_session
+    run_autonomous_session(diagnostics:dict;config;show_data:bool=True;max_fixes:int=10)
+  fixos/agent/autonomous_session.py:
+    i: re,signal,subprocess,time,dataclasses.{dataclass,field},typing.{Any,Dict,List,Optional}
+    e: FORBIDDEN_COMMANDS,SUDO_PREFIXES,SYSTEM_PROMPT_AUTONOMOUS,FixAction,AgentReport,AutonomousSession,run_autonomous_session
     FixAction: 
     AgentReport: summary(0)
-    _timeout_handler(signum;frame)
-    _is_forbidden(cmd:str)->Optional[str]
-    _add_sudo(cmd:str)->str
-    _execute(cmd:str)->tuple[bool, str]
-    run_autonomous_session(diagnostics:dict;config:FixOsConfig;show_data:bool=True;max_fixes:int=10)
-    _parse_agent_json(text:str)->Optional[dict]
+    AutonomousSession: __init__(4),_setup_timeout(0),_clear_timeout(0),_confirm_start(0),_initialize_messages(0)  # Self-directed autonomous diagnostic a...
+    run_autonomous_session(diagnostics:Dict[str;Any];config:FixOsConfig;show_data:bool=True;max_fixes:int=10)->AgentReport
   fixos/agent/hitl.py:
-    i: re,sys,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.{anonymize,display_anonymized_preview}
-    e: SYSTEM_PROMPT,CmdResult,run_hitl_session
+    i: hitl_session.{CmdResult,HITLSession,SYSTEM_PROMPT}
+    e: run_hitl_session
+    run_hitl_session(diagnostics:dict;config;show_data:bool=True)
+  fixos/agent/hitl_session.py:
+    i: re,sys,time,dataclasses.{dataclass,field},typing.{Any,Dict,List,Optional,Tuple}
+    e: SYSTEM_PROMPT,CmdResult,HITLSession,run_hitl_session
     CmdResult: 
-    _timeout(signum;frame)
-    _sep(char:str='─';width:int=65)
-    _print_cmd_preview(cmd:str;comment:str='')
-    _print_cmd_result(result:CmdResult)
-    _run_cmd(cmd:str;comment:str='')->CmdResult
-    _extract_fixes(reply:str)->list[tuple[str, str]]
-    _print_action_menu(fixes:list[tuple[str;str]];rem_time:str;tokens:int)
-    _ask_user_problem()->str
+    HITLSession: __init__(3),_setup_timeout(0),_clear_timeout(0),remaining(0),fmt_time(1)  # Interactive Human-in-the-Loop diagnos...
+    run_hitl_session(diagnostics:Dict[str;Any];config:FixOsConfig;show_data:bool=True)
   fixos/anonymizer.py:
     i: re,socket,getpass,os
     e: get_sensitive_values,anonymize
     get_sensitive_values()->dict
     anonymize(data_str:str)->str
-  fixos/cli.py:
-    i: json,os,sys,click,config.FixOsConfig,pathlib.Path,typing.{Any,Dict,List,Optional}
-    e: BANNER,COMMON_OPTIONS,add_common_options,add_shared_options,NaturalLanguageGroup,cli,ask,scan
-    NaturalLanguageGroup: resolve_command(2)
-    add_common_options(fn)
-    add_shared_options(func)
-    cli(ctx;dry_run;version)
+  fixos/cli/ask_cmd.py:
+    i: click
+    e: ask,_ACTION_KEYWORDS
     ask(prompt;dry_run)
+    _match_heuristic_command(prompt_lower:str)
+    _format_command(matched_cmd)->str
+    _build_output_dict(status:str;prompt:str;source:str;command:str;exit_code:int=0;stdout:str='';...+1)->dict
+    _execute_heuristic_command(cmd_str:str;prompt:str;dry_run:bool;cfg)->None
+    _execute_with_llm(prompt:str;dry_run:bool;cfg)->None
     _handle_natural_command(prompt:str;dry_run:bool=False)
     _validate_result_with_llm(prompt:str;cmd_str:str;result;cfg)
+  fixos/cli/cleanup_cmd.py:
+    i: click,subprocess,fixos.cli.shared.BANNER,fixos.config.FixOsConfig,fixos.diagnostics.service_scanner.ServiceDataScanner
+    e: cleanup_services
+    cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only)
+    _display_cleanup_summary(plan:dict;threshold:int)->None
+    _display_service_item(svc:dict)->None
+    _execute_safe_cleanup(services:list;scanner)->float
+    _display_unsafe_services(services:list)->None
+    _cleanup_single_service(service_name:str;scanner;json_output:bool;dry_run:bool)->None
+    _cleanup_flatpak_detailed(scanner;json_output:bool;dry_run:bool)
+    _parse_size_to_gb(size_str:str)->float
+  fixos/cli/config_cmd.py:
+    i: click
+    e: config,config_show,config_init,config_set
+    config()
+    config_show()
+    config_init(force)
+    config_set(key;value)
+  fixos/cli/features_cmd.py:
+    i: json,click,features.SystemDetector,features.auditor.FeatureAuditor,features.catalog.PackageCatalog,features.installer.FeatureInstaller,features.profiles.UserProfile,features.renderer.FeatureRenderer,pathlib.Path,typing.Optional
+    e: features,features_audit,features_install,features_profiles,features_system
+    features()
+    features_audit(profile:Optional[str];json_output:bool)
+    features_install(profile:str;dry_run:bool;yes:bool;category:tuple)
+    features_profiles()
+    features_system()
+    _interactive_profile_select()->str
+  fixos/cli/fix_cmd.py:
+    i: click,json,fixos.cli.shared.{BANNER,add_common_options,add_shared_options},fixos.config.FixOsConfig,pathlib.Path,typing.{Any,Dict,List}
+    e: fix,handle_disk_cleanup_mode,execute_cleanup_actions,try_llm_fallback_for_failures
+    fix(provider;token;model;no_banner;mode;timeout;...+1)
+    handle_disk_cleanup_mode(disk_analysis:Dict[str;Any];cfg;dry_run:bool;interactive:bool;json_output:bool;llm_fallback:bool)
+    execute_cleanup_actions(actions:List[Dict];cfg;llm_fallback:bool)
+    try_llm_fallback_for_failures(failed_actions;cfg)
+  fixos/cli/history_cmd.py:
+    i: click
+    e: history
+    history(limit;json_output)
+  fixos/cli/main.py:
+    i: click,fixos.cli.history_cmd.history,fixos.cli.profile_cmd.profile,fixos.cli.quickfix_cmd.quickfix,fixos.cli.report_cmd.report,fixos.cli.rollback_cmd.rollback,fixos.cli.shared.{BANNER,NaturalLanguageGroup},fixos.cli.watch_cmd.watch,fixos.config.FixOsConfig
+    e: cli,main
+    cli(ctx;dry_run;version)
     _print_welcome()
+    main()
+  fixos/cli/orchestrate_cmd.py:
+    i: click,json,fixos.cli.shared.{BANNER,add_common_options},fixos.config.FixOsConfig,pathlib.Path
+    e: orchestrate
+    orchestrate(provider;token;model;no_banner;mode;modules;...+1)
+  fixos/cli/profile_cmd.py:
+    i: click
+    e: profile,profile_list,profile_show
+    profile()
+    profile_list()
+    profile_show(name)
+  fixos/cli/provider_cmd.py:
+    i: click
+    e: PROVIDERS_INFO,llm_providers,providers,test_llm
+    llm_providers(free)
+    providers()
+    test_llm(provider;token;model;no_banner)
+  fixos/cli/quickfix_cmd.py:
+    i: click,subprocess,fixos.plugins.base.Severity
+    e: quickfix
+    quickfix(dry_run;modules)
+  fixos/cli/report_cmd.py:
+    i: click,pathlib.Path
+    e: report
+    report(output_format;output;modules;profile)
+  fixos/cli/rollback_cmd.py:
+    i: click,fixos.orchestrator.rollback.RollbackSession
+    e: rollback,rollback_list,rollback_show,rollback_undo
+    rollback()
+    rollback_list(limit)
+    rollback_show(session_id)
+    rollback_undo(session_id;last;dry_run)
+  fixos/cli/scan_cmd.py:
+    i: click,fixos.cli.shared.{BANNER,add_shared_options},pathlib.Path
+    e: scan
     scan(modules;output;show_raw;no_banner;disc;dry_run;...+1)
+    _run_disk_analysis(data:dict;json_output:bool;is_fix_mode:bool=False)
+    _print_quick_issues(data:dict)
+  fixos/cli/shared.py:
+    i: click
+    e: BANNER,COMMON_OPTIONS,add_common_options,add_shared_options,NaturalLanguageGroup
+    NaturalLanguageGroup: resolve_command(2)  # Click group that routes unknown comma...
+    add_common_options(fn)
+    add_shared_options(func)
+  fixos/cli/token_cmd.py:
+    i: click,os,pathlib.Path
+    e: token,token_set,token_show,token_clear
+    token()
+    token_set(key;provider;env_file)
+    token_show()
+    token_clear(env_file)
+  fixos/cli/watch_cmd.py:
+    i: click,fixos.plugins.base.Severity
+    e: watch
+    watch(interval;modules;alert_on;max_iterations)
   fixos/config.py:
     i: os,sys,dataclasses.{dataclass,field},dotenv.load_dotenv,pathlib.Path,typing.Optional
     e: ENV_SEARCH_PATHS,PROVIDER_DEFAULTS,FixOsConfig,KEY_PREFIXES,detect_provider_from_key,interactive_provider_setup,get_providers_list
@@ -126,11 +249,19 @@ D:
     FlatpakItemInfo: to_dict(0)  # Detailed info about a Flatpak item (a...
     FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1)  # Advanced analyzer for Flatpak cleanup...
     analyze_flatpak_for_cleanup()->Dict[str, Any]
+  fixos/diagnostics/service_cleanup.py:
+    i: subprocess,typing.{Any,Dict,List}
+    e: ServiceCleaner
+    ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(1),is_safe_cleanup(1)  # Plans and executes cleanup of service...
+  fixos/diagnostics/service_details.py:
+    i: subprocess,os,flatpak_analyzer.FlatpakAnalyzer,typing.{Any,Dict}
+    e: ServiceDetailsProvider
+    ServiceDetailsProvider: get_details(2),_docker(0),_ollama(0),_conda(0),_package_cache(1)  # Provides detailed information about s...
   fixos/diagnostics/service_scanner.py:
-    i: os,shutil,json,subprocess,pathlib.Path,typing.{Any,Dict,List,Optional,Tuple}
+    i: os,glob,json,dataclasses.{dataclass,field},pathlib.Path,typing.{Any,Dict,List,Optional}
     e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
-    ServiceType: 
-    ServiceDataInfo:   # Information about service data
+    ServiceType:   # Service types that can be scanned and...
+    ServiceDataInfo:   # Information about service data.
     ServiceDataScanner: __init__(1),scan_all_services(0),scan_service(1),_analyze_service_path(2),_get_path_size_mb(1)  # Scans for large service data director...
     main()
   fixos/diagnostics/system_checks.py:
@@ -144,6 +275,34 @@ D:
     diagnose_system()->dict[str, Any]
     diagnose_security()->dict[str, Any]
     diagnose_resources()->dict[str, Any]
+  fixos/features/__init__.py:
+    i: platform,subprocess,shutil,os,dataclasses.{dataclass,field},pathlib.Path,typing.{List,Optional,Set}
+    e: SystemInfo,SystemDetector
+    SystemInfo:   # Complete system information snapshot.
+    SystemDetector: detect(0),_detect_os_family(0),_detect_distro(0),_detect_distro_version(0),_detect_id_like(0)  # Detects system parameters.
+  fixos/features/auditor.py:
+    i: shutil,SystemInfo,catalog.{PackageCatalog,PackageInfo},dataclasses.{dataclass,field},profiles.UserProfile,typing.{List,Set}
+    e: AuditResult,FeatureAuditor
+    AuditResult: completion_pct(0),total_packages(0),to_dict(0)  # Result of feature audit - what's inst...
+    FeatureAuditor: __init__(2),audit(1),_check_conditions(1),_is_installed(1)  # Compares installed packages with prof...
+  fixos/features/catalog.py:
+    i: yaml,dataclasses.{dataclass,field},pathlib.Path,typing.{Any,Dict,List,Optional}
+    e: PackageInfo,PackageCategory,PackageCatalog
+    PackageInfo: get_distro_name(1),is_available_on(1)  # Information about a single package.
+    PackageCategory:   # A category of packages (e.g., core_ut...
+    PackageCatalog: __init__(0),load(1),get_package(1),get_packages_by_category(1),list_categories(0)  # Manages the package database.
+  fixos/features/installer.py:
+    i: subprocess,shutil,SystemInfo,catalog.PackageInfo,pathlib.Path,typing.{List,Optional}
+    e: FeatureInstaller
+    FeatureInstaller: __init__(2),install(1),_install_package(1),_install_repo(1),_install_native(1)  # Safely installs packages using native...
+  fixos/features/profiles.py:
+    i: yaml,catalog.{PackageCatalog,PackageInfo},dataclasses.{dataclass,field},pathlib.Path,typing.{List,Optional,Set}
+    e: UserProfile
+    UserProfile: load(2),list_available(1),resolve_packages(2),to_dict(0)  # A user profile defining what packages...
+  fixos/features/renderer.py:
+    i: auditor.AuditResult,catalog.PackageInfo,rich.console.Console,rich.panel.Panel,rich.table.Table,rich.text.Text,typing.List
+    e: FeatureRenderer
+    FeatureRenderer: render_audit(1),_get_source_info(2),render_package_list(2),render_system_info(1)  # Renders audit results for terminal di...
   fixos/interactive/cleanup_planner.py:
     i: json,dataclasses.dataclass,enum.Enum,typing.{Any,Dict,List,Tuple}
     e: Priority,CleanupType,CleanupAction,CleanupPlanner,main

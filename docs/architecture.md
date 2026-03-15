@@ -1,6 +1,6 @@
 # fixOS — Architecture
 
-> 48 modules | 291 functions | 52 classes
+> 75 modules | 379 functions | 66 classes
 
 ## How It Works
 
@@ -38,15 +38,17 @@ Source files  ──►  code2llm (tree-sitter + AST)  ──►  AnalysisResult
 
 ```mermaid
 graph TD
-    Other["Other<br/>35 modules"]
-    API___CLI["API / CLI<br/>1 modules"]
+    Other["Other<br/>44 modules"]
+    API___CLI["API / CLI<br/>18 modules"]
     Config["Config<br/>1 modules"]
     Analysis["Analysis<br/>4 modules"]
+    Export___Output["Export / Output<br/>1 modules"]
     Core["Core<br/>7 modules"]
     Other --> API___CLI
     API___CLI --> Config
     Config --> Analysis
-    Analysis --> Core
+    Analysis --> Export___Output
+    Export___Output --> Core
 ```
 
 ### Other
@@ -56,10 +58,19 @@ graph TD
 - `fixos`
 - `fixos.agent`
 - `fixos.agent.autonomous`
+- `fixos.agent.autonomous_session`
 - `fixos.agent.hitl`
+- `fixos.agent.hitl_session`
 - `fixos.anonymizer`
 - `fixos.diagnostics`
+- `fixos.diagnostics.service_cleanup`
+- `fixos.diagnostics.service_details`
 - `fixos.diagnostics.system_checks`
+- `fixos.features`
+- `fixos.features.auditor`
+- `fixos.features.catalog`
+- `fixos.features.installer`
+- `fixos.features.profiles`
 - `fixos.fixes`
 - `fixos.interactive`
 - `fixos.interactive.cleanup_planner`
@@ -90,6 +101,23 @@ graph TD
 ### API / CLI
 
 - `fixos.cli`
+- `fixos.cli.ask_cmd`
+- `fixos.cli.cleanup_cmd`
+- `fixos.cli.config_cmd`
+- `fixos.cli.features_cmd`
+- `fixos.cli.fix_cmd`
+- `fixos.cli.history_cmd`
+- `fixos.cli.main`
+- `fixos.cli.orchestrate_cmd`
+- `fixos.cli.profile_cmd`
+- `fixos.cli.provider_cmd`
+- `fixos.cli.quickfix_cmd`
+- `fixos.cli.report_cmd`
+- `fixos.cli.rollback_cmd`
+- `fixos.cli.scan_cmd`
+- `fixos.cli.shared`
+- `fixos.cli.token_cmd`
+- `fixos.cli.watch_cmd`
 
 ### Config
 
@@ -101,6 +129,10 @@ graph TD
 - `fixos.diagnostics.flatpak_analyzer`
 - `fixos.diagnostics.service_scanner`
 - `fixos.providers.llm_analyzer`
+
+### Export / Output
+
+- `fixos.features.renderer`
 
 ### Core
 
@@ -123,15 +155,26 @@ graph LR
 
 ```mermaid
 classDiagram
-    class ServiceDataScanner {
-        -__init__(self, threshold_mb) None
-        +scan_all_services(self) None
-        +scan_service(self, service_type) None
-        -_analyze_service_path(self, service_type, path) None
-        -_get_path_size_mb(self, path) None
-        -_get_service_details(self, service_type, path) None
-        -_get_conda_details(self) None
-        -_get_docker_details(self) None
+    class AutonomousSession {
+        -__init__(self, diagnostics, config) None
+        -_setup_timeout(self) None
+        -_clear_timeout(self) None
+        -_confirm_start(self) None
+        -_initialize_messages(self) None
+        -_get_remaining_time(self) None
+        -_check_timeout(self) None
+        -_query_llm(self) None
+        ... +12 more
+    }
+    class HITLSession {
+        -__init__(self, diagnostics, config) None
+        -_setup_timeout(self) None
+        -_clear_timeout(self) None
+        +remaining(self) None
+        +fmt_time(s) None
+        -_initialize_messages(self) None
+        -_print_header(self) None
+        -_extract_fixes(reply) None
         ... +11 more
     }
     class DiskAnalyzer {
@@ -144,6 +187,28 @@ classDiagram
         +get_temp_dirs(self, path, max_dirs) None
         +suggest_cleanup_actions(self, path) None
         ... +6 more
+    }
+    class SystemDetector {
+        +detect(self) None
+        -_detect_os_family(self) None
+        -_detect_distro(self) None
+        -_detect_distro_version(self) None
+        -_detect_id_like(self) None
+        -_detect_de(self) None
+        -_detect_display_server(self) None
+        -_detect_gpu_vendor(self) None
+        ... +4 more
+    }
+    class FeatureInstaller {
+        -__init__(self, system, dry_run) None
+        +install(self, packages) None
+        -_install_package(self, pkg) None
+        -_install_repo(self, pkg) None
+        -_install_native(self, packages) None
+        -_install_flatpak(self, app_id) None
+        -_install_pip(self, package) None
+        -_install_cargo(self, package) None
+        ... +3 more
     }
     class FixOrchestrator {
         -__init__(self, config, executor) None
@@ -200,6 +265,16 @@ classDiagram
         +render_tree(self) None
         ... +1 more
     }
+    class ServiceCleaner {
+        -__init__(self, scanner) None
+        +get_cleanup_plan(self, selected_services) None
+        +cleanup_service(self, service_type, dry_run) None
+        -_service_to_dict(service) None
+        +is_safe_cleanup(service_type) None
+        +get_service_description(service_type) None
+        +get_cleanup_command(service_type, path) None
+        +get_preview_command(service_type, path) None
+    }
     class CommandExecutor {
         -__init__(self, default_timeout, require_confirmation) None
         +is_dangerous(self, command) None
@@ -210,6 +285,24 @@ classDiagram
         +execute_sync(self, command, timeout) None
         +execute(self, command, timeout) None
     }
+    class ServiceDetailsProvider {
+        +get_details(self, service_type, path) None
+        -_docker(self) None
+        -_ollama(self) None
+        -_conda(self) None
+        -_package_cache(self, path) None
+        -_flatpak(self) None
+        -_parse_size_bytes(size_str) None
+    }
+    class ServiceDataScanner {
+        -__init__(self, threshold_mb) None
+        +scan_all_services(self) None
+        +scan_service(self, service_type) None
+        -_analyze_service_path(self, service_type, path) None
+        -_get_path_size_mb(self, path) None
+        +get_cleanup_plan(self, selected_services) None
+        +cleanup_service(self, service_type, dry_run) None
+    }
     class LLMClient {
         -__init__(self, config) None
         +chat(self, messages) None
@@ -218,54 +311,6 @@ classDiagram
         +chat_structured(self, messages, response_model) None
         -_extract_json(text) None
         +ping(self) None
-    }
-    class LLMAnalyzer {
-        -__init__(self, llm_client) None
-        +analyze_disk_issues(self, disk_data) None
-        +analyze_failed_action(self, action, error) None
-        +analyze_complex_pattern(self, pattern_data) None
-        -_sanitize_suggestion(self, suggestion) None
-        -_create_fallback_analysis(self, error_message) None
-        +enhance_heuristics_with_llm(self, heuristic_suggestions, disk_data) None
-    }
-    class Plugin {
-        +diagnose(self) None
-        -_check_cpu(self) None
-        -_check_ram(self) None
-        -_check_top_processes(self) None
-        -_check_zombies(self) None
-        -_check_swap(self) None
-    }
-    class RollbackSession {
-        +record(self, command, rollback_cmd) None
-        +get_rollback_commands(self) None
-        +rollback_last(self, n, dry_run) None
-        -_save(self) None
-        +load(cls, session_id) None
-        +list_sessions(cls, limit) None
-    }
-    class Plugin {
-        +diagnose(self) None
-        -_check_firewall(self) None
-        -_check_selinux(self) None
-        -_check_open_ports(self) None
-        -_check_ssh(self) None
-        -_check_fail2ban(self) None
-    }
-    class Plugin {
-        +diagnose(self) None
-        -_check_gpu(self) None
-        -_check_battery(self) None
-        -_check_touchpad(self) None
-        -_check_camera(self) None
-        -_check_dmi(self) None
-    }
-    class WatchDaemon {
-        -__init__(self, interval, modules) None
-        +run(self) None
-        +stop(self) None
-        -_check_for_new_issues(self, results) None
-        -_notify(message) None
     }
 ```
 
@@ -284,55 +329,63 @@ classDiagram
 - `fixos.diagnostics.system_checks.diagnose_security` — Diagnostyka bezpieczeństwa systemu i sieci.
 - `fixos.diagnostics.system_checks.diagnose_resources` — Diagnostyka zasobów systemowych.
 - `fixos.diagnostics.system_checks.get_full_diagnostics` — Zbiera diagnostykę z wybranych modułów.
-- `fixos.cli.add_common_options`
-- `fixos.cli.add_shared_options` — Shared options for both scan and fix commands
-- `fixos.cli.ask` — Wykonaj polecenie w języku naturalnym.
-- `fixos.cli.scan` — Przeprowadza diagnostykę systemu.
-- `fixos.cli.fix` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
-- `fixos.cli.token` — Zarządzanie tokenami API LLM.
-- `fixos.cli.token_set` — Zapisuje token API do pliku .env.
-- `fixos.cli.token_show` — Pokazuje aktualnie skonfigurowany token (zamaskowany).
-- `fixos.cli.token_clear` — Usuwa token z pliku .env.
-- `fixos.cli.config` — Zarządzanie konfiguracją fixos.
-- `fixos.cli.config_show` — Wyświetla aktualną konfigurację.
-- `fixos.cli.config_init` — Tworzy plik .env na podstawie szablonu .env.example.
-- `fixos.cli.config_set` — Ustawia wartość w pliku .env.
-- `fixos.cli.llm_providers` — Lista providerów LLM z linkami do generowania kluczy API.
-- `fixos.cli.providers` — Lista dostępnych providerów LLM (skrócona). Użyj 'fixos llm' po więcej.
-- `fixos.cli.test_llm` — Testuje połączenie z wybranym providerem LLM.
-- `fixos.cli.orchestrate` — Orkiestracja napraw z grafem kaskadowych problemów.
-- `fixos.cli.cleanup_services` — Skanuje i czyści dane usług przekraczające próg.
-- `fixos.cli.rollback` — Zarządzanie cofaniem operacji fixOS.
-- `fixos.cli.rollback_list` — Pokaż historię sesji naprawczych.
-- `fixos.cli.rollback_show` — Pokaż szczegóły sesji rollback.
-- `fixos.cli.rollback_undo` — Cofnij operacje z podanej sesji.
-- `fixos.cli.watch` — Monitorowanie systemu w tle z powiadomieniami.
-- `fixos.cli.profile` — Zarządzanie profilami diagnostycznymi.
-- `fixos.cli.profile_list` — Pokaż dostępne profile diagnostyczne.
-- `fixos.cli.profile_show` — Pokaż szczegóły profilu diagnostycznego.
-- `fixos.cli.quickfix` — Natychmiastowe naprawy bez API — baza znanych bugów.
-- `fixos.cli.report` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
-- `fixos.cli.history` — Historia napraw fixOS.
-- `fixos.cli.main`
 - `fixos.diagnostics.disk_analyzer.main` — Test the disk analyzer
-- `fixos.config.detect_provider_from_key` — Wykrywa provider na podstawie prefiksu klucza API.
+- `fixos.config.get_providers_list` — Zwraca listę providerów jako listę słowników.
 - `fixos.diagnostics.flatpak_analyzer.analyze_flatpak_for_cleanup` — Convenience function to run full Flatpak analysis
+- `fixos.agent.hitl_session.run_hitl_session` — Run interactive HITL session (backward compatible wrapper).
+- `fixos.diagnostics.service_scanner.main` — Test the service data scanner.
+- `fixos.agent.autonomous_session.run_autonomous_session` — Run autonomous session (backward compatible wrapper).
+- `fixos.cli.profile_cmd.profile` — Zarządzanie profilami diagnostycznymi.
+- `fixos.cli.profile_cmd.profile_list` — Pokaż dostępne profile diagnostyczne.
+- `fixos.cli.profile_cmd.profile_show` — Pokaż szczegóły profilu diagnostycznego.
+- `fixos.cli.quickfix_cmd.quickfix` — Natychmiastowe naprawy bez API — baza znanych bugów.
+- `fixos.cli.scan_cmd.scan` — Przeprowadza diagnostykę systemu.
+- `fixos.cli.orchestrate_cmd.orchestrate` — Zaawansowana orkiestracja napraw z grafem problemów.
+- `fixos.cli.report_cmd.report` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
+- `fixos.cli.rollback_cmd.rollback` — Zarządzanie cofaniem operacji fixOS.
+- `fixos.cli.rollback_cmd.rollback_list` — Pokaż historię sesji naprawczych.
+- `fixos.cli.rollback_cmd.rollback_show` — Pokaż szczegóły sesji rollback.
+- `fixos.cli.rollback_cmd.rollback_undo` — Cofnij operacje z podanej sesji.
+- `fixos.cli.ask_cmd.ask` — Wykonaj polecenie w języku naturalnym.
+- `fixos.cli.history_cmd.history` — Historia napraw fixOS.
+- `fixos.cli.cleanup_cmd.cleanup_services` — Skanuje i czyści dane usług przekraczające próg.
+- `fixos.cli.watch_cmd.watch` — Monitorowanie systemu w tle z powiadomieniami.
+- `fixos.cli.main.main` — Entry point for fixOS CLI.
+- `fixos.cli.token_cmd.token` — Zarządzanie tokenem API.
+- `fixos.cli.token_cmd.token_set` — Zapisz token API do pliku .env.
+- `fixos.cli.token_cmd.token_show` — Pokaż obecny token (masked).
+- `fixos.cli.token_cmd.token_clear` — Usuń token z pliku .env.
+- `fixos.cli.features_cmd.features` — Zarządzanie pakietami komfortu systemu.
+- `fixos.cli.features_cmd.features_audit` — Sprawdź brakujące pakiety dla profilu.
+- `fixos.cli.features_cmd.features_install` — Zainstaluj brakujące pakiety dla profilu.
+- `fixos.cli.features_cmd.features_profiles` — Lista dostępnych profili.
+- `fixos.cli.features_cmd.features_system` — Pokaż wykryty system.
+- `fixos.cli.config_cmd.config` — Zarządzanie konfiguracją fixOS.
+- `fixos.cli.config_cmd.config_show` — Pokaż aktualną konfigurację.
+- `fixos.cli.config_cmd.config_init` — Zainicjalizuj plik konfiguracyjny .env.
+- `fixos.cli.config_cmd.config_set` — Ustaw wartość konfiguracyjną w .env.
+- `fixos.cli.provider_cmd.llm_providers` — Lista dostępnych providerów LLM.
+- `fixos.cli.provider_cmd.providers` — Lista providerów LLM z oznaczeniem FREE/PAID.
+- `fixos.cli.provider_cmd.test_llm` — Test połączenia z LLM.
+- `fixos.cli.fix_cmd.fix` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 - `fixos.providers.llm_analyzer.main` — Test the LLM analyzer
-- `fixos.diagnostics.service_scanner.main` — Test the service data scanner
 - `fixos.utils.timeout.timeout_handler` — Signal handler dla SIGALRM — rzuca SessionTimeout.
 - `fixos.utils.anonymizer.anonymize` — Anonimizuje wrażliwe dane.
 - `fixos.utils.terminal.colorize` — Return line unchanged – rich handles markup in render_md().
 - `fixos.utils.terminal.render_md` — Print LLM markdown reply to terminal via rich.
+- `fixos.utils.terminal.render_tree_colored` — Render a ProblemGraph as a rich-markup string.
+- `fixos.cli.shared.add_common_options` — Decorator adding common LLM options to a Click command.
+- `fixos.cli.shared.add_shared_options` — Shared options for both scan and fix commands.
 - `fixos.interactive.cleanup_planner.main` — Test the cleanup planner
 
 ## Metrics Summary
 
 | Metric | Value |
 |--------|-------|
-| Modules | 48 |
-| Functions | 291 |
-| Classes | 52 |
-| CFG Nodes | 1808 |
+| Modules | 75 |
+| Functions | 379 |
+| Classes | 66 |
+| CFG Nodes | 2363 |
 | Patterns | 1 |
-| Avg Complexity | 5.7 |
-| Analysis Time | 4.27s |
+| Avg Complexity | 5.0 |
+| Analysis Time | 4.13s |

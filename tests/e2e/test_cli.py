@@ -274,4 +274,5 @@ class TestConfigCommands:
             result = runner.invoke(cli, ["config", "set", "AGENT_MODE", "autonomous"])
             assert result.exit_code == 0
             content = Path(".env").read_text()
-            assert "AGENT_MODE=autonomous" in content
+            # dotenv library adds quotes around values
+            assert "AGENT_MODE='autonomous'" in content

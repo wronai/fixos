@@ -1,0 +1,355 @@
+"""
+Service Cleanup for fixOS
+Handles planning and execution of service data cleanup operations.
+"""
+
+import subprocess
+from typing import Dict, Any, List
+
+
+class ServiceCleaner:
+    """Plans and executes cleanup of service data."""
+
+    def __init__(self, scanner):
+        """Initialize with a ServiceDataScanner instance."""
+        self.scanner = scanner
+
+    def get_cleanup_plan(self, selected_services: List[str] = None) -> Dict[str, Any]:
+        """Generate cleanup plan for services."""
+        services = self.scanner.scan_all_services()
+
+        if selected_services:
+            services = [s for s in services if s.service_type.value in selected_services]
+
+        total_size_gb = sum(s.size_gb for s in services)
+        safe_services = [s for s in services if s.safe_to_cleanup]
+        unsafe_services = [s for s in services if not s.safe_to_cleanup]
+
+        plan = {
+            "threshold_mb": self.scanner.threshold_mb,
+            "services_found": len(services),
+            "total_size_gb": round(total_size_gb, 2),
+            "safe_cleanup_gb": round(sum(s.size_gb for s in safe_services), 2),
+            "requires_review_gb": round(sum(s.size_gb for s in unsafe_services), 2),
+            "services": [self._service_to_dict(s) for s in services],
+            "safe_to_cleanup": [self._service_to_dict(s) for s in safe_services],
+            "requires_review": [self._service_to_dict(s) for s in unsafe_services],
+        }
+
+        return plan
+
+    def cleanup_service(self, service_type: str, dry_run: bool = False) -> Dict[str, Any]:
+        """Execute cleanup for a specific service."""
+        from .service_scanner import ServiceType
+
+        result = {
+            "service": service_type,
+            "dry_run": dry_run,
+            "success": False,
+            "space_freed_gb": 0,
+            "output": "",
+            "error": "",
+        }
+
+        try:
+            service_enum = ServiceType(service_type)
+            services = self.scanner.scan_service(service_enum)
+
+            if not services:
+                result["error"] = f"No {service_type} data found above threshold"
+                return result
+
+            service = services[0]  # Take first (largest)
+            initial_size = service.size_gb
+
+            if dry_run:
+                result["success"] = True
+                result["output"] = f"[DRY RUN] Would execute: {service.cleanup_command}"
+                result["space_freed_gb"] = initial_size
+                return result
+
+            # Execute cleanup
+            cleanup_result = subprocess.run(
+                service.cleanup_command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+
+            # Check new size
+            new_size_mb = self.scanner._get_path_size_mb(service.path)
+            new_size_gb = new_size_mb / 1024
+            freed_gb = max(0, initial_size - new_size_gb)
+
+            result["success"] = cleanup_result.returncode == 0
+            result["output"] = cleanup_result.stdout
+            result["error"] = cleanup_result.stderr
+            result["space_freed_gb"] = round(freed_gb, 3)
+            result["initial_size_gb"] = initial_size
+            result["remaining_size_gb"] = round(new_size_gb, 3)
+
+        except Exception as e:
+            result["error"] = str(e)
+
+        return result
+
+    @staticmethod
+    def _service_to_dict(service) -> Dict[str, Any]:
+        """Convert ServiceDataInfo to dictionary."""
+        return {
+            "service_type": service.service_type.value,
+            "name": service.name,
+            "path": service.path,
+            "size_mb": service.size_mb,
+            "size_gb": service.size_gb,
+            "description": service.description,
+            "can_cleanup": service.can_cleanup,
+            "cleanup_command": service.cleanup_command,
+            "preview_command": service.preview_command,
+            "safe_to_cleanup": service.safe_to_cleanup,
+            "impact": service.impact,
+            "items_count": service.items_count,
+            "details": service.details,
+        }
+
+    @staticmethod
+    def is_safe_cleanup(service_type) -> bool:
+        """Determine if cleanup is generally safe (cache-only, not user data)."""
+        from .service_scanner import ServiceType
+
+        safe_services = {
+            # Package caches (can be re-downloaded)
+            ServiceType.NPM, ServiceType.YARN, ServiceType.PNPM,
+            ServiceType.PIP, ServiceType.POETRY,
+            ServiceType.GRADLE, ServiceType.MAVEN, ServiceType.CARGO,
+            ServiceType.GO,
+            # System caches
+            ServiceType.APT, ServiceType.DNF, ServiceType.PACMAN,
+            ServiceType.YUM, ServiceType.ZYPPER,
+            # Browser caches
+            ServiceType.CHROME, ServiceType.FIREFOX, ServiceType.EDGE,
+            # App caches
+            ServiceType.THUMBNAILS, ServiceType.LOGS,
+            # Cloud CLI caches
+            ServiceType.AWS, ServiceType.GCLOUD, ServiceType.AZURE,
+            # IaC caches
+            ServiceType.TERRAFORM, ServiceType.PULUMI,
+        }
+        return service_type in safe_services
+
+    @staticmethod
+    def get_service_description(service_type) -> str:
+        """Get description for service type."""
+        from .service_scanner import ServiceType
+
+        descriptions = {
+            # Containers
+            ServiceType.DOCKER: "Docker images, containers, and volumes",
+            ServiceType.OLLAMA: "Ollama AI models and cache",
+            ServiceType.CONTAINERD: "Containerd container runtime data",
+            ServiceType.PODMAN: "Podman containers and images",
+            # JS/Node
+            ServiceType.NPM: "NPM package cache",
+            ServiceType.YARN: "Yarn package cache",
+            ServiceType.PNPM: "PNPM store cache",
+            # Python
+            ServiceType.PIP: "Python pip cache",
+            ServiceType.CONDA: "Conda/Anaconda environments and packages",
+            ServiceType.POETRY: "Poetry virtual environments and cache",
+            # Java
+            ServiceType.GRADLE: "Gradle build cache",
+            ServiceType.MAVEN: "Maven repository cache",
+            # Rust/Go
+            ServiceType.CARGO: "Rust Cargo registry cache",
+            ServiceType.GO: "Go modules cache",
+            # Mobile
+            ServiceType.FLUTTER: "Flutter SDK and pub cache",
+            ServiceType.DART: "Dart pub cache",
+            ServiceType.ANDROID: "Android SDK and build cache",
+            # System packages
+            ServiceType.SNAP: "Snap packages and cache",
+            ServiceType.FLATPAK: "Flatpak applications and runtimes",
+            ServiceType.APPIMAGE: "AppImage applications",
+            ServiceType.APT: "APT package cache",
+            ServiceType.DNF: "DNF package cache",
+            ServiceType.PACMAN: "Pacman package cache",
+            ServiceType.YUM: "Yum package cache",
+            ServiceType.ZYPPER: "Zypper package cache",
+            # Virtualization
+            ServiceType.VAGRANT: "Vagrant boxes and VMs",
+            ServiceType.VBOX: "VirtualBox VMs and cache",
+            ServiceType.VMWARE: "VMware virtual machines",
+            # Package managers
+            ServiceType.NIX: "Nix store and profiles",
+            ServiceType.BREW: "Homebrew cache and Cellar",
+            # Browsers
+            ServiceType.CHROME: "Google Chrome cache and data",
+            ServiceType.FIREFOX: "Firefox cache and data",
+            ServiceType.EDGE: "Microsoft Edge cache and data",
+            # IDEs
+            ServiceType.VSCODE: "VS Code extensions and cache",
+            ServiceType.CURSOR: "Cursor editor cache",
+            ServiceType.JETBRAINS: "JetBrains IDE caches and indexes",
+            # Cloud/ML
+            ServiceType.HUGGINGFACE: "HuggingFace models cache",
+            ServiceType.AWS: "AWS CLI cache and logs",
+            ServiceType.GCLOUD: "Google Cloud CLI cache",
+            ServiceType.AZURE: "Azure CLI telemetry and logs",
+            # IaC
+            ServiceType.TERRAFORM: "Terraform provider plugins cache",
+            ServiceType.PULUMI: "Pulumi plugins cache",
+            # Game engines
+            ServiceType.UNITY: "Unity Editor cache and data",
+            ServiceType.UNREAL: "Unreal Engine cache",
+            # Other
+            ServiceType.JUPYTER: "Jupyter runtime and kernels",
+            ServiceType.THUMBNAILS: "Thumbnail cache",
+            ServiceType.TRASH: "Trash/Recycle Bin",
+            ServiceType.LOGS: "Application logs",
+        }
+        return descriptions.get(service_type, f"{service_type.value} data")
+
+    @staticmethod
+    def get_cleanup_command(service_type, path: str) -> str:
+        """Get cleanup command for service."""
+        from .service_scanner import ServiceType
+
+        commands = {
+            # Containers
+            ServiceType.DOCKER: "docker system prune -af --volumes",
+            ServiceType.OLLAMA: "ollama rm $(ollama list | tail -n +2 | awk '{print $1}') 2>/dev/null || true && rm -rf ~/.ollama/models/*",
+            ServiceType.CONTAINERD: "sudo rm -rf /var/lib/containerd",
+            ServiceType.PODMAN: "podman system prune -af --volumes",
+            # JS/Node
+            ServiceType.NPM: "npm cache clean --force",
+            ServiceType.YARN: "yarn cache clean --all",
+            ServiceType.PNPM: "pnpm store prune",
+            # Python
+            ServiceType.PIP: "pip cache purge || rm -rf ~/.cache/pip/*",
+            ServiceType.CONDA: "conda clean --all -y || rm -rf ~/.conda/envs/*/pkgs",
+            ServiceType.POETRY: "poetry cache clear --all pypi || rm -rf ~/.cache/pypoetry",
+            # Java
+            ServiceType.GRADLE: "rm -rf ~/.gradle/caches ~/.gradle/daemon ~/.gradle/wrapper",
+            ServiceType.MAVEN: "rm -rf ~/.m2/repository",
+            # Rust/Go
+            ServiceType.CARGO: "cargo clean --registry || rm -rf ~/.cargo/registry/cache",
+            ServiceType.GO: "go clean -cache -modcache && rm -rf ~/go/pkg",
+            # Mobile
+            ServiceType.FLUTTER: "flutter pub cache clean && rm -rf ~/.pub-cache",
+            ServiceType.DART: "rm -rf ~/.pub-cache",
+            ServiceType.ANDROID: "rm -rf ~/.android/build-cache ~/Android/Sdk/build-tools/*/preview",
+            # System packages
+            ServiceType.SNAP: "snap list --all | awk '/disabled/{print $1, $3}' | while read snapname revision; do sudo snap remove \"$snapname\" --revision=\"$revision\"; done",
+            ServiceType.FLATPAK: "flatpak uninstall --unused -y && flatpak repair",
+            ServiceType.APPIMAGE: "rm -rf ~/.local/share/AppImage ~/.cache/AppImage",
+            ServiceType.APT: "sudo apt-get clean && sudo apt-get autoclean",
+            ServiceType.DNF: "sudo dnf clean all",
+            ServiceType.PACMAN: "sudo pacman -Scc --noconfirm",
+            ServiceType.YUM: "sudo yum clean all",
+            ServiceType.ZYPPER: "sudo zypper clean --all",
+            # Virtualization
+            ServiceType.VAGRANT: "vagrant box prune --force",
+            ServiceType.VBOX: "rm -rf ~/VirtualBox\\ VMs/*/Snapshots",
+            ServiceType.VMWARE: "rm -rf ~/vmware/*.log ~/vmware/*.vmss",
+            # Package managers
+            ServiceType.NIX: "nix-collect-garbage -d || nix store gc",
+            ServiceType.BREW: "brew cleanup --prune=all && brew autoremove",
+            # Browsers
+            ServiceType.CHROME: "rm -rf ~/.cache/google-chrome ~/.config/google-chrome/Default/Service\\ Worker",
+            ServiceType.FIREFOX: "rm -rf ~/.cache/mozilla ~/.mozilla/firefox/*/cache2",
+            ServiceType.EDGE: "rm -rf ~/.cache/microsoft-edge",
+            # IDEs
+            ServiceType.VSCODE: "rm -rf ~/.config/Code/Cache ~/.config/Code/CachedData ~/.vscode/extensions/*/out",
+            ServiceType.CURSOR: "rm -rf ~/.config/Cursor/Cache ~/.config/Cursor/CachedData ~/.cursor/extensions/*/out",
+            ServiceType.JETBRAINS: "find ~/.cache/JetBrains -name 'index' -type d -exec rm -rf {} + 2>/dev/null; find ~/.JetBrains -name 'caches' -type d -exec rm -rf {} + 2>/dev/null",
+            # Cloud/ML
+            ServiceType.HUGGINGFACE: "rm -rf ~/.cache/huggingface/hub/*",
+            ServiceType.AWS: "rm -rf ~/.aws/sso/cache ~/.aws/cli/cache",
+            ServiceType.GCLOUD: "gcloud auth application-default revoke 2>/dev/null; rm -rf ~/.config/gcloud/logs ~/.cache/gcloud",
+            ServiceType.AZURE: "rm -rf ~/.azure/telemetry ~/.azure/logs",
+            # IaC
+            ServiceType.TERRAFORM: "rm -rf ~/.terraform.d/plugin-cache",
+            ServiceType.PULUMI: "pulumi plugin rm --all --yes 2>/dev/null || rm -rf ~/.pulumi/plugins",
+            # Game engines
+            ServiceType.UNITY: "rm -rf ~/.config/unity3d/Editor/Cache",
+            ServiceType.UNREAL: "rm -rf ~/.config/Epic/UnrealEngine/5.*/DerivedDataCache",
+            # Other
+            ServiceType.JUPYTER: "jupyter kernelspec uninstall -y $(jupyter kernelspec list | tail -n +2 | awk '{print $1}') 2>/dev/null; rm -rf ~/.local/share/jupyter/runtime",
+            ServiceType.THUMBNAILS: "rm -rf ~/.cache/thumbnails/* ~/.thumbnails/*",
+            ServiceType.TRASH: "rm -rf ~/.local/share/Trash/* ~/.Trash/*",
+            ServiceType.LOGS: "find ~/.cache/log ~/.local/state -name '*.log' -mtime +7 -delete 2>/dev/null; journalctl --vacuum-time=7d 2>/dev/null || true",
+        }
+        return commands.get(service_type, f"rm -rf {path}")
+
+    @staticmethod
+    def get_preview_command(service_type, path: str) -> str:
+        """Get preview command for service."""
+        from .service_scanner import ServiceType
+
+        previews = {
+            # Containers
+            ServiceType.DOCKER: "docker system df -v",
+            ServiceType.OLLAMA: "ollama list",
+            ServiceType.CONTAINERD: "sudo ls -la /var/lib/containerd 2>/dev/null || echo 'Requires sudo access'",
+            ServiceType.PODMAN: "podman system df -v || podman images",
+            # JS/Node
+            ServiceType.NPM: "npm cache ls 2>/dev/null || du -sh ~/.npm",
+            ServiceType.YARN: "yarn cache list 2>/dev/null || du -sh ~/.cache/yarn",
+            ServiceType.PNPM: "pnpm store status 2>/dev/null || du -sh ~/.pnpm-store",
+            # Python
+            ServiceType.PIP: "pip cache dir && pip cache info 2>/dev/null || du -sh ~/.cache/pip",
+            ServiceType.CONDA: "conda info --envs 2>/dev/null && conda list 2>/dev/null | head -20 || du -sh ~/miniconda3",
+            ServiceType.POETRY: "poetry config cache-dir 2>/dev/null || du -sh ~/.cache/pypoetry",
+            # Java
+            ServiceType.GRADLE: "ls -la ~/.gradle/caches 2>/dev/null | head -20 || du -sh ~/.gradle",
+            ServiceType.MAVEN: "du -sh ~/.m2/repository/* 2>/dev/null | sort -hr | head -20",
+            # Rust/Go
+            ServiceType.CARGO: "ls -la ~/.cargo/registry/cache 2>/dev/null | head -20 || du -sh ~/.cargo",
+            ServiceType.GO: "go env GOPATH && du -sh ~/go/pkg 2>/dev/null || echo 'Go modules cache'",
+            # Mobile
+            ServiceType.FLUTTER: "flutter pub cache list 2>/dev/null | head -20 || du -sh ~/.pub-cache",
+            ServiceType.DART: "du -sh ~/.pub-cache 2>/dev/null",
+            ServiceType.ANDROID: "du -sh ~/Android/Sdk/* 2>/dev/null | sort -hr | head -10 || du -sh ~/.android",
+            # System packages
+            ServiceType.SNAP: "snap list --all",
+            ServiceType.FLATPAK: "flatpak list --app --runtime",
+            ServiceType.APPIMAGE: "ls -la ~/.local/share/AppImage 2>/dev/null || echo 'No AppImage data'",
+            ServiceType.APT: "apt-cache stats 2>/dev/null || du -sh /var/cache/apt/archives",
+            ServiceType.DNF: "dnf repolist && du -sh /var/cache/dnf 2>/dev/null",
+            ServiceType.PACMAN: "pacman -Sc --dry-run 2>/dev/null || du -sh /var/cache/pacman/pkg",
+            ServiceType.YUM: "yum repolist && du -sh /var/cache/yum 2>/dev/null",
+            ServiceType.ZYPPER: "zypper packages --installed-only 2>/dev/null | head -20 || du -sh /var/cache/zypp",
+            # Virtualization
+            ServiceType.VAGRANT: "vagrant box list",
+            ServiceType.VBOX: "vboxmanage list vms 2>/dev/null || ls -la ~/VirtualBox\\ VMs 2>/dev/null || echo 'No VirtualBox VMs'",
+            ServiceType.VMWARE: "ls -la ~/vmware 2>/dev/null || ls -la ~/Virtual\\ Machines 2>/dev/null || echo 'No VMware VMs'",
+            # Package managers
+            ServiceType.NIX: "nix store gc --dry-run 2>/dev/null || du -sh /nix 2>/dev/null || du -sh ~/.nix-profile",
+            ServiceType.BREW: "brew list | wc -l && du -sh ~/homebrew 2>/dev/null || du -sh /opt/homebrew 2>/dev/null || du -sh /usr/local/Homebrew",
+            # Browsers
+            ServiceType.CHROME: "du -sh ~/.cache/google-chrome 2>/dev/null || du -sh ~/.config/google-chrome",
+            ServiceType.FIREFOX: "du -sh ~/.cache/mozilla 2>/dev/null || du -sh ~/.mozilla",
+            ServiceType.EDGE: "du -sh ~/.cache/microsoft-edge 2>/dev/null || du -sh ~/.config/microsoft-edge",
+            # IDEs
+            ServiceType.VSCODE: "code --list-extensions 2>/dev/null | wc -l && du -sh ~/.vscode/extensions 2>/dev/null",
+            ServiceType.CURSOR: "du -sh ~/.cursor/extensions 2>/dev/null || du -sh ~/.config/Cursor",
+            ServiceType.JETBRAINS: "find ~/.cache/JetBrains -maxdepth 1 -type d 2>/dev/null | wc -l && du -sh ~/.cache/JetBrains 2>/dev/null",
+            # Cloud/ML
+            ServiceType.HUGGINGFACE: "du -sh ~/.cache/huggingface 2>/dev/null && ls ~/.cache/huggingface/hub 2>/dev/null | head -10",
+            ServiceType.AWS: "ls -la ~/.aws/sso/cache 2>/dev/null || du -sh ~/.aws",
+            ServiceType.GCLOUD: "gcloud config list 2>/dev/null | head -10 || du -sh ~/.config/gcloud",
+            ServiceType.AZURE: "az account list 2>/dev/null | head -5 || du -sh ~/.azure",
+            # IaC
+            ServiceType.TERRAFORM: "ls ~/.terraform.d/providers 2>/dev/null || du -sh ~/.terraform.d",
+            ServiceType.PULUMI: "pulumi plugin ls 2>/dev/null || du -sh ~/.pulumi/plugins",
+            # Game engines
+            ServiceType.UNITY: "du -sh ~/.config/unity3d 2>/dev/null || du -sh ~/Library/Unity",
+            ServiceType.UNREAL: "du -sh ~/.config/Epic 2>/dev/null || du -sh ~/Library/Application\\ Support/Epic",
+            # Other
+            ServiceType.JUPYTER: "jupyter kernelspec list 2>/dev/null || du -sh ~/.local/share/jupyter",
+            ServiceType.THUMBNAILS: "du -sh ~/.cache/thumbnails 2>/dev/null && find ~/.cache/thumbnails -type f | wc -l",
+            ServiceType.TRASH: "du -sh ~/.local/share/Trash 2>/dev/null || du -sh ~/.Trash",
+            ServiceType.LOGS: "find ~/.cache/log ~/.local/state /var/log ~/.var/log 2>/dev/null -name '*.log' | wc -l && du -sh ~/.cache/log 2>/dev/null || du -sh /var/log 2>/dev/null",
+        }
+        return previews.get(service_type, f"du -sh {path} 2>/dev/null && ls -la {path} | head -20")

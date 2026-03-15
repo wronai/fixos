@@ -1,20 +1,46 @@
 # fixOS — Module Reference
 
-> 48 modules | 291 functions | 52 classes
+> 75 modules | 379 functions | 66 classes
 
 ## Module Overview
 
 | Module | Lines | Functions | Classes | CC avg | Description | Source |
 |--------|-------|-----------|---------|--------|-------------|--------|
-| `fixos.agent.autonomous` | 349 | 6 | 2 | 6.1 | Tryb autonomiczny – agent sam diagnozuje i naprawia system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py) |
-| `fixos.agent.hitl` | 461 | 10 | 1 | 6.8 | Tryb Human-in-the-Loop (HITL) – użytkownik zatwierdza każdą  | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py) |
+| `fixos.agent.autonomous` | 49 | 1 | 0 | 1.0 | Tryb autonomiczny – agent sam diagnozuje i naprawia system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py) |
+| `fixos.agent.autonomous_session` | 429 | 1 | 3 | 2.8 | Autonomous Session for fixOS Agent | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py) |
+| `fixos.agent.hitl` | 36 | 1 | 0 | 1.0 | Tryb Human-in-the-Loop (HITL) – użytkownik zatwierdza każdą  | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py) |
+| `fixos.agent.hitl_session` | 509 | 1 | 2 | 4.1 | Human-in-the-Loop (HITL) Session for fixOS Agent | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl_session.py) |
 | `fixos.anonymizer` | 86 | 2 | 0 | 4.5 | Moduł anonimizacji wrażliwych danych systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py) |
-| `fixos.cli` | 2251 | 42 | 1 | 8.6 | fixos CLI – wielopoziomowe komendy | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py) |
+| `fixos.cli.ask_cmd` | 354 | 8 | 0 | 8.0 | Natural language command (ask) for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/ask_cmd.py) |
+| `fixos.cli.cleanup_cmd` | 371 | 8 | 0 | 8.4 | Cleanup command for fixOS CLI - service data cleanup with de | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/cleanup_cmd.py) |
+| `fixos.cli.config_cmd` | 83 | 4 | 0 | 2.5 | Config management commands for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py) |
+| `fixos.cli.features_cmd` | 176 | 6 | 0 | 5.8 | Features CLI command for fixOS. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py) |
+| `fixos.cli.fix_cmd` | 282 | 4 | 0 | 10.0 | Fix command for fixOS CLI - diagnostics and repair session w | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py) |
+| `fixos.cli.history_cmd` | 49 | 1 | 0 | 5.0 | History command for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/history_cmd.py) |
+| `fixos.cli.main` | 158 | 3 | 0 | 3.3 | Main CLI entry point for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/main.py) |
+| `fixos.cli.orchestrate_cmd` | 132 | 1 | 0 | 13.0 | Orchestrate command for fixOS CLI - advanced repair with pro | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/orchestrate_cmd.py) |
+| `fixos.cli.profile_cmd` | 59 | 3 | 0 | 3.0 | Profile commands for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/profile_cmd.py) |
+| `fixos.cli.provider_cmd` | 250 | 3 | 0 | 6.3 | Provider management commands for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/provider_cmd.py) |
+| `fixos.cli.quickfix_cmd` | 76 | 1 | 0 | 12.0 | Quickfix command for fixOS CLI - heuristic fixes without LLM | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/quickfix_cmd.py) |
+| `fixos.cli.report_cmd` | 115 | 1 | 0 | 16.0 | Report command for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/report_cmd.py) |
+| `fixos.cli.rollback_cmd` | 90 | 4 | 0 | 4.0 | Rollback commands for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py) |
+| `fixos.cli.scan_cmd` | 187 | 3 | 0 | 14.7 | Scan command for fixOS CLI - system diagnostics | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/scan_cmd.py) |
+| `fixos.cli.shared` | 62 | 2 | 1 | 3.0 | Shared utilities for fixOS CLI commands | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/shared.py) |
+| `fixos.cli.token_cmd` | 124 | 4 | 0 | 3.2 | Token management commands for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py) |
+| `fixos.cli.watch_cmd` | 49 | 1 | 0 | 2.0 | Watch daemon command for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/watch_cmd.py) |
 | `fixos.config` | 422 | 4 | 1 | 9.7 | Zarządzanie konfiguracją fixos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py) |
 | `fixos.diagnostics.disk_analyzer` | 419 | 1 | 1 | 7.1 | Disk Analyzer Module for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py) |
 | `fixos.diagnostics.flatpak_analyzer` | 332 | 1 | 3 | 6.0 | Advanced Flatpak analyzer for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/flatpak_analyzer.py) |
-| `fixos.diagnostics.service_scanner` | 987 | 1 | 3 | 5.0 | Service Data Scanner for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py) |
+| `fixos.diagnostics.service_cleanup` | 355 | 0 | 1 | 3.0 | Service Cleanup for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_cleanup.py) |
+| `fixos.diagnostics.service_details` | 242 | 0 | 1 | 6.9 | Service Details Provider for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_details.py) |
+| `fixos.diagnostics.service_scanner` | 249 | 1 | 3 | 3.1 | Service Data Scanner for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py) |
 | `fixos.diagnostics.system_checks` | 512 | 9 | 0 | 5.4 | Diagnostyka systemu – rozszerzona o: | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py) |
+| `fixos.features` | 267 | 0 | 2 | 5.8 | System detection module for fixOS features. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/__init__.py) |
+| `fixos.features.auditor` | 127 | 0 | 2 | 5.0 | Feature auditor - compares system state with desired profile | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/auditor.py) |
+| `fixos.features.catalog` | 119 | 0 | 3 | 3.0 | Package catalog - loads and manages package database from YA | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/catalog.py) |
+| `fixos.features.installer` | 202 | 0 | 1 | 4.9 | Feature installer - safely installs missing packages. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/installer.py) |
+| `fixos.features.profiles` | 88 | 0 | 1 | 4.0 | User profile management for fixOS features. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/profiles.py) |
+| `fixos.features.renderer` | 124 | 0 | 1 | 5.0 | Feature renderer - displays audit results in terminal. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/renderer.py) |
 | `fixos.interactive.cleanup_planner` | 417 | 1 | 4 | 6.0 | Interactive Cleanup Planner for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py) |
 | `fixos.llm_shell` | 240 | 4 | 0 | 6.8 | Interaktywny shell LLM do diagnostyki i naprawy systemu syst | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py) |
 | `fixos.orchestrator.executor` | 272 | 0 | 4 | 3.9 | CommandExecutor – bezpieczne wykonywanie komend systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py) |
@@ -47,23 +73,51 @@
 
 Tryb autonomiczny – agent sam diagnozuje i naprawia system.
 
-**`AgentReport`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L77)
+- `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Uruchamia autonomiczny tryb agenta. [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L31)
+
+### `fixos.agent.autonomous_session` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py)
+
+Autonomous Session for fixOS Agent
+
+**`AgentReport`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py#L74)
 
 | Method | Args | Returns | CC |
 |--------|------|---------|----|
 | `summary` | `` | `—` | 4 |
 
-**`FixAction`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L68)
+**`AutonomousSession`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py#L97)
+: Self-directed autonomous diagnostic and repair session.
 
-- `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Uruchamia autonomiczny tryb agenta. [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L139)
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `run` | `` | `—` | 6 |
+
+**`FixAction`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py#L65)
+
+- `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Run autonomous session (backward compatible wrapper). [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous_session.py#L416)
 
 ### `fixos.agent.hitl` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py)
 
 Tryb Human-in-the-Loop (HITL) – użytkownik zatwierdza każdą akcję.
 
-**`CmdResult`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L75)
+- `run_hitl_session(diagnostics, config, show_data)` — Run interactive HITL session with full transparency. [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L24)
 
-- `run_hitl_session(diagnostics, config, show_data)` — Runs interactive HITL session with full transparency. [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L225)
+### `fixos.agent.hitl_session` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl_session.py)
+
+Human-in-the-Loop (HITL) Session for fixOS Agent
+
+**`CmdResult`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl_session.py#L60)
+
+**`HITLSession`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl_session.py#L71)
+: Interactive Human-in-the-Loop diagnostic and repair session.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `remaining` | `` | `—` | 1 |
+| `fmt_time` | `s` | `—` | 1 |
+| `run` | `` | `—` | 5 |
+
+- `run_hitl_session(diagnostics, config, show_data)` — Run interactive HITL session (backward compatible wrapper). [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl_session.py#L498)
 
 ### `fixos.anonymizer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py)
 
@@ -72,50 +126,136 @@ Moduł anonimizacji wrażliwych danych systemowych.
 - `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L30)
 - `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania. [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L12)
 
-### `fixos.cli` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py)
+### `fixos.cli.ask_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/ask_cmd.py)
 
-fixos CLI – wielopoziomowe komendy
+Natural language command (ask) for fixOS CLI
 
-**`NaturalLanguageGroup`** (click.Group) [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L81)
+- `ask(prompt, dry_run)` — Wykonaj polecenie w języku naturalnym. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/ask_cmd.py#L10)
+
+### `fixos.cli.cleanup_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/cleanup_cmd.py)
+
+Cleanup command for fixOS CLI - service data cleanup with detailed flatpak support
+
+- `cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only)` — Skanuje i czyści dane usług przekraczające próg. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/cleanup_cmd.py#L24)
+
+### `fixos.cli.config_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py)
+
+Config management commands for fixOS CLI
+
+- `config()` — Zarządzanie konfiguracją fixOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py#L8)
+- `config_init(force)` — Zainicjalizuj plik konfiguracyjny .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py#L40)
+- `config_set(key, value)` — Ustaw wartość konfiguracyjną w .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py#L72)
+- `config_show()` — Pokaż aktualną konfigurację. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/config_cmd.py#L14)
+
+### `fixos.cli.features_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py)
+
+Features CLI command for fixOS.
+
+- `features()` — Zarządzanie pakietami komfortu systemu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py#L21)
+- `features_audit(profile, json_output)` — Sprawdź brakujące pakiety dla profilu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py#L29)
+- `features_install(profile, dry_run, yes, category)` — Zainstaluj brakujące pakiety dla profilu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py#L58)
+- `features_profiles()` — Lista dostępnych profili. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py#L112)
+- `features_system()` — Pokaż wykryty system. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/features_cmd.py#L131)
+
+### `fixos.cli.fix_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py)
+
+Fix command for fixOS CLI - diagnostics and repair session with LLM
+
+- `execute_cleanup_actions(actions, cfg, llm_fallback)` — Execute cleanup actions with safety checks [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py#L219)
+- `fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback)` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py#L28)
+- `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive, json_output, llm_fallback)` — Handle disk cleanup mode with interactive planning [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py#L149)
+- `try_llm_fallback_for_failures(failed_actions, cfg)` — Try to fix failed actions using LLM [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/fix_cmd.py#L260)
+
+### `fixos.cli.history_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/history_cmd.py)
+
+History command for fixOS CLI
+
+- `history(limit, json_output)` — Historia napraw fixOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/history_cmd.py#L10)
+
+### `fixos.cli.main` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/main.py)
+
+Main CLI entry point for fixOS
+
+- `cli(ctx, dry_run, version)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/main.py#L13)
+- `main()` — Entry point for fixOS CLI. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/main.py#L120)
+
+### `fixos.cli.orchestrate_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/orchestrate_cmd.py)
+
+Orchestrate command for fixOS CLI - advanced repair with problem graph
+
+- `orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output)` — Zaawansowana orkiestracja napraw z grafem problemów. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/orchestrate_cmd.py#L23)
+
+### `fixos.cli.profile_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/profile_cmd.py)
+
+Profile commands for fixOS CLI
+
+- `profile()` — Zarządzanie profilami diagnostycznymi. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/profile_cmd.py#L8)
+- `profile_list()` — Pokaż dostępne profile diagnostyczne. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/profile_cmd.py#L14)
+- `profile_show(name)` — Pokaż szczegóły profilu diagnostycznego. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/profile_cmd.py#L41)
+
+### `fixos.cli.provider_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/provider_cmd.py)
+
+Provider management commands for fixOS CLI
+
+- `llm_providers(free)` — Lista dostępnych providerów LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/provider_cmd.py#L109)
+- `providers()` — Lista providerów LLM z oznaczeniem FREE/PAID. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/provider_cmd.py#L154)
+- `test_llm(provider, token, model, no_banner)` — Test połączenia z LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/provider_cmd.py#L192)
+
+### `fixos.cli.quickfix_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/quickfix_cmd.py)
+
+Quickfix command for fixOS CLI - heuristic fixes without LLM
+
+- `quickfix(dry_run, modules)` — Natychmiastowe naprawy bez API — baza znanych bugów. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/quickfix_cmd.py#L12)
+
+### `fixos.cli.report_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/report_cmd.py)
+
+Report command for fixOS CLI
+
+- `report(output_format, output, modules, profile)` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/report_cmd.py#L14)
+
+### `fixos.cli.rollback_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py)
+
+Rollback commands for fixOS CLI
+
+- `rollback()` — Zarządzanie cofaniem operacji fixOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py#L9)
+- `rollback_list(limit)` — Pokaż historię sesji naprawczych. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py#L16)
+- `rollback_show(session_id)` — Pokaż szczegóły sesji rollback. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py#L37)
+- `rollback_undo(session_id, last, dry_run)` — Cofnij operacje z podanej sesji. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/rollback_cmd.py#L63)
+
+### `fixos.cli.scan_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/scan_cmd.py)
+
+Scan command for fixOS CLI - system diagnostics
+
+- `scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile)` — Przeprowadza diagnostykę systemu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/scan_cmd.py#L18)
+
+### `fixos.cli.shared` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/shared.py)
+
+Shared utilities for fixOS CLI commands
+
+**`NaturalLanguageGroup`** (click.Group) [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/shared.py#L54)
+: Click group that routes unknown commands to 'ask' command.
 
 | Method | Args | Returns | CC |
 |--------|------|---------|----|
 | `resolve_command` | `ctx, args` | `—` | 6 |
 
-- `add_common_options(fn)` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L50)
-- `add_shared_options(func)` — Shared options for both scan and fix commands [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L55)
-- `ask(prompt, dry_run)` — Wykonaj polecenie w języku naturalnym. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L126)
-- `cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only)` — Skanuje i czyści dane usług przekraczające próg. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1650)
-- `cli(ctx, dry_run, version)` — fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L93)
-- `config()` — Zarządzanie konfiguracją fixos. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1093)
-- `config_init(force)` — Tworzy plik .env na podstawie szablonu .env.example. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1113)
-- `config_set(key, value)` — Ustawia wartość w pliku .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1145)
-- `config_show()` — Wyświetla aktualną konfigurację. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1099)
-- `execute_cleanup_actions(actions, cfg, llm_fallback)` — Execute cleanup actions with safety checks [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L873)
-- `fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback)` — Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L687)
-- `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive, json_output, llm_fallback)` — Handle disk cleanup mode with interactive planning [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L803)
-- `history(limit, json_output)` — Historia napraw fixOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L2200)
-- `llm_providers(free)` — Lista providerów LLM z linkami do generowania kluczy API. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1177)
-- `main()` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L2246)
-- `orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output)` — Orkiestracja napraw z grafem kaskadowych problemów. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1317)
-- `profile()` — Zarządzanie profilami diagnostycznymi. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1949)
-- `profile_list()` — Pokaż dostępne profile diagnostyczne. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1955)
-- `profile_show(name)` — Pokaż szczegóły profilu diagnostycznego. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1982)
-- `providers()` — Lista dostępnych providerów LLM (skrócona). Użyj 'fixos llm' po więcej. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1253)
-- `quickfix(dry_run, modules)` — Natychmiastowe naprawy bez API — baza znanych bugów. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L2010)
-- `report(output_format, output, modules, profile)` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L2089)
-- `rollback()` — Zarządzanie cofaniem operacji fixOS. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1805)
-- `rollback_list(limit)` — Pokaż historię sesji naprawczych. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1812)
-- `rollback_show(session_id)` — Pokaż szczegóły sesji rollback. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1835)
-- `rollback_undo(session_id, last, dry_run)` — Cofnij operacje z podanej sesji. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1863)
-- `scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile)` — Przeprowadza diagnostykę systemu. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L503)
-- `test_llm(provider, token, model, no_banner)` — Testuje połączenie z wybranym providerem LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1273)
-- `token()` — Zarządzanie tokenami API LLM. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L988)
-- `token_clear(env_file)` — Usuwa token z pliku .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1074)
-- `token_set(key, provider, env_file)` — Zapisuje token API do pliku .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L997)
-- `token_show()` — Pokazuje aktualnie skonfigurowany token (zamaskowany). [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1059)
-- `try_llm_fallback_for_failures(failed_actions, cfg)` — Use LLM to analyze and suggest fixes for failed cleanup actions [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L959)
-- `watch(interval, modules, alert_on, max_iterations)` — Monitorowanie systemu w tle z powiadomieniami. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1909)
+- `add_common_options(fn)` — Decorator adding common LLM options to a Click command. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/shared.py#L26)
+- `add_shared_options(func)` — Shared options for both scan and fix commands. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/shared.py#L33)
+
+### `fixos.cli.token_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py)
+
+Token management commands for fixOS CLI
+
+- `token()` — Zarządzanie tokenem API. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py#L10)
+- `token_clear(env_file)` — Usuń token z pliku .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py#L106)
+- `token_set(key, provider, env_file)` — Zapisz token API do pliku .env. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py#L19)
+- `token_show()` — Pokaż obecny token (masked). [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/token_cmd.py#L90)
+
+### `fixos.cli.watch_cmd` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/watch_cmd.py)
+
+Watch daemon command for fixOS CLI
+
+- `watch(interval, modules, alert_on, max_iterations)` — Monitorowanie systemu w tle z powiadomieniami. [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/watch_cmd.py#L18)
 
 ### `fixos.config` [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py)
 
@@ -174,26 +314,54 @@ Advanced Flatpak analyzer for fixOS
 
 - `analyze_flatpak_for_cleanup()` — Convenience function to run full Flatpak analysis [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/flatpak_analyzer.py#L329)
 
+### `fixos.diagnostics.service_cleanup` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_cleanup.py)
+
+Service Cleanup for fixOS
+
+**`ServiceCleaner`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_cleanup.py#L10)
+: Plans and executes cleanup of service data.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `get_cleanup_plan` | `selected_services` | `—` | 14 |
+| `cleanup_service` | `service_type, dry_run` | `—` | 4 |
+| `is_safe_cleanup` | `service_type` | `—` | 1 |
+| `get_service_description` | `service_type` | `—` | 1 |
+| `get_cleanup_command` | `service_type, path` | `—` | 1 |
+| `get_preview_command` | `service_type, path` | `—` | 1 |
+
+### `fixos.diagnostics.service_details` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_details.py)
+
+Service Details Provider for fixOS
+
+**`ServiceDetailsProvider`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_details.py#L18)
+: Provides detailed information about service data.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `get_details` | `service_type, path` | `—` | 3 |
+
 ### `fixos.diagnostics.service_scanner` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py)
 
 Service Data Scanner for fixOS
 
-**`ServiceDataInfo`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L77)
-: Information about service data
+**`ServiceDataInfo`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L75)
+: Information about service data.
 
-**`ServiceDataScanner`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L94)
-: Scans for large service data directories and allows cleanup
+**`ServiceDataScanner`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L92)
+: Scans for large service data directories and allows cleanup.
 
 | Method | Args | Returns | CC |
 |--------|------|---------|----|
 | `scan_all_services` | `` | `—` | 3 |
 | `scan_service` | `service_type` | `—` | 7 |
-| `get_cleanup_plan` | `selected_services` | `—` | 14 |
-| `cleanup_service` | `service_type, dry_run` | `—` | 4 |
+| `get_cleanup_plan` | `selected_services` | `—` | 1 |
+| `cleanup_service` | `service_type, dry_run` | `—` | 1 |
 
-**`ServiceType`** (Enum) [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L24)
+**`ServiceType`** (Enum) [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L21)
+: Service types that can be scanned and cleaned.
 
-- `main()` — Test the service data scanner [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L979)
+- `main()` — Test the service data scanner. [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L241)
 
 ### `fixos.diagnostics.system_checks` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py)
 
@@ -206,6 +374,102 @@ Diagnostyka systemu – rozszerzona o:
 - `diagnose_system()` — System metrics – cross-platform: CPU, RAM, disks, processes. [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L204)
 - `diagnose_thumbnails()` — Diagnostyka podglądów plików (thumbnails) w system. [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L106)
 - `get_full_diagnostics(modules, progress_callback)` — Zbiera diagnostykę z wybranych modułów. [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L482)
+
+### `fixos.features` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/__init__.py)
+
+System detection module for fixOS features.
+
+**`SystemDetector`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/__init__.py#L50)
+: Detects system parameters.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `detect` | `` | `—` | 3 |
+
+**`SystemInfo`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/__init__.py#L16)
+: Complete system information snapshot.
+
+### `fixos.features.auditor` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/auditor.py)
+
+Feature auditor - compares system state with desired profile.
+
+**`AuditResult`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/auditor.py#L15)
+: Result of feature audit - what's installed, what's missing.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `to_dict` | `` | `—` | 4 |
+
+**`FeatureAuditor`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/auditor.py#L52)
+: Compares installed packages with profile requirements.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `audit` | `profile` | `—` | 5 |
+
+### `fixos.features.catalog` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/catalog.py)
+
+Package catalog - loads and manages package database from YAML.
+
+**`PackageCatalog`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/catalog.py#L48)
+: Manages the package database.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `load` | `cls, data_dir` | `—` | 7 |
+| `get_package` | `pkg_id` | `—` | 1 |
+| `get_packages_by_category` | `category` | `—` | 3 |
+| `list_categories` | `` | `—` | 1 |
+
+**`PackageCategory`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/catalog.py#L40)
+: A category of packages (e.g., core_utils, dev_tools).
+
+**`PackageInfo`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/catalog.py#L12)
+: Information about a single package.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `get_distro_name` | `distro` | `—` | 2 |
+| `is_available_on` | `distro` | `—` | 6 |
+
+### `fixos.features.installer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/installer.py)
+
+Feature installer - safely installs missing packages.
+
+**`FeatureInstaller`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/installer.py#L14)
+: Safely installs packages using native package manager or other backends.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `install` | `packages` | `—` | 5 |
+| `get_rollback_commands` | `installed_packages` | `—` | 8 |
+
+### `fixos.features.profiles` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/profiles.py)
+
+User profile management for fixOS features.
+
+**`UserProfile`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/profiles.py#L14)
+: A user profile defining what packages/features they want.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `load` | `cls, profile_name, data_dir` | `—` | 3 |
+| `list_available` | `cls, data_dir` | `—` | 4 |
+| `resolve_packages` | `catalog, system_info` | `—` | 8 |
+| `to_dict` | `` | `—` | 1 |
+
+### `fixos.features.renderer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/renderer.py)
+
+Feature renderer - displays audit results in terminal.
+
+**`FeatureRenderer`** [source](https://github.com/wronai/fixfedora/blob/main/fixos/features/renderer.py#L18)
+: Renders audit results for terminal display.
+
+| Method | Args | Returns | CC |
+|--------|------|---------|----|
+| `render_audit` | `result` | `—` | 8 |
+| `render_package_list` | `packages, title` | `—` | 3 |
+| `render_system_info` | `system` | `—` | 2 |
 
 ### `fixos.interactive.cleanup_planner` [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py)
 

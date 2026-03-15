@@ -133,6 +133,43 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.30] - 2026-03-15
+
+### Docs
+- Update docs/README.md
+- Update docs/api-changelog.md
+- Update docs/api.md
+- Update docs/architecture.md
+- Update docs/coverage.md
+- Update docs/dependency-graph.md
+- Update docs/index.html
+- Update docs/modules.md
+- Update project/README.md
+- Update project/context.md
+
+### Test
+- Update test-results/alpine-build.log
+- Update test-results/arch-build.log
+- Update test-results/arch-unit-tests.log
+- Update test-results/debian-build.log
+- Update test-results/debian-unit-tests.log
+- Update test-results/fedora-build.log
+- Update test-results/ubuntu-build.log
+- Update tests/e2e/test_cli.py
+
+### Other
+- Update fixos/agent/__init__.py
+- Update fixos/agent/autonomous.py
+- Update fixos/agent/autonomous_session.py
+- Update fixos/agent/hitl.py
+- Update fixos/agent/hitl_session.py
+- Update fixos/cli/features_cmd.py
+- Update fixos/cli/main.py
+- Update fixos/diagnostics/service_cleanup.py
+- Update fixos/diagnostics/service_details.py
+- Update fixos/diagnostics/service_scanner.py
+- ... and 25 more files
+
 ## [2.1.29] - 2026-03-15
 
 ### Docs

@@ -1,11 +1,11 @@
 # fixOS — Docstring Coverage
 
-🟡 **Overall coverage: 71.1%**
+🟡 **Overall coverage: 78.0%**
 
 | Category | Documented | Total | Coverage |
 |----------|-----------|-------|----------|
-| Functions | 213 | 291 | 73.2% |
-| Classes | 31 | 52 | 59.6% |
+| Functions | 300 | 379 | 79.2% |
+| Classes | 47 | 66 | 71.2% |
 
 ## Per-Module Breakdown
 
@@ -15,16 +15,43 @@
 | `docs.examples.quickstart` | 0/0 | 0/0 | 🟢 100% |
 | `fixos` | 0/0 | 0/0 | 🟢 100% |
 | `fixos.agent` | 0/0 | 0/0 | 🟢 100% |
-| `fixos.agent.autonomous` | 5/6 | 0/2 | 🟡 62% |
-| `fixos.agent.hitl` | 8/10 | 0/1 | 🟡 73% |
+| `fixos.agent.autonomous` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.agent.autonomous_session` | 1/1 | 1/3 | 🟡 50% |
+| `fixos.agent.hitl` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.agent.hitl_session` | 1/1 | 1/2 | 🟡 67% |
 | `fixos.anonymizer` | 2/2 | 0/0 | 🟢 100% |
-| `fixos.cli` | 40/42 | 0/1 | 🟢 93% |
+| `fixos.cli` | 0/0 | 0/0 | 🟢 100% |
+| `fixos.cli.ask_cmd` | 8/8 | 0/0 | 🟢 100% |
+| `fixos.cli.cleanup_cmd` | 8/8 | 0/0 | 🟢 100% |
+| `fixos.cli.config_cmd` | 4/4 | 0/0 | 🟢 100% |
+| `fixos.cli.features_cmd` | 6/6 | 0/0 | 🟢 100% |
+| `fixos.cli.fix_cmd` | 4/4 | 0/0 | 🟢 100% |
+| `fixos.cli.history_cmd` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.cli.main` | 3/3 | 0/0 | 🟢 100% |
+| `fixos.cli.orchestrate_cmd` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.cli.profile_cmd` | 3/3 | 0/0 | 🟢 100% |
+| `fixos.cli.provider_cmd` | 3/3 | 0/0 | 🟢 100% |
+| `fixos.cli.quickfix_cmd` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.cli.report_cmd` | 1/1 | 0/0 | 🟢 100% |
+| `fixos.cli.rollback_cmd` | 4/4 | 0/0 | 🟢 100% |
+| `fixos.cli.scan_cmd` | 3/3 | 0/0 | 🟢 100% |
+| `fixos.cli.shared` | 2/2 | 1/1 | 🟢 100% |
+| `fixos.cli.token_cmd` | 4/4 | 0/0 | 🟢 100% |
+| `fixos.cli.watch_cmd` | 1/1 | 0/0 | 🟢 100% |
 | `fixos.config` | 4/4 | 0/1 | 🟢 80% |
 | `fixos.diagnostics` | 0/0 | 0/0 | 🟢 100% |
 | `fixos.diagnostics.disk_analyzer` | 1/1 | 1/1 | 🟢 100% |
 | `fixos.diagnostics.flatpak_analyzer` | 1/1 | 2/3 | 🟡 75% |
-| `fixos.diagnostics.service_scanner` | 1/1 | 2/3 | 🟡 75% |
+| `fixos.diagnostics.service_cleanup` | 0/0 | 1/1 | 🟢 100% |
+| `fixos.diagnostics.service_details` | 0/0 | 1/1 | 🟢 100% |
+| `fixos.diagnostics.service_scanner` | 1/1 | 3/3 | 🟢 100% |
 | `fixos.diagnostics.system_checks` | 8/9 | 0/0 | 🟢 89% |
+| `fixos.features` | 0/0 | 2/2 | 🟢 100% |
+| `fixos.features.auditor` | 0/0 | 2/2 | 🟢 100% |
+| `fixos.features.catalog` | 0/0 | 3/3 | 🟢 100% |
+| `fixos.features.installer` | 0/0 | 1/1 | 🟢 100% |
+| `fixos.features.profiles` | 0/0 | 1/1 | 🟢 100% |
+| `fixos.features.renderer` | 0/0 | 1/1 | 🟢 100% |
 | `fixos.fixes` | 0/0 | 0/0 | 🟢 100% |
 | `fixos.interactive` | 0/0 | 0/0 | 🟢 100% |
 | `fixos.interactive.cleanup_planner` | 1/1 | 2/4 | 🟡 60% |
@@ -62,16 +89,12 @@
 
 ## Undocumented Items
 
-- `fixos.cli.add_common_options` (/home/tom/github/wronai/fixOS/fixos/cli.py:50)
-- `fixos.cli.main` (/home/tom/github/wronai/fixOS/fixos/cli.py:2246)
 - `fixos.llm_shell.format_time` (/home/tom/github/wronai/fixOS/fixos/llm_shell.py:58)
-- `fixos.agent.autonomous.AgentReport` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous.py:77)
-- `fixos.agent.autonomous.FixAction` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous.py:68)
-- `fixos.agent.hitl.CmdResult` (/home/tom/github/wronai/fixOS/fixos/agent/hitl.py:75)
-- `fixos.cli.NaturalLanguageGroup` (/home/tom/github/wronai/fixOS/fixos/cli.py:81)
+- `fixos.agent.autonomous_session.AgentReport` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous_session.py:74)
+- `fixos.agent.autonomous_session.FixAction` (/home/tom/github/wronai/fixOS/fixos/agent/autonomous_session.py:65)
+- `fixos.agent.hitl_session.CmdResult` (/home/tom/github/wronai/fixOS/fixos/agent/hitl_session.py:60)
 - `fixos.config.FixOsConfig` (/home/tom/github/wronai/fixOS/fixos/config.py:156)
 - `fixos.diagnostics.flatpak_analyzer.FlatpakItemType` (/home/tom/github/wronai/fixOS/fixos/diagnostics/flatpak_analyzer.py:21)
-- `fixos.diagnostics.service_scanner.ServiceType` (/home/tom/github/wronai/fixOS/fixos/diagnostics/service_scanner.py:24)
 - `fixos.interactive.cleanup_planner.CleanupType` (/home/tom/github/wronai/fixOS/fixos/interactive/cleanup_planner.py:20)
 - `fixos.interactive.cleanup_planner.Priority` (/home/tom/github/wronai/fixOS/fixos/interactive/cleanup_planner.py:13)
 - `fixos.orchestrator.executor.CommandTimeoutError` (/home/tom/github/wronai/fixOS/fixos/orchestrator/executor.py:23)

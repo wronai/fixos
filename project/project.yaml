@@ -3,48 +3,33 @@ project:
   name: fixOS
   repo: /home/tom/github/wronai/fixOS
   language: python
-  analyzed_at: '2026-03-15T10:42:02Z'
+  analyzed_at: '2026-03-15T13:22:18Z'
   tool: code2llm
   stats:
-    files: 33
-    lines: 13851
-    functions: 291
-    classes: 52
+    files: 59
+    lines: 15339
+    functions: 379
+    classes: 66
 health:
-  cc_avg: 5.7
-  critical_count: 53
+  cc_avg: 5.0
+  critical_count: 56
   critical_limit: 10
   duplicates: 1
-  cycles: 1
+  cycles: 0
   alerts:
   - type: high_fan_out
-    target: run_hitl_session
-    value: 42
+    target: HITLSession._process_turn
+    value: 28
     limit: 10
     severity: critical
   - type: cc_exceeded
-    target: _handle_natural_command
-    value: 37
-    limit: 15
-    severity: critical
-  - type: cc_exceeded
-    target: run_hitl_session
-    value: 34
-    limit: 15
-    severity: critical
-  - type: cc_exceeded
-    target: cleanup_services
-    value: 34
+    target: FeatureInstaller._install_package
+    value: 27
     limit: 15
     severity: critical
   - type: high_fan_out
     target: orchestrate
-    value: 30
-    limit: 10
-    severity: critical
-  - type: high_fan_out
-    target: run_autonomous_session
-    value: 28
+    value: 24
     limit: 10
     severity: critical
   - type: high_fan_out
@@ -63,11 +48,6 @@ health:
     limit: 10
     severity: critical
   - type: high_fan_out
-    target: token_set
-    value: 23
-    limit: 10
-    severity: critical
-  - type: high_fan_out
     target: report
     value: 22
     limit: 10
@@ -77,18 +57,8 @@ health:
     value: 21
     limit: 10
     severity: critical
-  - type: high_fan_out
-    target: execute_cleanup_actions
-    value: 21
-    limit: 10
-    severity: critical
   - type: cc_exceeded
     target: interactive_provider_setup
-    value: 24
-    limit: 15
-    severity: error
-  - type: cc_exceeded
-    target: execute_cleanup_actions
     value: 24
     limit: 15
     severity: error
@@ -98,8 +68,8 @@ health:
     limit: 15
     severity: error
   - type: cc_exceeded
-    target: run_autonomous_session
-    value: 21
+    target: HITLSession._process_turn
+    value: 20
     limit: 15
     severity: error
   - type: high_fan_out
@@ -113,161 +83,61 @@ health:
     limit: 10
     severity: error
   - type: high_fan_out
+    target: token_set
+    value: 18
+    limit: 10
+    severity: error
+  - type: high_fan_out
     target: FixOrchestrator.load_from_diagnostics
     value: 18
     limit: 10
     severity: error
+  - type: high_fan_out
+    target: Plugin.diagnose
+    value: 18
+    limit: 10
+    severity: error
+  - type: high_fan_out
+    target: diagnose_resources
+    value: 17
+    limit: 10
+    severity: error
+  - type: high_fan_out
+    target: SystemDetector.detect
+    value: 17
+    limit: 10
+    severity: error
+  - type: high_fan_out
+    target: cleanup_services
+    value: 16
+    limit: 10
+    severity: error
+  - type: high_fan_out
+    target: features_audit
+    value: 16
+    limit: 10
+    severity: error
 modules:
-- path: fixos/cli.py
-  lines: 2251
+- path: fixos/features/installer.py
+  lines: 202
   classes: 1
-  methods: 43
-  cc_max: 37
+  methods: 11
+  cc_max: 27
   inbound_deps: 0
   exports:
-  - name: NaturalLanguageGroup
+  - name: FeatureInstaller
     type: class
-    cc_avg: 6.0
-  - name: add_common_options
-    type: function
-    cc: 2
-  - name: add_shared_options
-    type: function
-    cc: 1
-  - name: cli
-    type: function
-    cc: 3
-  - name: ask
-    type: function
-    cc: 1
-  - name: scan
-    type: function
-    cc: 12
-    fan_out: 11
-  - name: fix
-    type: function
-    cc: 18
-    flag: split
-    fan_out: 21
-  - name: handle_disk_cleanup_mode
-    type: function
-    cc: 13
-    fan_out: 13
-  - name: execute_cleanup_actions
-    type: function
-    cc: 24
-    flag: split
-    fan_out: 21
-  - name: try_llm_fallback_for_failures
-    type: function
-    cc: 3
-  - name: token
-    type: function
-    cc: 1
-  - name: token_set
-    type: function
-    cc: 18
-    flag: split
-    fan_out: 23
-  - name: token_show
-    type: function
-    cc: 4
-  - name: token_clear
-    type: function
-    cc: 7
-    fan_out: 15
-  - name: config
-    type: function
-    cc: 1
-  - name: config_show
-    type: function
-    cc: 3
-  - name: config_init
-    type: function
-    cc: 4
-    fan_out: 11
-  - name: config_set
-    type: function
-    cc: 5
-    fan_out: 13
-  - name: llm_providers
-    type: function
-    cc: 10
-  - name: providers
-    type: function
-    cc: 3
-  - name: test_llm
-    type: function
-    cc: 5
-  - name: orchestrate
-    type: function
-    cc: 13
-    fan_out: 30
-  - name: cleanup_services
-    type: function
-    cc: 34
-    flag: split
-    fan_out: 18
-  - name: rollback
-    type: function
-    cc: 1
-  - name: rollback_list
-    type: function
-    cc: 3
-  - name: rollback_show
-    type: function
-    cc: 5
-  - name: rollback_undo
-    type: function
-    cc: 7
-  - name: watch
-    type: function
-    cc: 2
-  - name: profile
-    type: function
-    cc: 1
-  - name: profile_list
-    type: function
-    cc: 4
-  - name: profile_show
-    type: function
-    cc: 4
-  - name: quickfix
-    type: function
-    cc: 12
-    fan_out: 11
-  - name: report
-    type: function
-    cc: 16
-    flag: split
-    fan_out: 22
-  - name: history
-    type: function
-    cc: 5
-  - name: main
-    type: function
-    cc: 1
-- path: fixos/agent/hitl.py
-  lines: 461
-  classes: 1
-  methods: 10
-  cc_max: 34
-  inbound_deps: 1
-  exports:
-  - name: CmdResult
-    type: class
-    cc_avg: 0.0
-  - name: run_hitl_session
-    type: function
-    cc: 34
-    flag: split
-    fan_out: 42
+    cc_avg: 4.9
+    methods:
+    - name: _install_package
+      cc: 27
+      flag: split
 - path: fixos/config.py
   lines: 422
   classes: 1
   methods: 7
   cc_max: 24
-  inbound_deps: 1
+  inbound_deps: 2
   exports:
   - name: FixOsConfig
     type: class
@@ -286,55 +156,91 @@ modules:
   - name: get_providers_list
     type: function
     cc: 3
-- path: fixos/agent/autonomous.py
-  lines: 349
-  classes: 2
-  methods: 7
-  cc_max: 21
-  inbound_deps: 1
+- path: fixos/cli/cleanup_cmd.py
+  lines: 371
+  classes: 0
+  methods: 8
+  cc_max: 23
+  inbound_deps: 0
   exports:
-  - name: FixAction
+  - name: cleanup_services
+    type: function
+    cc: 15
+    flag: split
+    fan_out: 16
+- path: fixos/agent/hitl_session.py
+  lines: 509
+  classes: 2
+  methods: 20
+  cc_max: 20
+  inbound_deps: 0
+  exports:
+  - name: CmdResult
     type: class
     cc_avg: 0.0
-  - name: AgentReport
+  - name: HITLSession
     type: class
-    cc_avg: 4.0
-  - name: run_autonomous_session
+    cc_avg: 4.3
+    methods:
+    - name: _extract_fixes
+      cc: 10
+    - name: _run_cmd
+      cc: 3
+      fan_out: 10
+    - name: _check_low_confidence
+      cc: 7
+      fan_out: 10
+    - name: _process_turn
+      cc: 20
+      flag: split
+      fan_out: 28
+  - name: run_hitl_session
     type: function
-    cc: 21
-    flag: split
-    fan_out: 28
-- path: fixos/diagnostics/service_scanner.py
-  lines: 987
-  classes: 3
-  methods: 20
+    cc: 1
+- path: fixos/cli/ask_cmd.py
+  lines: 354
+  classes: 0
+  methods: 8
   cc_max: 18
   inbound_deps: 0
   exports:
-  - name: ServiceType
-    type: class
-    cc_avg: 0.0
-  - name: ServiceDataInfo
-    type: class
-    cc_avg: 0.0
-  - name: ServiceDataScanner
-    type: class
-    cc_avg: 5.2
-    methods:
-    - name: _analyze_service_path
-      cc: 4
-      fan_out: 11
-    - name: _get_docker_details
-      cc: 18
-      flag: split
-    - name: _get_flatpak_details
-      cc: 6
-      fan_out: 11
-    - name: get_cleanup_plan
-      cc: 14
-  - name: main
+  - name: ask
     type: function
     cc: 1
+- path: fixos/cli/fix_cmd.py
+  lines: 282
+  classes: 0
+  methods: 4
+  cc_max: 18
+  inbound_deps: 0
+  exports:
+  - name: fix
+    type: function
+    cc: 18
+    flag: split
+    fan_out: 21
+  - name: handle_disk_cleanup_mode
+    type: function
+    cc: 13
+    fan_out: 13
+  - name: execute_cleanup_actions
+    type: function
+    cc: 6
+    fan_out: 10
+  - name: try_llm_fallback_for_failures
+    type: function
+    cc: 3
+- path: fixos/cli/scan_cmd.py
+  lines: 187
+  classes: 0
+  methods: 3
+  cc_max: 18
+  inbound_deps: 1
+  exports:
+  - name: scan
+    type: function
+    cc: 12
+    fan_out: 11
 - path: fixos/interactive/cleanup_planner.py
   lines: 417
   classes: 4
@@ -421,6 +327,24 @@ modules:
   - name: main
     type: function
     cc: 1
+- path: fixos/diagnostics/service_details.py
+  lines: 242
+  classes: 1
+  methods: 7
+  cc_max: 17
+  inbound_deps: 0
+  exports:
+  - name: ServiceDetailsProvider
+    type: class
+    cc_avg: 6.9
+    methods:
+    - name: _docker
+      cc: 17
+      flag: split
+      fan_out: 10
+    - name: _flatpak
+      cc: 6
+      fan_out: 11
 - path: fixos/orchestrator/orchestrator.py
   lines: 382
   classes: 2
@@ -448,6 +372,18 @@ modules:
     - name: _parse_json
       cc: 6
       fan_out: 10
+- path: fixos/cli/report_cmd.py
+  lines: 115
+  classes: 0
+  methods: 1
+  cc_max: 16
+  inbound_deps: 0
+  exports:
+  - name: report
+    type: function
+    cc: 16
+    flag: split
+    fan_out: 22
 - path: fixos/plugins/builtin/security.py
   lines: 171
   classes: 1
@@ -468,7 +404,7 @@ modules:
   classes: 1
   methods: 8
   cc_max: 16
-  inbound_deps: 3
+  inbound_deps: 2
   exports:
   - name: _C
     type: class
@@ -497,6 +433,31 @@ modules:
     type: function
     cc: 8
     fan_out: 10
+- path: fixos/cli/features_cmd.py
+  lines: 176
+  classes: 0
+  methods: 6
+  cc_max: 15
+  inbound_deps: 0
+  exports:
+  - name: features
+    type: function
+    cc: 1
+  - name: features_audit
+    type: function
+    cc: 4
+    fan_out: 16
+  - name: features_install
+    type: function
+    cc: 15
+    flag: split
+    fan_out: 15
+  - name: features_profiles
+    type: function
+    cc: 3
+  - name: features_system
+    type: function
+    cc: 1
 - path: fixos/diagnostics/flatpak_analyzer.py
   lines: 332
   classes: 3
@@ -523,6 +484,31 @@ modules:
   - name: analyze_flatpak_for_cleanup
     type: function
     cc: 1
+- path: fixos/features/__init__.py
+  lines: 267
+  classes: 2
+  methods: 12
+  cc_max: 15
+  inbound_deps: 0
+  exports:
+  - name: SystemInfo
+    type: class
+    cc_avg: 0.0
+  - name: SystemDetector
+    type: class
+    cc_avg: 5.8
+    methods:
+    - name: detect
+      cc: 3
+      fan_out: 17
+    - name: _detect_de
+      cc: 15
+      flag: split
+    - name: _detect_gpu_vendor
+      cc: 13
+    - name: _get_installed_packages
+      cc: 7
+      fan_out: 10
 - path: fixos/llm_shell.py
   lines: 240
   classes: 0
@@ -559,6 +545,19 @@ modules:
     - name: chat
       cc: 15
       flag: split
+- path: fixos/diagnostics/service_cleanup.py
+  lines: 355
+  classes: 1
+  methods: 8
+  cc_max: 14
+  inbound_deps: 0
+  exports:
+  - name: ServiceCleaner
+    type: class
+    cc_avg: 3.0
+    methods:
+    - name: get_cleanup_plan
+      cc: 14
 - path: fixos/diagnostics/system_checks.py
   lines: 512
   classes: 0
@@ -603,6 +602,17 @@ modules:
     - name: diagnose
       cc: 14
       fan_out: 13
+- path: fixos/cli/orchestrate_cmd.py
+  lines: 132
+  classes: 0
+  methods: 1
+  cc_max: 13
+  inbound_deps: 0
+  exports:
+  - name: orchestrate
+    type: function
+    cc: 13
+    fan_out: 24
 - path: fixos/orchestrator/graph.py
   lines: 163
   classes: 2
@@ -649,6 +659,17 @@ modules:
   - name: main
     type: function
     cc: 1
+- path: fixos/cli/quickfix_cmd.py
+  lines: 76
+  classes: 0
+  methods: 1
+  cc_max: 12
+  inbound_deps: 0
+  exports:
+  - name: quickfix
+    type: function
+    cc: 12
+    fan_out: 11
 - path: fixos/plugins/builtin/disk.py
   lines: 113
   classes: 1
@@ -716,6 +737,22 @@ modules:
     - name: execute
       cc: 9
       fan_out: 13
+- path: fixos/features/auditor.py
+  lines: 127
+  classes: 2
+  methods: 5
+  cc_max: 10
+  inbound_deps: 0
+  exports:
+  - name: AuditResult
+    type: class
+    cc_avg: 4.0
+  - name: FeatureAuditor
+    type: class
+    cc_avg: 5.2
+    methods:
+    - name: _is_installed
+      cc: 10
 - path: fixos/plugins/builtin/audio.py
   lines: 107
   classes: 1
@@ -744,6 +781,22 @@ modules:
     - name: diagnose
       cc: 10
       fan_out: 13
+- path: fixos/cli/provider_cmd.py
+  lines: 250
+  classes: 0
+  methods: 3
+  cc_max: 9
+  inbound_deps: 0
+  exports:
+  - name: llm_providers
+    type: function
+    cc: 6
+  - name: providers
+    type: function
+    cc: 4
+  - name: test_llm
+    type: function
+    cc: 9
 - path: fixos/utils/web_search.py
   lines: 254
   classes: 1
@@ -780,6 +833,52 @@ modules:
   - name: format_results_for_llm
     type: function
     cc: 3
+- path: fixos/agent/autonomous_session.py
+  lines: 429
+  classes: 3
+  methods: 22
+  cc_max: 8
+  inbound_deps: 0
+  exports:
+  - name: FixAction
+    type: class
+    cc_avg: 0.0
+  - name: AgentReport
+    type: class
+    cc_avg: 4.0
+  - name: AutonomousSession
+    type: class
+    cc_avg: 2.9
+    methods:
+    - name: _handle_exec
+      cc: 4
+      fan_out: 10
+    - name: _process_turn
+      cc: 8
+      fan_out: 13
+  - name: run_autonomous_session
+    type: function
+    cc: 1
+- path: fixos/features/profiles.py
+  lines: 88
+  classes: 1
+  methods: 4
+  cc_max: 8
+  inbound_deps: 0
+  exports:
+  - name: UserProfile
+    type: class
+    cc_avg: 4.0
+- path: fixos/features/renderer.py
+  lines: 124
+  classes: 1
+  methods: 4
+  cc_max: 8
+  inbound_deps: 0
+  exports:
+  - name: FeatureRenderer
+    type: class
+    cc_avg: 5.0
 - path: fixos/platform_utils.py
   lines: 184
   classes: 0
@@ -814,6 +913,89 @@ modules:
   - name: cancel_signal_timeout
     type: function
     cc: 2
+- path: fixos/cli/rollback_cmd.py
+  lines: 90
+  classes: 0
+  methods: 4
+  cc_max: 7
+  inbound_deps: 0
+  exports:
+  - name: rollback
+    type: function
+    cc: 1
+  - name: rollback_list
+    type: function
+    cc: 3
+  - name: rollback_show
+    type: function
+    cc: 5
+  - name: rollback_undo
+    type: function
+    cc: 7
+- path: fixos/cli/token_cmd.py
+  lines: 124
+  classes: 0
+  methods: 4
+  cc_max: 7
+  inbound_deps: 0
+  exports:
+  - name: token
+    type: function
+    cc: 1
+  - name: token_set
+    type: function
+    cc: 7
+    fan_out: 18
+  - name: token_show
+    type: function
+    cc: 2
+  - name: token_clear
+    type: function
+    cc: 3
+    fan_out: 10
+- path: fixos/diagnostics/service_scanner.py
+  lines: 249
+  classes: 3
+  methods: 8
+  cc_max: 7
+  inbound_deps: 0
+  exports:
+  - name: ServiceType
+    type: class
+    cc_avg: 0.0
+  - name: ServiceDataInfo
+    type: class
+    cc_avg: 0.0
+  - name: ServiceDataScanner
+    type: class
+    cc_avg: 3.4
+    methods:
+    - name: _analyze_service_path
+      cc: 4
+      fan_out: 11
+  - name: main
+    type: function
+    cc: 1
+- path: fixos/features/catalog.py
+  lines: 119
+  classes: 3
+  methods: 7
+  cc_max: 7
+  inbound_deps: 0
+  exports:
+  - name: PackageInfo
+    type: class
+    cc_avg: 4.0
+  - name: PackageCategory
+    type: class
+    cc_avg: 0.0
+  - name: PackageCatalog
+    type: class
+    cc_avg: 2.6
+    methods:
+    - name: load
+      cc: 7
+      fan_out: 12
 - path: fixos/orchestrator/rollback.py
   lines: 162
   classes: 2
@@ -845,12 +1027,41 @@ modules:
     - name: run
       cc: 7
       fan_out: 13
+- path: fixos/cli/main.py
+  lines: 158
+  classes: 0
+  methods: 3
+  cc_max: 6
+  inbound_deps: 0
+  exports:
+  - name: cli
+    type: function
+    cc: 3
+  - name: main
+    type: function
+    cc: 1
+- path: fixos/cli/shared.py
+  lines: 62
+  classes: 1
+  methods: 3
+  cc_max: 6
+  inbound_deps: 0
+  exports:
+  - name: NaturalLanguageGroup
+    type: class
+    cc_avg: 6.0
+  - name: add_common_options
+    type: function
+    cc: 2
+  - name: add_shared_options
+    type: function
+    cc: 1
 - path: fixos/system_checks.py
   lines: 156
   classes: 0
   methods: 8
   cc_max: 6
-  inbound_deps: 1
+  inbound_deps: 2
   exports:
   - name: run_cmd
     type: function
@@ -890,6 +1101,51 @@ modules:
   - name: anonymize
     type: function
     cc: 5
+- path: fixos/cli/history_cmd.py
+  lines: 49
+  classes: 0
+  methods: 1
+  cc_max: 5
+  inbound_deps: 0
+  exports:
+  - name: history
+    type: function
+    cc: 5
+- path: fixos/cli/config_cmd.py
+  lines: 83
+  classes: 0
+  methods: 4
+  cc_max: 4
+  inbound_deps: 0
+  exports:
+  - name: config
+    type: function
+    cc: 1
+  - name: config_show
+    type: function
+    cc: 4
+  - name: config_init
+    type: function
+    cc: 3
+  - name: config_set
+    type: function
+    cc: 2
+- path: fixos/cli/profile_cmd.py
+  lines: 59
+  classes: 0
+  methods: 3
+  cc_max: 4
+  inbound_deps: 0
+  exports:
+  - name: profile
+    type: function
+    cc: 1
+  - name: profile_list
+    type: function
+    cc: 4
+  - name: profile_show
+    type: function
+    cc: 4
 - path: fixos/profiles/__init__.py
   lines: 65
   classes: 1
@@ -904,6 +1160,16 @@ modules:
     - name: load
       cc: 3
       fan_out: 10
+- path: fixos/cli/watch_cmd.py
+  lines: 49
+  classes: 0
+  methods: 1
+  cc_max: 2
+  inbound_deps: 0
+  exports:
+  - name: watch
+    type: function
+    cc: 2
 - path: fixos/plugins/base.py
   lines: 99
   classes: 4
@@ -923,6 +1189,26 @@ modules:
   - name: DiagnosticPlugin
     type: class
     cc_avg: 1.0
+- path: fixos/agent/autonomous.py
+  lines: 49
+  classes: 0
+  methods: 1
+  cc_max: 1
+  inbound_deps: 1
+  exports:
+  - name: run_autonomous_session
+    type: function
+    cc: 1
+- path: fixos/agent/hitl.py
+  lines: 36
+  classes: 0
+  methods: 1
+  cc_max: 1
+  inbound_deps: 1
+  exports:
+  - name: run_hitl_session
+    type: function
+    cc: 1
 - path: fixos/utils/timeout.py
   lines: 17
   classes: 1
@@ -943,7 +1229,13 @@ modules:
   cc_max: 0
   inbound_deps: 0
 - path: fixos/agent/__init__.py
-  lines: 3
+  lines: 22
+  classes: 0
+  methods: 0
+  cc_max: 0
+  inbound_deps: 0
+- path: fixos/cli/__init__.py
+  lines: 8
   classes: 0
   methods: 0
   cc_max: 0
@@ -1031,16 +1323,13 @@ modules:
   cc_max: 0
   inbound_deps: 0
 hotspots:
-- name: run_hitl_session
-  fan_out: 42
-  note: Runs interactive HITL session with full transparency.
-- name: orchestrate
-  fan_out: 30
-  note: "Orkiestracja napraw z grafem kaskadowych problemów.\n\n\b\nRóżnica od 'fix':\n\
-    \  - Bud"
-- name: run_autonomous_session
+- name: HITLSession._process_turn
   fan_out: 28
-  note: Uruchamia autonomiczny tryb agenta.
+  note: Analysis pipeline, 28 stages
+- name: orchestrate
+  fan_out: 24
+  note: "Zaawansowana orkiestracja napraw z grafem problemów.\n\n\b\nRóżnica od 'fix':\n\
+    \  - Bu"
 - name: _cleanup_flatpak_detailed
   fan_out: 24
   note: "Detailed interactive Flatpak cleanup showing unused runtimes, \nleftover\
@@ -1054,10 +1343,6 @@ hotspots:
   note: 'Interaktywny wybór providera gdy brak konfiguracji.
 
     Wyświetla numerowaną listę p'
-- name: token_set
-  fan_out: 23
-  note: "Zapisuje token API do pliku .env.\n\n\b\nPrzykłady:\n  fixos token set AIzaSy...\
-    \     "
 - name: report
   fan_out: 22
   note: "Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.\n\n\b\nPrzykłady:\n\
@@ -1066,27 +1351,28 @@ hotspots:
   fan_out: 21
   note: "Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.\n\n\b\n\
     Tryby:\n  hi"
-- name: execute_cleanup_actions
-  fan_out: 21
-  note: Execute cleanup actions with safety checks
+- name: diagnose_system
+  fan_out: 19
+  note: 'System metrics – cross-platform: CPU, RAM, disks, processes.'
+- name: render_md
+  fan_out: 19
+  note: 'Print LLM markdown reply to terminal via rich.
+
+
+    Handles:
+
+    - ``` code blocks ``` r'
+- name: token_set
+  fan_out: 18
+  note: "Zapisz token API do pliku .env.\n\n\b\nPrzykłady:\n  fixos token set AIzaSy...\
+    \       "
 refactoring:
   priorities:
-  - action: Split run_hitl_session (CC=34 → target CC<10)
+  - action: Split FeatureInstaller._install_package (CC=27 → target CC<10)
     impact: high
     effort: low
-    module: hitl.py
-  - action: Split _handle_natural_command (CC=37 → target CC<10)
-    impact: high
-    effort: low
-    module: cli.py
-  - action: Split cleanup_services (CC=34 → target CC<10)
-    impact: high
-    effort: low
-    module: cli.py
-  - action: Split god module fixos/cli.py (2251L, 1 classes)
-    impact: high
-    effort: high
-  - action: Split god module fixos/diagnostics/service_scanner.py (987L, 3 classes)
+    module: installer.py
+  - action: Split god module fixos/agent/hitl_session.py (509L, 2 classes)
     impact: high
     effort: high
   - action: Split god module fixos/diagnostics/system_checks.py (512L, 0 classes)
@@ -1096,41 +1382,53 @@ refactoring:
     impact: medium
     effort: low
     module: llm_shell.py
-  - action: Split interactive_provider_setup (CC=24 → target CC<10)
-    impact: medium
-    effort: low
-    module: config.py
   - action: Split DiskAnalyzer._identify_cache_type (CC=17 → target CC<10)
     impact: medium
     effort: low
     module: disk_analyzer.py
+  - action: Split ServiceDetailsProvider._docker (CC=17 → target CC<10)
+    impact: medium
+    effort: low
+    module: service_details.py
+  - action: Split interactive_provider_setup (CC=24 → target CC<10)
+    impact: medium
+    effort: low
+    module: config.py
+  - action: Split HITLSession._process_turn (CC=20 → target CC<10)
+    impact: medium
+    effort: low
+    module: hitl_session.py
   - action: Split FlatpakAnalyzer._find_leftover_data (CC=15 → target CC<10)
     impact: medium
     effort: low
     module: flatpak_analyzer.py
-  - action: Split run_autonomous_session (CC=21 → target CC<10)
+  - action: Split SystemDetector._detect_de (CC=15 → target CC<10)
     impact: medium
     effort: low
-    module: autonomous.py
-  - action: Split LLMClient.chat (CC=15 → target CC<10)
+    module: __init__.py
+  - action: Split _run_disk_analysis (CC=18 → target CC<10)
     impact: medium
     effort: low
-    module: llm.py
-  - action: Split ServiceDataScanner._get_docker_details (CC=18 → target CC<10)
+    module: scan_cmd.py
+  - action: Split report (CC=16 → target CC<10)
     impact: medium
     effort: low
-    module: service_scanner.py
-  - action: Split anonymize (CC=15 → target CC<10)
+    module: report_cmd.py
+  - action: Split _match_heuristic_command (CC=18 → target CC<10)
     impact: medium
     effort: low
-    module: anonymizer.py
-  - action: Split _dict_to_markdown (CC=18 → target CC<10)
+    module: ask_cmd.py
+  - action: Split cleanup_services (CC=15 → target CC<10)
     impact: medium
     effort: low
-    module: anonymizer.py
+    module: cleanup_cmd.py
+  - action: Split _cleanup_flatpak_detailed (CC=23 → target CC<10)
+    impact: medium
+    effort: low
+    module: cleanup_cmd.py
 evolution:
 - date: '2026-03-15'
-  cc_avg: 5.7
-  critical: 53
-  lines: 13851
+  cc_avg: 5.0
+  critical: 56
+  lines: 15339
   note: Automated analysis

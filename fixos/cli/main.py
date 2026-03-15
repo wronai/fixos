@@ -137,6 +137,7 @@ from fixos.cli.scan_cmd import scan
 from fixos.cli.fix_cmd import fix
 from fixos.cli.orchestrate_cmd import orchestrate
 from fixos.cli.cleanup_cmd import cleanup_services
+from fixos.cli.features_cmd import features
 
 cli.add_command(rollback)
 cli.add_command(watch)
@@ -154,3 +155,4 @@ cli.add_command(scan)
 cli.add_command(fix)
 cli.add_command(orchestrate)
 cli.add_command(cleanup_services)
+cli.add_command(features)

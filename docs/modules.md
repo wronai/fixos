@@ -23,7 +23,7 @@
 | `fixos.providers.llm` | 142 | 0 | 2 | 6.2 | Ujednolicony klient LLM obsługujący wiele providerów przez O | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py) |
 | `fixos.providers.llm_analyzer` | 333 | 1 | 2 | 5.2 | LLM Analyzer for fixOS - Fallback analysis when heuristics a | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py) |
 | `fixos.system_checks` | 156 | 8 | 0 | 2.6 | Moduł zbierający dane diagnostyczne z systemu system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py) |
-| `fixos.utils.anonymizer` | 298 | 7 | 1 | 6.6 | Anonimizacja wrażliwych danych systemowych z podglądem dla u | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py) |
+| `fixos.utils.anonymizer` | 299 | 7 | 1 | 6.6 | Anonimizacja wrażliwych danych systemowych z podglądem dla u | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py) |
 | `fixos.utils.terminal` | 316 | 8 | 1 | 5.2 | Terminal rendering utilities – shared between hitl, orchestr | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py) |
 | `fixos.utils.web_search` | 254 | 9 | 1 | 4.9 | Zewnętrzne źródła wiedzy – fallback gdy LLM nie zna rozwiąza | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py) |
 

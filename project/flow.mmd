@@ -199,15 +199,6 @@ flowchart TD
         fixos__system_checks__get_full_diagnostics["get_full_diagnostics"]
     end
     subgraph fixos_utils
-        fixos__utils__web_search___http_get["_http_get"]
-        fixos__utils__web_search__search_fedora_bugzilla["search_fedora_bugzilla"]
-        fixos__utils__web_search__search_ask_fedora["search_ask_fedora"]
-        fixos__utils__web_search__search_arch_wiki("search_arch_wiki CC=9")
-        fixos__utils__web_search__search_github_issues["search_github_issues"]
-        fixos__utils__web_search__search_serpapi["search_serpapi"]
-        fixos__utils__web_search__search_ddg("search_ddg CC=8")
-        fixos__utils__web_search__search_all["search_all"]
-        fixos__utils__web_search__format_results_for_llm["format_results_for_llm"]
         fixos__utils__anonymizer__AnonymizationReport__add["add"]
         fixos__summary["summary"]
         fixos__utils__anonymizer___get_sensitive["_get_sensitive"]
@@ -217,6 +208,15 @@ flowchart TD
         fixos___format_diagnostics_markdown["_format_diagnostics_markdown"]
         fixos__utils__anonymizer___dict_to_markdown{{_dict_to_markdown CC=18}}
         fixos__utils__anonymizer___format_key_title["_format_key_title"]
+        fixos__utils__web_search___http_get["_http_get"]
+        fixos__utils__web_search__search_fedora_bugzilla["search_fedora_bugzilla"]
+        fixos__utils__web_search__search_ask_fedora["search_ask_fedora"]
+        fixos__utils__web_search__search_arch_wiki("search_arch_wiki CC=9")
+        fixos__utils__web_search__search_github_issues["search_github_issues"]
+        fixos__utils__web_search__search_serpapi["search_serpapi"]
+        fixos__utils__web_search__search_ddg("search_ddg CC=8")
+        fixos__utils__web_search__search_all["search_all"]
+        fixos__utils__web_search__format_results_for_llm["format_results_for_llm"]
         fixos__utils__terminal__colorize["colorize"]
         fixos__utils__terminal__render_md{{render_md CC=16}}
         fixos__utils__terminal__print_cmd_block["print_cmd_block"]
@@ -229,7 +229,6 @@ flowchart TD
     fixos__platform_utils__elevate_cmd --> fixos__platform_utils__needs_elevation
     fixos__platform_utils__get_package_manager --> fixos__platform_utils___cmd_exists
     fixos__platform_utils__install_package_cmd --> fixos__platform_utils__get_package_manager
-    fixos__anonymizer__anonymize --> fixos__anonymizer__get_sensitive_values
     fixos__system_checks__get_fedora_specific --> fixos__system_checks__run_cmd
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_cpu_info
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_memory_info
@@ -237,6 +236,7 @@ flowchart TD
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_network_info
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_top_processes
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_fedora_specific
+    fixos__anonymizer__anonymize --> fixos__anonymizer__get_sensitive_values
     fixos__llm_shell__run_llm_shell --> fixos__anonymizer__anonymize
     fixos__diagnostics__system_checks__diagnose_audio --> fixos__diagnostics__system_checks___cmd
     fixos__diagnose_thumbnails --> fixos__diagnostics__system_checks___cmd
@@ -258,6 +258,11 @@ flowchart TD
     fixos__agent__hitl__run_hitl_session --> fixos__platform_utils__get_package_manager
     fixos__config__FixOsConfig__load --> fixos__config___load_env_files
     fixos__agent__autonomous__run_autonomous_session --> fixos__anonymizer__anonymize
+    fixos__utils__anonymizer__anonymize --> fixos__utils__anonymizer___get_sensitive
+    fixos__display_anonymized_preview --> fixos___format_diagnostics_markdown
+    fixos__display_anonymized_preview --> fixos__utils__anonymizer___colorize_md_line
+    fixos___format_diagnostics_markdown --> fixos__utils__anonymizer___dict_to_markdown
+    fixos__utils__anonymizer___dict_to_markdown --> fixos__utils__anonymizer___format_key_title
     fixos__utils__web_search__search_fedora_bugzilla --> fixos__utils__web_search___http_get
     fixos__utils__web_search__search_ask_fedora --> fixos__utils__web_search___http_get
     fixos__utils__web_search__search_arch_wiki --> fixos__utils__web_search___http_get
@@ -269,11 +274,6 @@ flowchart TD
     fixos__utils__web_search__search_all --> fixos__utils__web_search__search_github_issues
     fixos__utils__web_search__search_all --> fixos__utils__web_search__search_serpapi
     fixos__utils__web_search__search_all --> fixos__utils__web_search__search_ddg
-    fixos__utils__anonymizer__anonymize --> fixos__utils__anonymizer___get_sensitive
-    fixos__display_anonymized_preview --> fixos___format_diagnostics_markdown
-    fixos__display_anonymized_preview --> fixos__utils__anonymizer___colorize_md_line
-    fixos___format_diagnostics_markdown --> fixos__utils__anonymizer___dict_to_markdown
-    fixos__utils__anonymizer___dict_to_markdown --> fixos__utils__anonymizer___format_key_title
     fixos__load_from_diagnostics --> fixos__anonymizer__anonymize
     fixos___evaluate_and_rediagnose --> fixos__anonymizer__anonymize
     fixos___default_confirm --> fixos__utils__terminal__print_problem_header
@@ -301,5 +301,5 @@ flowchart TD
 
     classDef highCC fill:#ff6b6b,stroke:#c92a2a,color:#fff
     classDef medCC fill:#ffd43b,stroke:#f08c00,color:#000
-    class fixos__llm_shell__run_llm_shell,fixos___identify_cache_type,fixos__agent__hitl__run_hitl_session,fixos__config__interactive_provider_setup,fixos__providers__llm__LLMClient__chat,fixos__agent__autonomous__run_autonomous_session,fixos__utils__anonymizer__anonymize,fixos__utils__anonymizer___dict_to_markdown,fixos__utils__terminal__render_md,fixos___get_docker_details,fixos__run_sync,fixos___generate_recommendations,fixos__cli___handle_natural_command,fixos__cli___run_disk_analysis,fixos__cli__fix,fixos__cli__execute_cleanup_actions,fixos__cli__token_set,fixos__cli__cleanup_services highCC
-    class fixos__platform_utils__get_package_manager,fixos__llm_shell__execute_command,fixos__diagnostics__system_checks__diagnose_system,fixos__diagnose_resources,fixos__get_cache_dirs,fixos__get_log_dirs,fixos__get_temp_dirs,fixos__suggest_cleanup_actions,fixos___categorize_file,fixos__agent__hitl___print_cmd_result,fixos__agent__hitl___extract_fixes,fixos__config___load_env_files,fixos__config__FixOsConfig__load,fixos___sanitize_suggestion,fixos__enhance_heuristics_with_llm,fixos__utils__web_search__search_arch_wiki,fixos__utils__web_search__search_ddg,fixos__utils__anonymizer___colorize_md_line,fixos__utils__terminal__render_tree_colored,fixos__get_cleanup_plan,fixos__execute_sync,fixos__execute,fixos___recalculate_order,fixos___evaluate_and_rediagnose,fixos___default_progress,fixos__prioritize_actions,fixos__create_cleanup_plan,fixos___get_category_for_action,fixos__cli___validate_result_with_llm,fixos__cli__scan medCC
+    class fixos__llm_shell__run_llm_shell,fixos___identify_cache_type,fixos__agent__hitl__run_hitl_session,fixos__config__interactive_provider_setup,fixos__providers__llm__LLMClient__chat,fixos__agent__autonomous__run_autonomous_session,fixos__utils__anonymizer__anonymize,fixos__utils__anonymizer___dict_to_markdown,fixos___get_docker_details,fixos__utils__terminal__render_md,fixos___generate_recommendations,fixos__run_sync,fixos__cli___handle_natural_command,fixos__cli___run_disk_analysis,fixos__cli__fix,fixos__cli__execute_cleanup_actions,fixos__cli__token_set,fixos__cli__cleanup_services highCC
+    class fixos__platform_utils__get_package_manager,fixos__llm_shell__execute_command,fixos__diagnostics__system_checks__diagnose_system,fixos__diagnose_resources,fixos__get_cache_dirs,fixos__get_log_dirs,fixos__get_temp_dirs,fixos__suggest_cleanup_actions,fixos___categorize_file,fixos__agent__hitl___print_cmd_result,fixos__agent__hitl___extract_fixes,fixos__config___load_env_files,fixos__config__FixOsConfig__load,fixos___sanitize_suggestion,fixos__enhance_heuristics_with_llm,fixos__utils__anonymizer___colorize_md_line,fixos__utils__web_search__search_arch_wiki,fixos__utils__web_search__search_ddg,fixos__get_cleanup_plan,fixos__utils__terminal__render_tree_colored,fixos__execute_sync,fixos__execute,fixos__prioritize_actions,fixos__create_cleanup_plan,fixos___get_category_for_action,fixos___recalculate_order,fixos___evaluate_and_rediagnose,fixos___default_progress,fixos__cli___validate_result_with_llm,fixos__cli__scan medCC

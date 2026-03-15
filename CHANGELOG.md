@@ -133,6 +133,40 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.26] - 2026-03-15
+
+### Docs
+- Update docker/TEST_RESULTS.md
+- Update docs/README.md
+- Update docs/architecture.md
+- Update docs/modules.md
+- Update project/context.md
+
+### Test
+- Update test-results/alpine-build.log
+- Update test-results/alpine-scan-help.log
+- Update test-results/alpine-unit-tests.log
+- Update test-results/alpine-version.log
+- Update test-results/arch-build.log
+- Update test-results/arch-unit-tests.log
+- Update test-results/debian-build.log
+- Update test-results/fedora-build.log
+- Update test-results/fedora-unit-tests.log
+- Update test-results/ubuntu-build.log
+
+### Other
+- Update docker/test-multi-system.sh
+- Update fixos/agent/autonomous.py
+- Update fixos/agent/hitl.py
+- Update fixos/cli.py
+- Update fixos/llm_shell.py
+- Update fixos/orchestrator/rollback.py
+- Update fixos/plugins/__init__.py
+- Update fixos/plugins/base.py
+- Update fixos/plugins/builtin/__init__.py
+- Update fixos/plugins/builtin/audio.py
+- ... and 27 more files
+
 ## [2.1.25] - 2026-03-15
 
 ### Test

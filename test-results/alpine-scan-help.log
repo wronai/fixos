@@ -1,0 +1,37 @@
+Usage: fixos scan [OPTIONS]
+
+  Przeprowadza diagnostykę systemu.
+
+  Nowe opcje:
+    --disc          – Analiza zajętości dysku
+    --dry-run       – Symulacja (dla kompatybilności)
+    --interactive   – Tryb interaktywny (dla kompatybilności)
+    --json          – Wyjście w formacie JSON
+    --llm-fallback  – Użyj LLM gdy heurystyki nie wystarczą
+
+  Przykłady:
+    fixos scan                    # pełna diagnostyka
+    fixos scan --disc              # z analizą dysku
+    fixos scan --disc --json      # analiza dysku w JSON
+    fixos scan --audio             # tylko diagnostyka dźwięku
+
+Options:
+  --audio                         Tylko diagnostyka dźwięku
+  --thumbnails                    Tylko podglądy plików
+  --hardware                      Tylko sprzęt
+  --system                        Tylko system
+  --all                           Wszystkie moduły (domyślnie)
+  --llm-fallback / --no-llm-fallback
+                                  Użyj LLM gdy heurystyki nie wystarczą
+  --json                          Wyjście w formacie JSON
+  --interactive / --no-interactive
+                                  Tryb interaktywny (pytaj przed każdą akcją)
+  --dry-run                       Symuluj wykonanie komend bez faktycznego
+                                  uruchamiania
+  --disk                          Analiza zajętości dysku (alias do --disc)
+  --disc                          Analiza zajętości dysku + grupowanie
+                                  przyczyn
+  --no-banner                     Ukryj baner fixos
+  --show-raw                      Pokaż surowe dane diagnostyczne (JSON)
+  -o, --output TEXT               Zapisz wyniki do pliku
+  --help                          Show this message and exit.

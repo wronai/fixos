@@ -48,8 +48,7 @@ Wykryte problemy:
 Co naprawiamy? (wpisz numer, 'all', 'skip' lub 'q' aby zakończyć)"""
 
 # ── Timeout handler ─────────────────────────────────────────────────────────
-class SessionTimeout(Exception):
-    pass
+from fixos.utils.timeout import SessionTimeout
 
 def _timeout_handler(signum, frame):
     raise SessionTimeout()

@@ -66,8 +66,8 @@ test_system() {
     echo "  Running unit tests..."
     if ! docker run --rm "fixos-test:$system" bash -c "
         cd /app && 
-        if [ '$system' = 'ubuntu' ] || [ '$system' = 'debian' ]; then
-          python3 -m venv test_env && source test_env/bin/activate && pip install pytest pytest-mock --quiet --break-system-packages && python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
+        if [ '$system' = 'ubuntu' ] || [ '$system' = 'debian' ] || [ '$system' = 'arch' ] || [ '$system' = 'alpine' ]; then
+          python3 -m venv test_env && source test_env/bin/activate && pip install pytest pytest-mock --quiet && python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
         else
           pip install pytest pytest-mock --quiet && python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
         fi

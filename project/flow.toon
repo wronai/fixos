@@ -380,18 +380,18 @@ DATA_TYPES (by cross-function usage) [168 annotated, 0 inferred / 203 functions]
   Dict                 consumed:6   produced:7  
   Path                 consumed:11  produced:0    !! HUB-TYPE → split interface
   list[SearchResult]   consumed:1   produced:7    output-heavy
-  ServiceType          consumed:7   produced:0    input-heavy (read-only flow)
   dict[str, Any]       consumed:0   produced:7    output-heavy
-  Problem              consumed:4   produced:2  
+  ServiceType          consumed:7   produced:0    input-heavy (read-only flow)
   FixOsConfig          consumed:4   produced:2  
+  Problem              consumed:4   produced:2  
   CleanupAction        consumed:3   produced:2  
-  list[dict]           consumed:3   produced:1    narrow scope
   ExecutionResult      consumed:2   produced:2    narrow scope
-  ServiceDataInfo      consumed:1   produced:3    narrow scope
   LLMAnalysis          consumed:0   produced:4    narrow scope
+  list[dict]           consumed:3   produced:1    narrow scope
+  ServiceDataInfo      consumed:1   produced:3    narrow scope
   float                consumed:2   produced:2    narrow scope
   tuple[bool, str]     consumed:0   produced:3    narrow scope
-  list[Problem]        consumed:0   produced:3    narrow scope
+  list[str]            consumed:1   produced:2    narrow scope
 
   HUB TYPES (consumed ≥10):
     str → 83 consumers → split into:
@@ -407,7 +407,7 @@ SIDE_EFFECTS:
   IO:        get_os_info, get_full_diagnostics, execute_command, run_llm_shell, get_full_diagnostics, main, _sep, _print_cmd_result, _run_cmd, _print_action_menu
   Cache:     DiskAnalyzer.analyze_disk_usage, DiskAnalyzer.get_cache_dirs, DiskAnalyzer.suggest_cleanup_actions, ServiceDataScanner._get_service_details
   Mutation:  get_top_processes, diagnose_system, diagnose_security, diagnose_resources, DiskAnalyzer.__init__, DiskAnalyzer.get_large_files, DiskAnalyzer.get_log_dirs, DiskAnalyzer.get_temp_dirs, _extract_fixes, FixOsConfig.validate
-  Pure:      needs_elevation, elevate_cmd, is_dangerous, run_command, get_package_manager, install_package_cmd, _cmd_exists, setup_signal_timeout, cancel_signal_timeout, get_sensitive_values
+  Pure:      needs_elevation, elevate_cmd, is_dangerous, run_command, get_package_manager, install_package_cmd, _cmd_exists, setup_signal_timeout, cancel_signal_timeout, run_cmd
 
   PIPELINE PURITY:
     Fixos           ██░░ 50% pure

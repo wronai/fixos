@@ -421,14 +421,17 @@ def _print_welcome():
     commands = [
         ("fixos fix",         "", "Diagnostyka + sesja naprawcza z AI (HITL)"),
         ("fixos scan",        "", "Diagnostyka systemu bez AI"),
-        ("fixos cleanup",       "", "Skanuj i czyść dane usług (Docker, Ollama)"),
+        ("fixos quickfix",    "", "Naprawy offline bez API (baza znanych bugów)"),
+        ("fixos cleanup",     "", "Skanuj i czyść dane usług (Docker, Ollama)"),
         ("fixos orchestrate", "", "Zaawansowana orkiestracja napraw (graf problemów)"),
-        ("fixos llm",         "", "Lista 12 providerów LLM + linki do kluczy API"),
+        ("fixos watch",       "", "Monitoring w tle z powiadomieniami"),
+        ("fixos report",      "", "Eksport diagnostyki do HTML/Markdown/JSON"),
+        ("fixos history",     "", "Historia sesji naprawczych"),
+        ("fixos rollback",    "", "Cofanie operacji (undo/list/show)"),
+        ("fixos profile",     "", "Profile diagnostyczne (server/desktop/dev)"),
+        ("fixos llm",         "", "Lista providerów LLM + linki do kluczy API"),
         ("fixos token set",   "", "Zapisz klucz API (auto-detekcja providera)"),
-        ("fixos token show",  " ", "Pokaż aktualny token (zamaskowany)"),
         ("fixos config show", "", "Pokaż konfigurację"),
-        ("fixos config init", "", "Utwórz plik .env z szablonu"),
-        ("fixos providers",   "", "Lista providerów (skrócona)"),
         ("fixos test-llm",    "", "Test połączenia z LLM"),
     ]
 
@@ -491,7 +494,8 @@ def _print_welcome():
 @click.option("--all", "modules", flag_value="all", default=True, help="Wszystkie moduły (domyślnie)")
 @add_shared_options
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
-def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback):
+@click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
+def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile):
     """
     Przeprowadza diagnostykę systemu.
 
@@ -502,6 +506,7 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
       --interactive   – Tryb interaktywny (dla kompatybilności)
       --json          – Wyjście w formacie JSON
       --llm-fallback  – Użyj LLM gdy heurystyki nie wystarczą
+      --profile       – Profil diagnostyczny (nadpisuje --modules)
 
     \b
     Przykłady:
@@ -509,11 +514,23 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
       fixos scan --disc              # z analizą dysku
       fixos scan --disc --json      # analiza dysku w JSON
       fixos scan --audio             # tylko diagnostyka dźwięku
+      fixos scan --profile server    # profil serwera
     """
     if not no_banner:
         click.echo(click.style(BANNER, fg="cyan"))
 
     selected_modules = [modules] if modules and modules != "all" else None
+
+    # Profile overrides module selection
+    if profile:
+        from .profiles import Profile as DiagProfile
+        try:
+            prof = DiagProfile.load(profile)
+            selected_modules = prof.modules
+            click.echo(click.style(f"  Profil: {prof.name} — {prof.description}", fg="cyan"))
+        except FileNotFoundError as e:
+            click.echo(click.style(str(e), fg="red"))
+            return
     
     if disc and modules == "all":
         # Skip heavy system diagnostics if only disk is requested implicitly
@@ -1575,6 +1592,448 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
         for svc in plan["requires_review"]:
             click.echo(f"  • {svc['name']}: {svc['cleanup_command']}")
 
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos rollback
+# ══════════════════════════════════════════════════════════
+
+@cli.group("rollback")
+def rollback():
+    """Zarządzanie cofaniem operacji fixOS."""
+    pass
+
+
+@rollback.command("list")
+@click.option("--limit", default=20, help="Ile sesji pokazać")
+def rollback_list(limit):
+    """Pokaż historię sesji naprawczych."""
+    from .orchestrator.rollback import RollbackSession
+
+    sessions = RollbackSession.list_sessions(limit)
+    if not sessions:
+        click.echo("  Brak zapisanych sesji rollback.")
+        return
+
+    click.echo(click.style("\nHistoria sesji naprawczych:", fg="cyan"))
+    click.echo(click.style("═" * 65, fg="cyan"))
+    for s in sessions:
+        click.echo(
+            f"  {click.style(s['session_id'], fg='yellow')}  "
+            f"{s['created_at'][:16]}  "
+            f"{s['operations']} ops  "
+            f"{s['rollbackable']} rollbackable"
+        )
+    click.echo()
+
+
+@rollback.command("show")
+@click.argument("session_id")
+def rollback_show(session_id):
+    """Pokaż szczegóły sesji rollback."""
+    from .orchestrator.rollback import RollbackSession
+
+    try:
+        session = RollbackSession.load(session_id)
+    except FileNotFoundError:
+        click.echo(click.style(f"Sesja '{session_id}' nie znaleziona.", fg="red"))
+        return
+
+    click.echo(click.style(f"\nSesja: {session.session_id}", fg="cyan"))
+    click.echo(f"  Utworzono: {session.created_at}")
+    click.echo(f"  Operacji: {len(session.entries)}")
+    click.echo()
+
+    for i, entry in enumerate(session.entries, 1):
+        status = click.style("OK", fg="green") if entry.success else click.style("FAIL", fg="red")
+        click.echo(f"  {i}. [{status}] {entry.command}")
+        if entry.rollback_command:
+            click.echo(f"     Rollback: {entry.rollback_command}")
+        click.echo(f"     Exit: {entry.exit_code}  |  {entry.timestamp[:19]}")
+    click.echo()
+
+
+@rollback.command("undo")
+@click.argument("session_id")
+@click.option("--last", default=1, help="Ile ostatnich operacji cofnąć")
+@click.option("--dry-run", is_flag=True, default=False, help="Tylko pokaż co by się cofnęło")
+def rollback_undo(session_id, last, dry_run):
+    """Cofnij operacje z podanej sesji."""
+    from .orchestrator.rollback import RollbackSession
+
+    try:
+        session = RollbackSession.load(session_id)
+    except FileNotFoundError:
+        click.echo(click.style(f"Sesja '{session_id}' nie znaleziona.", fg="red"))
+        return
+
+    commands = session.get_rollback_commands()[:last]
+    if not commands:
+        click.echo("  Brak operacji do cofnięcia w tej sesji.")
+        return
+
+    if dry_run:
+        click.echo(click.style("[DRY-RUN] Operacje do cofnięcia:", fg="yellow"))
+    else:
+        click.echo(click.style("Cofanie operacji:", fg="cyan"))
+
+    results = session.rollback_last(n=last, dry_run=dry_run)
+    for r in results:
+        click.echo(f"  Cofam: {r['command']}")
+        click.echo(f"    → {r['rollback_command']}")
+        if r['success'] is None:
+            click.echo(click.style("    [DRY-RUN]", fg="yellow"))
+        elif r['success']:
+            click.echo(click.style("    OK", fg="green"))
+        else:
+            click.echo(click.style(f"    FAIL: {r['output']}", fg="red"))
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos watch
+# ══════════════════════════════════════════════════════════
+
+@cli.command("watch")
+@click.option("--interval", "-i", default=300, show_default=True,
+              help="Interwał diagnostyki w sekundach")
+@click.option("--modules", "-m", default=None,
+              help="Moduły diagnostyki: system,security,disk,audio,...")
+@click.option("--alert-on", type=click.Choice(["ok", "info", "warning", "critical"]),
+              default="critical", show_default=True,
+              help="Minimalny poziom alertów")
+@click.option("--max-iterations", default=0, show_default=True,
+              help="Maksymalna liczba iteracji (0 = bez limitu)")
+def watch(interval, modules, alert_on, max_iterations):
+    """
+    Monitorowanie systemu w tle z powiadomieniami.
+
+    \b
+    Wykonuje cykliczną diagnostykę i wysyła powiadomienia
+    desktop (notify-send na Linux) gdy pojawią się nowe
+    problemy powyżej wybranego poziomu.
+
+    \b
+    Przykłady:
+      fixos watch                              # co 5 min, alert na critical
+      fixos watch -i 60 --alert-on warning     # co minutę, alert na warning
+      fixos watch -m system,security -i 120    # system+security co 2 min
+    """
+    from .watch import WatchDaemon
+    from .plugins.base import Severity
+
+    severity_map = {
+        "ok": Severity.OK,
+        "info": Severity.INFO,
+        "warning": Severity.WARNING,
+        "critical": Severity.CRITICAL,
+    }
+
+    mods = modules.split(",") if modules else None
+    daemon = WatchDaemon(
+        interval=interval,
+        modules=mods,
+        alert_on=severity_map[alert_on],
+        max_iterations=max_iterations,
+    )
+    daemon.run()
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos profile
+# ══════════════════════════════════════════════════════════
+
+@cli.group("profile")
+def profile():
+    """Zarządzanie profilami diagnostycznymi."""
+    pass
+
+
+@profile.command("list")
+def profile_list():
+    """Pokaż dostępne profile diagnostyczne."""
+    from .profiles import Profile
+
+    available = Profile.list_available()
+    if not available:
+        click.echo("  Brak dostępnych profili.")
+        return
+
+    click.echo(click.style("\nDostępne profile diagnostyczne:", fg="cyan"))
+    click.echo(click.style("═" * 55, fg="cyan"))
+    for name in available:
+        try:
+            p = Profile.load(name)
+            mods = ", ".join(p.modules)
+            click.echo(f"  {click.style(name, fg='yellow', bold=True)}")
+            click.echo(f"    {p.description}")
+            click.echo(f"    Moduły: {mods}")
+        except Exception:
+            click.echo(f"  {click.style(name, fg='yellow')} (błąd ładowania)")
+    click.echo()
+    click.echo("  Użycie: fixos scan --profile <nazwa>")
+    click.echo()
+
+
+@profile.command("show")
+@click.argument("name")
+def profile_show(name):
+    """Pokaż szczegóły profilu diagnostycznego."""
+    from .profiles import Profile
+    import yaml
+
+    try:
+        p = Profile.load(name)
+    except FileNotFoundError as e:
+        click.echo(click.style(str(e), fg="red"))
+        return
+
+    click.echo(click.style(f"\nProfil: {p.name}", fg="cyan"))
+    click.echo(f"  Opis: {p.description}")
+    click.echo(f"  Moduły: {', '.join(p.modules)}")
+    if p.thresholds:
+        click.echo("  Progi:")
+        for k, v in p.thresholds.items():
+            click.echo(f"    {k}: {v}")
+    click.echo()
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos quickfix (v2.3 — heuristic fixes without LLM)
+# ══════════════════════════════════════════════════════════
+
+@cli.command("quickfix")
+@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania")
+@click.option("--modules", "-m", default=None, help="Moduły: audio,disk,security,...")
+def quickfix(dry_run, modules):
+    """
+    Natychmiastowe naprawy bez API — baza znanych bugów.
+
+    \b
+    Działa offline, zero tokenów. Używa wbudowanych heurystyk
+    do naprawy typowych problemów.
+
+    \b
+    Przykłady:
+      fixos quickfix                    # napraw wszystko co można
+      fixos quickfix --dry-run          # podgląd bez wykonywania
+      fixos quickfix -m audio,disk      # tylko audio i dysk
+    """
+    from .plugins.registry import PluginRegistry
+    from .plugins.base import Severity
+
+    registry = PluginRegistry()
+    registry.discover()
+
+    mods = modules.split(",") if modules else None
+    click.echo(click.style("Szybka diagnostyka (bez LLM)...", fg="cyan"))
+
+    results = registry.run(modules=mods)
+    fixes_found = 0
+    fixes_applied = 0
+
+    for result in results:
+        for finding in result.findings:
+            if finding.command:
+                fixes_found += 1
+                click.echo(
+                    f"\n  [{finding.severity.value.upper()}] "
+                    f"{click.style(finding.title, fg='yellow')}"
+                )
+                click.echo(f"    {finding.description}")
+                if finding.suggestion:
+                    click.echo(f"    Sugestia: {finding.suggestion}")
+                click.echo(f"    Komenda: {click.style(finding.command, fg='cyan')}")
+
+                if dry_run:
+                    click.echo(click.style("    [DRY-RUN] — pominięto", fg="yellow"))
+                else:
+                    if finding.severity in (Severity.CRITICAL, Severity.WARNING):
+                        if click.confirm("    Wykonać?"):
+                            import subprocess
+                            try:
+                                proc = subprocess.run(
+                                    finding.command, shell=True,
+                                    capture_output=True, text=True, timeout=60,
+                                )
+                                if proc.returncode == 0:
+                                    click.echo(click.style("    OK", fg="green"))
+                                    fixes_applied += 1
+                                else:
+                                    click.echo(click.style(
+                                        f"    FAIL (exit {proc.returncode}): {proc.stderr[:200]}",
+                                        fg="red",
+                                    ))
+                            except Exception as e:
+                                click.echo(click.style(f"    Błąd: {e}", fg="red"))
+
+    click.echo(click.style(f"\nPodsumowanie quickfix:", fg="cyan"))
+    click.echo(f"  Znalezione naprawy: {fixes_found}")
+    if not dry_run:
+        click.echo(f"  Wykonane: {fixes_applied}")
+    click.echo()
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos report (v2.4 — export to HTML/Markdown)
+# ══════════════════════════════════════════════════════════
+
+@cli.command("report")
+@click.option("--format", "output_format", type=click.Choice(["html", "markdown", "json"]),
+              default="html", show_default=True, help="Format raportu")
+@click.option("--output", "-o", default=None, help="Ścieżka pliku wyjściowego")
+@click.option("--modules", "-m", default=None, help="Moduły diagnostyki")
+@click.option("--profile", "-p", default=None, help="Profil diagnostyczny")
+def report(output_format, output, modules, profile):
+    """
+    Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
+
+    \b
+    Przykłady:
+      fixos report                           # HTML do stdout
+      fixos report -o raport.html            # zapisz HTML
+      fixos report --format markdown -o r.md # Markdown
+      fixos report --format json -o r.json   # JSON
+      fixos report -p server -o server.html  # profil serwera
+    """
+    from .plugins.registry import PluginRegistry
+    import json as json_module
+    from datetime import datetime
+
+    registry = PluginRegistry()
+    registry.discover()
+
+    # Resolve modules from profile
+    mods = None
+    if profile:
+        from .profiles import Profile
+        try:
+            prof = Profile.load(profile)
+            mods = prof.modules
+        except FileNotFoundError as e:
+            click.echo(click.style(str(e), fg="red"))
+            return
+    if modules:
+        mods = modules.split(",")
+
+    click.echo(click.style("Generowanie raportu...", fg="yellow"), err=True)
+    results = registry.run(modules=mods)
+
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if output_format == "json":
+        data = {
+            "timestamp": timestamp,
+            "results": [r.to_dict() for r in results],
+        }
+        content = json_module.dumps(data, indent=2, ensure_ascii=False)
+
+    elif output_format == "markdown":
+        lines = [
+            f"# fixOS Diagnostic Report",
+            f"",
+            f"**Timestamp:** {timestamp}",
+            f"",
+        ]
+        for r in results:
+            status_icon = {"ok": "✅", "warning": "⚠️", "critical": "❌"}.get(r.status.value, "ℹ️")
+            lines.append(f"## {status_icon} {r.plugin_name} ({r.status.value})")
+            lines.append(f"*Duration: {r.duration_ms:.0f}ms*\n")
+            if r.findings:
+                for f in r.findings:
+                    lines.append(f"- **[{f.severity.value.upper()}]** {f.title}")
+                    lines.append(f"  {f.description}")
+                    if f.command:
+                        lines.append(f"  `{f.command}`")
+                    lines.append("")
+            else:
+                lines.append("Brak problemów.\n")
+        content = "\n".join(lines)
+
+    else:  # html
+        rows = []
+        for r in results:
+            for f in r.findings:
+                color = {"critical": "#dc3545", "warning": "#ffc107", "ok": "#28a745"}.get(
+                    f.severity.value, "#6c757d"
+                )
+                cmd_html = f"<code>{f.command}</code>" if f.command else ""
+                rows.append(
+                    f"<tr><td>{r.plugin_name}</td>"
+                    f"<td style='color:{color};font-weight:bold'>{f.severity.value.upper()}</td>"
+                    f"<td>{f.title}</td><td>{f.description}</td>"
+                    f"<td>{cmd_html}</td></tr>"
+                )
+        table_rows = "\n".join(rows) if rows else "<tr><td colspan='5'>Brak problemów</td></tr>"
+        content = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>fixOS Report</title>
+<style>
+body {{ font-family: -apple-system, sans-serif; max-width: 900px; margin: 2em auto; padding: 0 1em; }}
+h1 {{ color: #0d6efd; }}
+table {{ width: 100%; border-collapse: collapse; margin: 1em 0; }}
+th, td {{ padding: 8px 12px; border: 1px solid #dee2e6; text-align: left; }}
+th {{ background: #f8f9fa; }}
+code {{ background: #e9ecef; padding: 2px 6px; border-radius: 3px; }}
+</style></head><body>
+<h1>fixOS Diagnostic Report</h1>
+<p><strong>Timestamp:</strong> {timestamp}</p>
+<table><thead><tr><th>Module</th><th>Severity</th><th>Issue</th><th>Description</th><th>Fix</th></tr></thead>
+<tbody>{table_rows}</tbody></table>
+</body></html>"""
+
+    if output:
+        Path(output).write_text(content, encoding="utf-8")
+        click.echo(click.style(f"Raport zapisany: {output}", fg="green"), err=True)
+    else:
+        click.echo(content)
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos history (v2.4 — repair history)
+# ══════════════════════════════════════════════════════════
+
+@cli.command("history")
+@click.option("--limit", default=20, help="Ile sesji pokazać")
+@click.option("--json", "json_output", is_flag=True, default=False, help="Wyjście JSON")
+def history(limit, json_output):
+    """
+    Historia napraw fixOS.
+
+    \b
+    Pokazuje ostatnie sesje naprawcze z wynikami.
+
+    \b
+    Przykłady:
+      fixos history              # ostatnie 20 sesji
+      fixos history --limit 5    # ostatnie 5 sesji
+      fixos history --json       # JSON output
+    """
+    from .orchestrator.rollback import RollbackSession
+
+    sessions = RollbackSession.list_sessions(limit)
+    if json_output:
+        import json as json_module
+        click.echo(json_module.dumps(sessions, indent=2, ensure_ascii=False))
+        return
+
+    if not sessions:
+        click.echo("  Brak historii napraw.")
+        return
+
+    click.echo(click.style("\nHistoria napraw fixOS:", fg="cyan"))
+    click.echo(click.style("═" * 65, fg="cyan"))
+    for s in sessions:
+        rollback_info = (
+            click.style(f" ({s['rollbackable']} cofnięć dostępnych)", fg="green")
+            if s['rollbackable'] > 0 else ""
+        )
+        click.echo(
+            f"  {click.style(s['session_id'], fg='yellow')}  "
+            f"{s['created_at'][:16]}  "
+            f"{s['operations']} operacji{rollback_info}"
+        )
+    click.echo(f"\n  Szczegóły: fixos rollback show <session_id>")
+    click.echo(f"  Cofnięcie: fixos rollback undo <session_id>")
+    click.echo()
 
 
 # ══════════════════════════════════════════════════════════

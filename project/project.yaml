@@ -3,11 +3,11 @@ project:
   name: fixOS
   repo: /home/tom/github/wronai/fixOS
   language: python
-  analyzed_at: '2026-03-15T10:17:09Z'
+  analyzed_at: '2026-03-15T10:26:31Z'
   tool: code2llm
   stats:
     files: 20
-    lines: 11252
+    lines: 11256
     functions: 203
     classes: 31
 health:
@@ -335,7 +335,7 @@ modules:
     type: function
     cc: 1
 - path: fixos/utils/anonymizer.py
-  lines: 298
+  lines: 299
   classes: 1
   methods: 9
   cc_max: 18
@@ -857,17 +857,17 @@ refactoring:
     impact: medium
     effort: low
     module: anonymizer.py
-  - action: Split render_md (CC=16 → target CC<10)
-    impact: medium
-    effort: low
-    module: terminal.py
   - action: Split ServiceDataScanner._get_docker_details (CC=18 → target CC<10)
     impact: medium
     effort: low
     module: service_scanner.py
+  - action: Split render_md (CC=16 → target CC<10)
+    impact: medium
+    effort: low
+    module: terminal.py
 evolution:
 - date: '2026-03-15'
   cc_avg: 6.0
   critical: 41
-  lines: 11252
+  lines: 11256
   note: Automated analysis

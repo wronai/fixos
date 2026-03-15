@@ -1,4 +1,4 @@
-# fixOS | 32f 8002L | python:31,shell:1
+# fixOS | 32f 8003L | python:31,shell:1
 # Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
 M[32]:
   docs/examples/advanced_usage.py,9
@@ -28,7 +28,7 @@ M[32]:
   fixos/providers/llm_analyzer.py,333
   fixos/system_checks.py,156
   fixos/utils/__init__.py,3
-  fixos/utils/anonymizer.py,298
+  fixos/utils/anonymizer.py,299
   fixos/utils/terminal.py,316
   fixos/utils/web_search.py,254
   project.sh,14

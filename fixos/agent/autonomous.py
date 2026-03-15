@@ -97,8 +97,7 @@ class AgentReport:
         return "\n".join(lines)
 
 
-class SessionTimeout(Exception):
-    pass
+from fixos.utils.timeout import SessionTimeout
 
 
 def _timeout_handler(signum, frame):

@@ -269,4 +269,4 @@ classDiagram
 | CFG Nodes | 1261 |
 | Patterns | 1 |
 | Avg Complexity | 6.0 |
-| Analysis Time | 3.49s |
+| Analysis Time | 3.38s |

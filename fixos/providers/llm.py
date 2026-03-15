@@ -5,8 +5,9 @@ Gemini, OpenAI, xAI, OpenRouter, Ollama – wszystkie przez ten sam interfejs.
 
 from __future__ import annotations
 
+import json
 import time
-from typing import Optional, Iterator
+from typing import Optional, Iterator, Type
 
 try:
     import openai
@@ -129,6 +130,69 @@ class LLMClient:
     @property
     def total_tokens(self) -> int:
         return self._total_tokens
+
+    def chat_structured(
+        self,
+        messages: list[dict],
+        response_model: Type,
+        *,
+        max_retries: int = 2,
+        max_tokens: int = 3000,
+        temperature: float = 0.1,
+    ):
+        """Wywołanie LLM z wymuszonym schematem JSON (Pydantic model).
+
+        Args:
+            messages: Lista wiadomości do LLM.
+            response_model: Klasa Pydantic BaseModel definiująca schemat.
+            max_retries: Ile razy ponowić przy błędzie parsowania.
+
+        Returns:
+            Instancja response_model z walidowanymi danymi.
+        """
+        schema = response_model.model_json_schema()
+        schema_prompt = (
+            "\n\n---\n"
+            "CRITICAL: Respond ONLY with a valid JSON object matching "
+            f"this schema:\n```json\n{json.dumps(schema, indent=2)}\n```\n"
+            "No markdown, no explanation, no preamble. ONLY the JSON object."
+        )
+
+        augmented = [m.copy() for m in messages]
+        augmented[-1] = {
+            **augmented[-1],
+            "content": augmented[-1]["content"] + schema_prompt,
+        }
+
+        for attempt in range(max_retries + 1):
+            raw = self.chat(augmented, max_tokens=max_tokens, temperature=temperature)
+            cleaned = self._extract_json(raw)
+            try:
+                return response_model.model_validate_json(cleaned)
+            except Exception as e:
+                if attempt < max_retries:
+                    augmented.append({"role": "assistant", "content": raw})
+                    augmented.append({
+                        "role": "user",
+                        "content": f"Invalid JSON. Error: {e}. "
+                                   f"Please output ONLY valid JSON.",
+                    })
+                else:
+                    raise ValueError(
+                        f"LLM failed to produce valid schema after "
+                        f"{max_retries + 1} attempts: {e}"
+                    )
+
+    @staticmethod
+    def _extract_json(text: str) -> str:
+        """Wyciągnij JSON z odpowiedzi LLM (obsługa markdown fences)."""
+        text = text.strip()
+        if text.startswith("```"):
+            lines = text.split("\n")
+            text = "\n".join(
+                lines[1:-1] if lines[-1].startswith("```") else lines[1:]
+            )
+        return text.strip()
 
     def ping(self) -> bool:
         """Sprawdza czy API odpowiada (krótki test)."""

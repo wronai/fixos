@@ -64,8 +64,7 @@ IMPORTANT: Adapt commands to the detected OS (Linux/Windows/macOS).
 """
 
 
-class SessionTimeout(Exception):
-    pass
+from fixos.utils.timeout import SessionTimeout
 
 
 def _timeout(signum, frame):

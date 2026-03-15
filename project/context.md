@@ -5,7 +5,7 @@
 - **Project**: fixOS
 - **Language**: python
 - **Files**: 20
-- **Lines**: 11252
+- **Lines**: 11256
 - **Functions**: 203
 - **Classes**: 31
 - **Avg CC**: 6.0
@@ -57,9 +57,9 @@
 - `llm_analyzer.py` — 333L, 8 methods, CC↑13
 - `__init__.py` — 2L, 0 methods, CC↑0
 
-### fixos/utils/ (4 files, 871L, 26 functions)
+### fixos/utils/ (4 files, 872L, 26 functions)
 
-- `anonymizer.py` — 298L, 9 methods, CC↑18
+- `anonymizer.py` — 299L, 9 methods, CC↑18
 - `terminal.py` — 316L, 8 methods, CC↑16
 - `web_search.py` — 254L, 9 methods, CC↑9
 - `__init__.py` — 3L, 0 methods, CC↑0

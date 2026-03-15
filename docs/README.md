@@ -146,7 +146,7 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 fixOS/
-    ├── platform_utils├── setup├── fixos/    ├── anonymizer    ├── system_checks    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── hitl    ├── cli    ├── agent/        ├── llm    ├── config    ├── providers/    ├── utils/        ├── anonymizer        ├── autonomous        ├── web_search    ├── fixes/    ├── orchestrator/        ├── terminal        ├── executor        ├── service_scanner        ├── orchestrator    ├── interactive/        ├── quickstart        ├── advanced_usage├── project        ├── cleanup_planner        ├── graph        ├── llm_analyzer```
+├── setup    ├── platform_utils    ├── system_checks├── fixos/    ├── anonymizer    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── hitl    ├── cli    ├── agent/        ├── llm    ├── config    ├── providers/    ├── utils/        ├── anonymizer        ├── autonomous        ├── web_search    ├── fixes/    ├── orchestrator/        ├── terminal        ├── service_scanner        ├── executor        ├── orchestrator    ├── interactive/        ├── quickstart        ├── advanced_usage├── project        ├── graph        ├── cleanup_planner        ├── llm_analyzer```
 
 ## API Overview
 
@@ -165,20 +165,20 @@ fixOS/
 - **`AgentReport`** — —
 - **`SessionTimeout`** — —
 - **`SearchResult`** — —
+- **`ServiceType`** — —
+- **`ServiceDataInfo`** — Information about service data
+- **`ServiceDataScanner`** — Scans for large service data directories and allows cleanup
 - **`DangerousCommandError`** — —
 - **`CommandTimeoutError`** — —
 - **`ExecutionResult`** — —
 - **`CommandExecutor`** — Bezpieczny executor komend z:
-- **`ServiceType`** — —
-- **`ServiceDataInfo`** — Information about service data
-- **`ServiceDataScanner`** — Scans for large service data directories and allows cleanup
 - **`FixOrchestrator`** — Orkiestrator napraw systemowych.
+- **`Problem`** — —
+- **`ProblemGraph`** — DAG problemów systemowych z topological sort do wyznaczania kolejności napraw.
 - **`Priority`** — —
 - **`CleanupType`** — —
 - **`CleanupAction`** — Represents a cleanup action
 - **`CleanupPlanner`** — Interactive cleanup planning and grouping system
-- **`Problem`** — —
-- **`ProblemGraph`** — DAG problemów systemowych z topological sort do wyznaczania kolejności napraw.
 - **`LLMAnalysis`** — Result of LLM analysis
 - **`LLMAnalyzer`** — Uses LLM to analyze disk issues when heuristics aren't sufficient
 
@@ -193,8 +193,6 @@ fixOS/
 - `install_package_cmd(package)` — Returns the install command for the detected package manager.
 - `setup_signal_timeout(seconds, handler)` — Sets up a timeout signal. Returns True if supported (POSIX only).
 - `cancel_signal_timeout()` — Cancels the timeout signal (POSIX only).
-- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
-- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `run_cmd(cmd, timeout)` — Uruchamia komendę shell i zwraca output. Bezpieczny fallback przy błędzie.
 - `get_cpu_info()` — Metryki CPU.
 - `get_memory_info()` — Metryki RAM i SWAP.
@@ -203,6 +201,8 @@ fixOS/
 - `get_top_processes(n)` — Lista TOP N procesów według zużycia CPU.
 - `get_fedora_specific()` — Komendy specyficzne dla system: dnf, journalctl, systemctl.
 - `get_full_diagnostics()` — Zbiera kompletne dane diagnostyczne systemu system.
+- `get_sensitive_values()` — Zbiera aktualne wrażliwe wartości systemowe do zamaskowania.
+- `anonymize(data_str)` — Anonimizuje wrażliwe dane w stringu.
 - `format_time(seconds)` — —
 - `execute_command(cmd)` — Wykonuje komendę systemową z potwierdzeniem użytkownika.
 - `run_llm_shell(diagnostics_data, token, model, timeout)` — Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.

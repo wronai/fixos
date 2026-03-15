@@ -1,4 +1,4 @@
-# fixOS | 48f 11186L | python:48
+# fixOS | 48f 11187L | python:48
 # Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
 M[48]:
   docs/examples/advanced_usage.py,6
@@ -28,7 +28,7 @@ M[48]:
   fixos/providers/llm_analyzer.py,256
   fixos/system_checks.py,138
   fixos/utils/__init__.py,3
-  fixos/utils/anonymizer.py,222
+  fixos/utils/anonymizer.py,223
   fixos/utils/terminal.py,245
   fixos/utils/web_search.py,225
   setup.py,43

@@ -1,0 +1,233 @@
+# fixOS | 32f 8002L | python:31,shell:1
+# Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
+M[32]:
+  docs/examples/advanced_usage.py,9
+  docs/examples/quickstart.py,16
+  fixos/__init__.py,2
+  fixos/agent/__init__.py,3
+  fixos/agent/autonomous.py,350
+  fixos/agent/hitl.py,462
+  fixos/anonymizer.py,86
+  fixos/cli.py,1589
+  fixos/config.py,422
+  fixos/diagnostics/__init__.py,2
+  fixos/diagnostics/disk_analyzer.py,419
+  fixos/diagnostics/service_scanner.py,895
+  fixos/diagnostics/system_checks.py,512
+  fixos/fixes/__init__.py,4
+  fixos/interactive/__init__.py,0
+  fixos/interactive/cleanup_planner.py,417
+  fixos/llm_shell.py,241
+  fixos/orchestrator/__init__.py,9
+  fixos/orchestrator/executor.py,272
+  fixos/orchestrator/graph.py,163
+  fixos/orchestrator/orchestrator.py,382
+  fixos/platform_utils.py,184
+  fixos/providers/__init__.py,2
+  fixos/providers/llm.py,142
+  fixos/providers/llm_analyzer.py,333
+  fixos/system_checks.py,156
+  fixos/utils/__init__.py,3
+  fixos/utils/anonymizer.py,298
+  fixos/utils/terminal.py,316
+  fixos/utils/web_search.py,254
+  project.sh,14
+  setup.py,45
+D:
+  fixos/cli.py:
+    e: NaturalLanguageGroup,add_common_options,add_shared_options,cli,ask,_handle_natural_command,_validate_result_with_llm,_print_welcome,scan,_run_disk_analysis,_print_quick_issues,fix,handle_disk_cleanup_mode,execute_cleanup_actions,try_llm_fallback_for_failures,token,token_set,token_show,token_clear,config,config_show,config_init,config_set,llm_providers,_example_key,providers,test_llm,orchestrate,cleanup_services,main
+    NaturalLanguageGroup(click.Group): resolve_command(2)
+    add_common_options(fn)
+    add_shared_options(func)
+    cli(ctx;dry_run)
+    ask(prompt;dry_run)
+    _handle_natural_command(prompt;dry_run)
+    _validate_result_with_llm(prompt;cmd_str;result;cfg)
+    _print_welcome()
+    scan(modules;output;show_raw;no_banner;disc;dry_run;interactive;json_output;llm_fallback)
+    _run_disk_analysis(data;json_output;is_fix_mode)
+    _print_quick_issues(data)
+    fix(provider;token;model;no_banner;mode;timeout;modules;no_show_data;output;max_fixes;disc;dry_run;interactive;json_output;llm_fallback)
+    handle_disk_cleanup_mode(disk_analysis;cfg;dry_run;interactive;json_output;llm_fallback)
+    execute_cleanup_actions(actions;cfg;llm_fallback)
+    try_llm_fallback_for_failures(failed_actions;cfg)
+    token()
+    token_set(key;provider;env_file)
+    token_show()
+    token_clear(env_file)
+    config()
+    config_show()
+    config_init(force)
+    config_set(key;value)
+    llm_providers(free)
+    _example_key(provider)
+    providers()
+    test_llm(provider;token;model;no_banner)
+    orchestrate(provider;token;model;no_banner;mode;modules;dry_run;max_iterations;output)
+    cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only)
+    main()
+  fixos/agent/hitl.py:
+    e: SessionTimeout,CmdResult,_timeout,_sep,_print_cmd_preview,_print_cmd_result,_run_cmd,_extract_fixes,_print_action_menu,_ask_user_problem,run_hitl_session,_extract_search_topic
+    SessionTimeout(Exception):
+    CmdResult:
+    _timeout(signum;frame)
+    _sep(char;width)
+    _print_cmd_preview(cmd;comment)
+    _print_cmd_result(result)
+    _run_cmd(cmd;comment)
+    _extract_fixes(reply)
+    _print_action_menu(fixes;rem_time;tokens)
+    _ask_user_problem()
+    run_hitl_session(diagnostics;config;show_data)
+    _extract_search_topic(llm_reply)
+  fixos/config.py:
+    e: FixOsConfig,_load_env_files,detect_provider_from_key,interactive_provider_setup,get_providers_list
+    FixOsConfig: load(0),validate(0),summary(0)
+    _load_env_files()
+    detect_provider_from_key(key)
+    interactive_provider_setup()
+    get_providers_list()
+  fixos/agent/autonomous.py:
+    e: FixAction,AgentReport,SessionTimeout,_timeout_handler,_is_forbidden,_add_sudo,_execute,run_autonomous_session,_parse_agent_json
+    FixAction:
+    AgentReport: summary(0)
+    SessionTimeout(Exception):
+    _timeout_handler(signum;frame)
+    _is_forbidden(cmd)
+    _add_sudo(cmd)
+    _execute(cmd)
+    run_autonomous_session(diagnostics;config;show_data;max_fixes)
+    _parse_agent_json(text)
+  fixos/utils/anonymizer.py:
+    e: AnonymizationReport,_get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_dict_to_markdown,_format_key_title
+    AnonymizationReport: add(2),summary(0)  # Raport anonimizacji – co zostało zmaskowane...
+    _get_sensitive()
+    anonymize(data_str)
+    display_anonymized_preview(data_str;report;max_lines)
+    _colorize_md_line(line)
+    _format_diagnostics_markdown(data_str)
+    _dict_to_markdown(data;indent)
+    _format_key_title(key)
+  fixos/diagnostics/service_scanner.py:
+    e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
+    ServiceType(Enum):
+    ServiceDataInfo:  # Information about service data...
+    ServiceDataScanner: __init__(1),scan_all_services(0),scan_service(1),_analyze_service_path(2),_get_path_size_mb(1),_get_service_details(2),_get_conda_details(0),_get_docker_details(0),_get_ollama_details(0),_get_package_cache_details(1),_get_service_description(1),_get_cleanup_command(2),_get_preview_command(2),_is_safe_cleanup(1),get_cleanup_plan(1),_service_to_dict(1),cleanup_service(2)  # Scans for large service data directories and allows cleanup...
+    main()
+  fixos/interactive/cleanup_planner.py:
+    e: Priority,CleanupType,CleanupAction,CleanupPlanner,main
+    Priority(Enum):
+    CleanupType(Enum):
+    CleanupAction: __post_init__(0)  # Represents a cleanup action...
+    CleanupPlanner: __init__(0),group_by_category(1),prioritize_actions(1),create_cleanup_plan(1),interactive_selection(1),_dict_to_action(1),_action_to_dict(1),_get_category_for_action(1),_priority_score(1),_generate_recommendations(2)  # Interactive cleanup planning and grouping system...
+    main()
+  fixos/diagnostics/disk_analyzer.py:
+    e: DiskAnalyzer,main
+    DiskAnalyzer: __init__(1),analyze_disk_usage(1),_get_disk_status(1),get_large_files(3),get_cache_dirs(2),get_log_dirs(2),get_temp_dirs(2),suggest_cleanup_actions(1),_get_dir_size_mb(1),_categorize_file(1),_identify_cache_type(1),_identify_temp_type(1),_get_oldest_file_date(1),_get_newest_file_date(1)  # Analyzes disk usage and provides cleanup suggestions...
+    main()
+  fixos/orchestrator/orchestrator.py:
+    e: _SkipAll,FixOrchestrator
+    _SkipAll(Exception):  # Rzucany gdy user wpisuje 's' – pomija wszystkie komendy bież...
+    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),run_sync(2),run_async(2),_evaluate_and_rediagnose(2),_parse_json(1),_log(2),_session_summary(0),_default_confirm(1),_default_progress(1)  # Orkiestrator napraw systemowych.
+
+Tryby:
+- hitl: każda komen...
+  fixos/utils/terminal.py:
+    e: _C,colorize,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap
+    _C:  # No-op stubs – kept so existing callers don't break at import...
+    colorize(line)
+    render_md(text)
+    print_cmd_block(cmd;comment;dry_run)
+    print_stdout_box(stdout;max_lines)
+    print_stderr_box(stderr;max_lines)
+    print_problem_header(problem_id;description;severity;status;attempts;max_attempts)
+    render_tree_colored(nodes;execution_order)
+    _wrap(text;width)
+  fixos/llm_shell.py:
+    e: SessionTimeout,_timeout_handler,format_time,execute_command,run_llm_shell
+    SessionTimeout(Exception):
+    _timeout_handler(signum;frame)
+    format_time(seconds)
+    execute_command(cmd)
+    run_llm_shell(diagnostics_data;token;model;timeout;verbose;base_url)
+  fixos/providers/llm.py:
+    e: LLMError,LLMClient
+    LLMError(Exception):  # Błąd komunikacji z LLM...
+    LLMClient: __init__(1),chat(1),chat_stream(1),ping(0)  # Wrapper nad openai.OpenAI kompatybilny z wieloma providerami...
+  fixos/diagnostics/system_checks.py:
+    e: _psutil_required,_cmd,diagnose_audio,diagnose_thumbnails,diagnose_hardware,diagnose_system,diagnose_security,diagnose_resources,get_full_diagnostics
+    _psutil_required()
+    _cmd(cmd;timeout)
+    diagnose_audio()
+    diagnose_thumbnails()
+    diagnose_hardware()
+    diagnose_system()
+    diagnose_security()
+    diagnose_resources()
+    get_full_diagnostics(modules;progress_callback)
+  fixos/providers/llm_analyzer.py:
+    e: LLMAnalysis,LLMAnalyzer,main
+    LLMAnalysis:  # Result of LLM analysis...
+    LLMAnalyzer: __init__(1),analyze_disk_issues(1),analyze_failed_action(2),analyze_complex_pattern(1),_sanitize_suggestion(1),_create_fallback_analysis(1),enhance_heuristics_with_llm(2)  # Uses LLM to analyze disk issues when heuristics aren't suffi...
+    main()
+  fixos/orchestrator/graph.py:
+    e: Problem,ProblemGraph
+    Problem: is_actionable(0),to_summary(0)
+    ProblemGraph: __init__(0),add(1),get(1),next_actionable(0),all_done(0),pending_count(0),summary(0),render_tree(0),_recalculate_order(0)  # DAG problemów systemowych z topological sort do wyznaczania ...
+  fixos/orchestrator/executor.py:
+    e: DangerousCommandError,CommandTimeoutError,ExecutionResult,CommandExecutor
+    DangerousCommandError(Exception): __init__(2)
+    CommandTimeoutError(Exception): __init__(2)
+    ExecutionResult: to_context(0)
+    CommandExecutor: __init__(3),is_dangerous(1),needs_sudo(1),add_sudo(1),_make_noninteractive(1),check_idempotent(1),execute_sync(4),execute(3)  # Bezpieczny executor komend z:
+- walidacją niebezpiecznych wz...
+  fixos/utils/web_search.py:
+    e: SearchResult,_http_get,search_fedora_bugzilla,search_ask_fedora,search_arch_wiki,search_github_issues,search_serpapi,search_ddg,search_all,format_results_for_llm
+    SearchResult:
+    _http_get(url;timeout)
+    search_fedora_bugzilla(query;max_results)
+    search_ask_fedora(query;max_results)
+    search_arch_wiki(query;max_results)
+    search_github_issues(query;max_results)
+    search_serpapi(query;api_key;max_results)
+    search_ddg(query;max_results)
+    search_all(query;serpapi_key;max_per_source)
+    format_results_for_llm(results)
+  fixos/platform_utils.py:
+    e: get_os_info,needs_elevation,elevate_cmd,is_dangerous,run_command,get_package_manager,install_package_cmd,_cmd_exists,setup_signal_timeout,cancel_signal_timeout
+    get_os_info()
+    needs_elevation(cmd)
+    elevate_cmd(cmd)
+    is_dangerous(cmd)
+    run_command(cmd;timeout;shell)
+    get_package_manager()
+    install_package_cmd(package)
+    _cmd_exists(cmd)
+    setup_signal_timeout(seconds;handler)
+    cancel_signal_timeout()
+  fixos/system_checks.py:
+    e: run_cmd,get_cpu_info,get_memory_info,get_disk_info,get_network_info,get_top_processes,get_fedora_specific,get_full_diagnostics
+    run_cmd(cmd;timeout)
+    get_cpu_info()
+    get_memory_info()
+    get_disk_info()
+    get_network_info()
+    get_top_processes(n)
+    get_fedora_specific()
+    get_full_diagnostics()
+  fixos/anonymizer.py:
+    e: get_sensitive_values,anonymize
+    get_sensitive_values()
+    anonymize(data_str)
+  setup.py:
+  fixos/__init__.py:
+  fixos/diagnostics/__init__.py:
+  fixos/agent/__init__.py:
+  fixos/providers/__init__.py:
+  fixos/utils/__init__.py:
+  fixos/fixes/__init__.py:
+  fixos/orchestrator/__init__.py:
+  fixos/interactive/__init__.py:
+  docs/examples/quickstart.py:
+  docs/examples/advanced_usage.py:
+  project.sh:

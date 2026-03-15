@@ -1,0 +1,424 @@
+# fixOS/flow | 203 func | 12 pipelines | 4 hub-types | 2026-03-15
+
+PIPELINES[12] (Analysis:2, Refactor:10):
+  Fixos [Refactor]: List[str] → Dict[str, Any]
+              → get_cleanup_plan(selected_services:List[str]) → Dict[str, Any] CC=14   pure ▶
+              → scan_all_services() → List[ServiceDataInfo] CC=3    mutation
+              → scan_service(service_type:ServiceType) → List[ServiceDataInfo] CC=7    mutation
+              → _analyze_service_path(service_type:ServiceType, path:str) → Optional[ServiceDataInfo] CC=4    pure
+              → _get_service_details(service_type:ServiceType, path:str) → Dict[str, Any] CC=5    cache
+              → _get_conda_details() → Dict[str, Any]   CC=6    pure ■
+              PURITY: 3/6 pure  BOTTLENECK: get_cleanup_plan(CC=14)
+
+  Fixos [Refactor]: provider → str
+              → fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback) CC=18   IO  !! ▶
+              → run_hitl_session(diagnostics:dict, config:FixOsConfig, show_data:bool) CC=34   IO  !!
+              → display_anonymized_preview(data_str:str, report:AnonymizationReport, max_lines:int) CC=5    IO
+              → _format_diagnostics_markdown(data_str:str) → str CC=3    pure
+              → _dict_to_markdown(data:dict, indent:int) → str CC=18   mutation  !!
+              → _format_key_title(key:str) → str        CC=1    pure ■
+              PURITY: 2/6 pure  BOTTLENECK: run_hitl_session(CC=34)
+
+  Fixos [Refactor]: str → Dict[str, Any]
+              → cleanup_service(service_type:str, dry_run:bool) → Dict[str, Any] CC=4    pure ▶
+              → scan_service(service_type:ServiceType) → List[ServiceDataInfo] CC=7    mutation
+              → _analyze_service_path(service_type:ServiceType, path:str) → Optional[ServiceDataInfo] CC=4    pure
+              → _get_service_details(service_type:ServiceType, path:str) → Dict[str, Any] CC=5    cache
+              → _get_conda_details() → Dict[str, Any]   CC=6    pure ■
+              PURITY: 3/5 pure  BOTTLENECK: scan_service(CC=7)
+
+  Orchestrator [Refactor]: confirm_fn → dict
+              → run_async(confirm_fn, progress_fn) → dict CC=1    pure ▶
+              → run_sync(confirm_fn, progress_fn) → dict CC=17   IO  !!
+              → _evaluate_and_rediagnose(problem:Problem, result:ExecutionResult) → list[Problem] CC=10   IO
+              → anonymize(data_str:str) → str           CC=5    pure
+              → get_sensitive_values() → dict           CC=4    pure ■
+              PURITY: 3/5 pure  BOTTLENECK: run_sync(CC=17)
+
+  Fixos [Refactor]: ? → AnalysisResult
+              → main()                                  CC=1    pure ▶
+              → cli(ctx, dry_run)                       CC=2    pure
+              → _print_welcome()                        CC=6    IO
+              → load(cls) → FixOsConfig                 CC=14   IO
+              → _load_env_files() → AnalysisResult      CC=13   IO ■
+              PURITY: 2/5 pure  BOTTLENECK: load(CC=14)
+
+  Fixos [Analysis]: str → str
+              → analyze_disk_usage(path:str) → Dict[str, Any] CC=4    cache ▶
+              → suggest_cleanup_actions(path:Path) → List[Dict] CC=13   cache
+              → get_temp_dirs(path:Path, max_dirs:int) → List[Dict] CC=9    mutation
+              → _identify_temp_type(dir_path:Path) → str CC=4    pure ■
+              PURITY: 1/4 pure  BOTTLENECK: suggest_cleanup_actions(CC=13)
+
+  Fixos [Refactor]: prompt → AnalysisResult
+              → ask(prompt, dry_run)                    CC=1    pure ▶
+              → _handle_natural_command(prompt:str, dry_run:bool) CC=37   IO  !!
+              → load(cls) → FixOsConfig                 CC=14   IO
+              → _load_env_files() → AnalysisResult      CC=13   IO ■
+              PURITY: 1/4 pure  BOTTLENECK: _handle_natural_command(CC=37)
+
+  Fixos [Refactor]: modules → str
+              → scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback) CC=10   IO ▶
+              → get_full_diagnostics() → dict           CC=1    IO
+              → get_fedora_specific() → dict            CC=1    pure
+              → run_cmd(cmd:str, timeout:int) → str     CC=6    pure ■
+              PURITY: 2/4 pure  BOTTLENECK: scan(CC=10)
+
+  Fixos [Refactor]: provider → AnalysisResult
+              → orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output) CC=13   IO ▶
+              → interactive_provider_setup() → Optional[FixOsConfig] CC=24   IO  !!
+              → load(cls) → FixOsConfig                 CC=14   IO
+              → _load_env_files() → AnalysisResult      CC=13   IO ■
+              PURITY: 0/4 pure  BOTTLENECK: interactive_provider_setup(CC=24)
+
+  Fixos [Analysis]: str → str
+              → analyze_disk_usage(path:str) → Dict[str, Any] CC=4    cache ▶
+              → suggest_cleanup_actions(path:Path) → List[Dict] CC=13   cache
+              → get_large_files(path:Path, min_size_mb:int, max_files:int) → List[Dict] CC=7    mutation
+              → _categorize_file(file_path:Path) → str  CC=9    pure ■
+              PURITY: 1/4 pure  BOTTLENECK: suggest_cleanup_actions(CC=13)
+
+  Fixos [Refactor]: str → bool
+              → install_package_cmd(package:str) → str  CC=2    pure ▶
+              → get_package_manager() → Optional[str]   CC=8    pure
+              → _cmd_exists(cmd:str) → bool             CC=1    pure ■
+              PURITY: 3/3 pure  BOTTLENECK: get_package_manager(CC=8)
+
+  Fixos [Refactor]: dict → dict
+              → run_llm_shell(diagnostics_data:dict, token:str, model:str, timeout:int, verbose:bool, base_url:Optional[str]) CC=15   IO  !! ▶
+              → anonymize(data_str:str) → str           CC=5    pure
+              → get_sensitive_values() → dict           CC=4    pure ■
+              PURITY: 2/3 pure  BOTTLENECK: run_llm_shell(CC=15)
+
+
+TRANSFORMS (fan-out ≥10):
+  run_hitl_session(diagnostics:dict, config:FixOsConfig, show_data:bool) fan=42   !! mutation-heavy
+  orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output) fan=30   !! mutation-heavy
+  run_autonomous_session(diagnostics:dict, config:FixOsConfig, show_data:bool, max_fixes:int) fan=28   !! side-effects
+  run_llm_shell(diagnostics_data:dict, token:str, model:str, timeout:int, verbose:bool, base_url:Optional[str]) fan=23   !! side-effects
+  interactive_provider_setup() → Optional[FixOsConfig]    fan=23   !! side-effects
+  token_set(key, provider, env_file)                      fan=23   !! side-effects
+  fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback) fan=21   !! side-effects
+  execute_cleanup_actions(actions:List[Dict], cfg, llm_fallback:bool) fan=21   !! side-effects
+  diagnose_system() → dict[str, Any]                      fan=19   fan=19
+  render_md(text:str) → None                              fan=19   fan=19
+  load_from_diagnostics(diagnostics:dict) → list[Problem] fan=18   PIPELINE:FixOrchestrator.entry
+  _handle_natural_command(prompt:str, dry_run:bool)       fan=18   fan=18
+  diagnose_resources() → dict[str, Any]                   fan=17   fan=17
+  cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only) fan=17   fan=17
+  run_sync(confirm_fn, progress_fn) → dict                fan=15   PIPELINE:FixOrchestrator.entry
+
+CONTRACTS:
+  Pipeline: Fixos
+    get_cleanup_plan(selected_services:List[str]) → Dict[str, Any]
+      IN:  selected_services:List[str]
+      OUT: Dict[str, Any]
+
+    scan_all_services() → List[ServiceDataInfo]
+      IN:  ()
+      OUT: List[ServiceDataInfo]
+      SIDE-EFFECT: pure
+
+    scan_service(service_type:ServiceType) → List[ServiceDataInfo]
+      IN:  service_type:ServiceType
+      OUT: List[ServiceDataInfo]
+      SIDE-EFFECT: pure
+
+    _analyze_service_path(service_type:ServiceType, path:str) → Optional[ServiceDataInfo]
+      IN:  service_type:ServiceType, path:str
+      OUT: Optional[ServiceDataInfo]
+
+    _get_service_details(service_type:ServiceType, path:str) → Dict[str, Any]
+      IN:  service_type:ServiceType, path:str
+      OUT: Dict[str, Any]
+      SIDE-EFFECT: cache(self._get_package_cache_details)
+
+    _get_conda_details() → Dict[str, Any]
+      IN:  ()
+      OUT: Dict[str, Any]
+
+  Pipeline: Fixos
+    fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback)
+      IN:  provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback
+      OUT: None
+      SIDE-EFFECT: IO(load, write_text, dumps)
+      SMELL: CC=18 → split
+
+    run_hitl_session(diagnostics:dict, config:FixOsConfig, show_data:bool)
+      IN:  diagnostics:dict, config:FixOsConfig, show_data:bool
+      OUT: None
+      SIDE-EFFECT: IO(print, print, print)
+      SMELL: CC=34 → split
+
+    display_anonymized_preview(data_str:str, report:AnonymizationReport, max_lines:int)
+      IN:  data_str:str, report:AnonymizationReport, max_lines:int
+      OUT: None
+      SIDE-EFFECT: IO(print, print, print)
+
+    _format_diagnostics_markdown(data_str:str) → str
+      IN:  data_str:str
+      OUT: str
+
+    _dict_to_markdown(data:dict, indent:int) → str
+      IN:  data:dict, indent:int
+      OUT: str
+      SIDE-EFFECT: pure
+      SMELL: CC=18 → split
+
+    _format_key_title(key:str) → str
+      IN:  key:str
+      OUT: str
+
+  Pipeline: Fixos
+    cleanup_service(service_type:str, dry_run:bool) → Dict[str, Any]
+      IN:  service_type:str, dry_run:bool
+      OUT: Dict[str, Any]
+
+    scan_service(service_type:ServiceType) → List[ServiceDataInfo]
+      IN:  service_type:ServiceType
+      OUT: List[ServiceDataInfo]
+      SIDE-EFFECT: pure
+
+    _analyze_service_path(service_type:ServiceType, path:str) → Optional[ServiceDataInfo]
+      IN:  service_type:ServiceType, path:str
+      OUT: Optional[ServiceDataInfo]
+
+    _get_service_details(service_type:ServiceType, path:str) → Dict[str, Any]
+      IN:  service_type:ServiceType, path:str
+      OUT: Dict[str, Any]
+      SIDE-EFFECT: cache(self._get_package_cache_details)
+
+    _get_conda_details() → Dict[str, Any]
+      IN:  ()
+      OUT: Dict[str, Any]
+
+  Pipeline: Orchestrator
+    run_async(confirm_fn, progress_fn) → dict
+      IN:  confirm_fn, progress_fn
+      OUT: dict
+
+    run_sync(confirm_fn, progress_fn) → dict
+      IN:  confirm_fn, progress_fn
+      OUT: dict
+      SIDE-EFFECT: IO(print, print, print)
+      SMELL: CC=17 → split
+
+    _evaluate_and_rediagnose(problem:Problem, result:ExecutionResult) → list[Problem]
+      IN:  problem:Problem, result:ExecutionResult
+      OUT: list[Problem]
+      SIDE-EFFECT: IO(dumps)
+
+    anonymize(data_str:str) → str
+      IN:  data_str:str
+      OUT: str
+
+    get_sensitive_values() → dict
+      IN:  ()
+      OUT: dict
+
+  Pipeline: Fixos
+    main()
+      IN:  ()
+      OUT: None
+
+    cli(ctx, dry_run)
+      IN:  ctx, dry_run
+      OUT: None
+
+    _print_welcome()
+      IN:  ()
+      OUT: None
+      SIDE-EFFECT: IO(load)
+
+    load(cls) → FixOsConfig
+      IN:  cls
+      OUT: FixOsConfig
+      SIDE-EFFECT: IO(print)
+
+    _load_env_files() → AnalysisResult
+      IN:  ()
+      OUT: AnalysisResult
+      SIDE-EFFECT: IO(read_text)
+
+  Pipeline: Fixos
+    analyze_disk_usage(path:str) → Dict[str, Any]
+      IN:  path:str
+      OUT: Dict[str, Any]
+      SIDE-EFFECT: cache(self.get_cache_dirs)
+
+    suggest_cleanup_actions(path:Path) → List[Dict]
+      IN:  path:Path
+      OUT: List[Dict]
+      SIDE-EFFECT: cache(self.get_cache_dirs, cache.get)
+
+    get_temp_dirs(path:Path, max_dirs:int) → List[Dict]
+      IN:  path:Path, max_dirs:int
+      OUT: List[Dict]
+      SIDE-EFFECT: pure
+
+    _identify_temp_type(dir_path:Path) → str
+      IN:  dir_path:Path
+      OUT: str
+
+  Pipeline: Fixos
+    ask(prompt, dry_run)
+      IN:  prompt, dry_run
+      OUT: None
+
+    _handle_natural_command(prompt:str, dry_run:bool)
+      IN:  prompt:str, dry_run:bool
+      OUT: None
+      SIDE-EFFECT: IO(load, dump, dump)
+      SMELL: CC=37 → split
+
+    load(cls) → FixOsConfig
+      IN:  cls
+      OUT: FixOsConfig
+      SIDE-EFFECT: IO(print)
+
+    _load_env_files() → AnalysisResult
+      IN:  ()
+      OUT: AnalysisResult
+      SIDE-EFFECT: IO(read_text)
+
+  Pipeline: Fixos
+    scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback)
+      IN:  modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback
+      OUT: None
+      SIDE-EFFECT: IO(dumps, write_text, dumps)
+
+    get_full_diagnostics() → dict
+      IN:  ()
+      OUT: dict
+      SIDE-EFFECT: IO(print, print, print)
+
+    get_fedora_specific() → dict
+      IN:  ()
+      OUT: dict
+
+    run_cmd(cmd:str, timeout:int) → str
+      IN:  cmd:str, timeout:int
+      OUT: str
+
+  Pipeline: Fixos
+    orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output)
+      IN:  provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output
+      OUT: None
+      SIDE-EFFECT: IO(load, print, print)
+
+    interactive_provider_setup() → Optional[FixOsConfig]
+      IN:  ()
+      OUT: Optional[FixOsConfig]
+      SIDE-EFFECT: IO(print, print, print)
+      SMELL: CC=24 → split
+
+    load(cls) → FixOsConfig
+      IN:  cls
+      OUT: FixOsConfig
+      SIDE-EFFECT: IO(print)
+
+    _load_env_files() → AnalysisResult
+      IN:  ()
+      OUT: AnalysisResult
+      SIDE-EFFECT: IO(read_text)
+
+  Pipeline: Fixos
+    analyze_disk_usage(path:str) → Dict[str, Any]
+      IN:  path:str
+      OUT: Dict[str, Any]
+      SIDE-EFFECT: cache(self.get_cache_dirs)
+
+    suggest_cleanup_actions(path:Path) → List[Dict]
+      IN:  path:Path
+      OUT: List[Dict]
+      SIDE-EFFECT: cache(self.get_cache_dirs, cache.get)
+
+    get_large_files(path:Path, min_size_mb:int, max_files:int) → List[Dict]
+      IN:  path:Path, min_size_mb:int, max_files:int
+      OUT: List[Dict]
+      SIDE-EFFECT: pure
+
+    _categorize_file(file_path:Path) → str
+      IN:  file_path:Path
+      OUT: str
+
+  Pipeline: Fixos
+    install_package_cmd(package:str) → str
+      IN:  package:str
+      OUT: str
+
+    get_package_manager() → Optional[str]
+      IN:  ()
+      OUT: Optional[str]
+
+    _cmd_exists(cmd:str) → bool
+      IN:  cmd:str
+      OUT: bool
+
+  Pipeline: Fixos
+    run_llm_shell(diagnostics_data:dict, token:str, model:str, timeout:int, verbose:bool, base_url:Optional[str])
+      IN:  diagnostics_data:dict, token:str, model:str, timeout:int, verbose:bool, base_url:Optional[str]
+      OUT: None
+      SIDE-EFFECT: IO(print, print, print)
+      SMELL: CC=15 → split
+
+    anonymize(data_str:str) → str
+      IN:  data_str:str
+      OUT: str
+
+    get_sensitive_values() → dict
+      IN:  ()
+      OUT: dict
+
+
+DATA_TYPES (by cross-function usage) [168 annotated, 0 inferred / 203 functions]:
+  str                  consumed:83  produced:40   !! HUB-TYPE → split interface
+  int                  consumed:36  produced:2    !! HUB-TYPE → split interface
+  bool                 consumed:19  produced:10   !! HUB-TYPE → split interface
+  dict                 consumed:9   produced:17 
+  str, Any             consumed:7   produced:13 
+  Dict                 consumed:6   produced:7  
+  Path                 consumed:11  produced:0    !! HUB-TYPE → split interface
+  list[SearchResult]   consumed:1   produced:7    output-heavy
+  ServiceType          consumed:7   produced:0    input-heavy (read-only flow)
+  dict[str, Any]       consumed:0   produced:7    output-heavy
+  Problem              consumed:4   produced:2  
+  FixOsConfig          consumed:4   produced:2  
+  CleanupAction        consumed:3   produced:2  
+  list[dict]           consumed:3   produced:1    narrow scope
+  ExecutionResult      consumed:2   produced:2    narrow scope
+  ServiceDataInfo      consumed:1   produced:3    narrow scope
+  LLMAnalysis          consumed:0   produced:4    narrow scope
+  float                consumed:2   produced:2    narrow scope
+  tuple[bool, str]     consumed:0   produced:3    narrow scope
+  list[Problem]        consumed:0   produced:3    narrow scope
+
+  HUB TYPES (consumed ≥10):
+    str → 83 consumers → split into:
+      - (analyze consumers to suggest sub-interfaces)
+    int → 36 consumers → split into:
+      - (analyze consumers to suggest sub-interfaces)
+    bool → 19 consumers → split into:
+      - (analyze consumers to suggest sub-interfaces)
+    Path → 11 consumers → split into:
+      - (analyze consumers to suggest sub-interfaces)
+
+SIDE_EFFECTS:
+  IO:        get_os_info, get_full_diagnostics, execute_command, run_llm_shell, get_full_diagnostics, main, _sep, _print_cmd_result, _run_cmd, _print_action_menu
+  Cache:     DiskAnalyzer.analyze_disk_usage, DiskAnalyzer.get_cache_dirs, DiskAnalyzer.suggest_cleanup_actions, ServiceDataScanner._get_service_details
+  Mutation:  get_top_processes, diagnose_system, diagnose_security, diagnose_resources, DiskAnalyzer.__init__, DiskAnalyzer.get_large_files, DiskAnalyzer.get_log_dirs, DiskAnalyzer.get_temp_dirs, _extract_fixes, FixOsConfig.validate
+  Pure:      needs_elevation, elevate_cmd, is_dangerous, run_command, get_package_manager, install_package_cmd, _cmd_exists, setup_signal_timeout, cancel_signal_timeout, get_sensitive_values
+
+  PIPELINE PURITY:
+    Fixos           ██░░ 50% pure
+    Fixos           █░░░ 33% pure
+    Fixos           ██░░ 60% pure
+    Orchestrator    ██░░ 60% pure
+    Fixos           █░░░ 40% pure
+    Fixos           █░░░ 25% pure
+    Fixos           █░░░ 25% pure
+    Fixos           ██░░ 50% pure
+    Fixos           ░░░░ 0% pure
+    Fixos           █░░░ 25% pure
+    Fixos           ████ 100% pure
+    Fixos           ██░░ 66% pure

@@ -1,0 +1,696 @@
+# fixOS — API Reference
+
+> 32 modules | 203 functions | 31 classes
+
+## Contents
+
+- [Core](#core) (1 modules)
+- [fixos](#fixos) (26 modules)
+
+## Core
+
+### `fixos` [source](https://github.com/wronai/fixfedora/blob/main/fixos/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `AgentReport` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L77) |
+| `FixAction` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L68) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L100) |
+| `CmdResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L76) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L67) |
+| `NaturalLanguageGroup` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L81) |
+| `FixOsConfig` | 3 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L156) |
+| `DiskAnalyzer` | 6 | Analyzes disk usage and provides cleanup suggestions | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L15) |
+| `ServiceDataInfo` | 0 | Information about service data | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L70) |
+| `ServiceDataScanner` | 4 | Scans for large service data directories and allows cleanup | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L87) |
+| `ServiceType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L17) |
+| `CleanupAction` | 0 | Represents a cleanup action | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L32) |
+| `CleanupPlanner` | 4 | Interactive cleanup planning and grouping system | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L52) |
+| `CleanupType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L20) |
+| `Priority` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L13) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L51) |
+| `CommandExecutor` | 6 | Bezpieczny executor komend z: | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L85) |
+| `CommandTimeoutError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L23) |
+| `DangerousCommandError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L16) |
+| `ExecutionResult` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L31) |
+| `Problem` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L19) |
+| `ProblemGraph` | 7 | DAG problemów systemowych z topological sort do wyznaczania kolejności napraw. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L46) |
+| `FixOrchestrator` | 4 | Orkiestrator napraw systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/orchestrator.py#L83) |
+| `LLMClient` | 4 | Wrapper nad openai.OpenAI kompatybilny z wieloma providerami. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L25) |
+| `LLMError` | 0 | Błąd komunikacji z LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L20) |
+| `LLMAnalysis` | 0 | Result of LLM analysis | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L12) |
+| `LLMAnalyzer` | 4 | Uses LLM to analyze disk issues when heuristics aren't sufficient | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L20) |
+| `AnonymizationReport` | 2 | Raport anonimizacji – co zostało zmaskowane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L16) |
+| `SearchResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L19) |
+
+**`FixOsConfig` methods:**
+
+- `load(cls)` — Tworzy konfigurację z połączonych źródeł.
+- `validate()` — Zwraca listę błędów walidacji (pusta = OK).
+- `summary()` — Krótkie podsumowanie konfiguracji (bez klucza API).
+
+**`DiskAnalyzer` methods:**
+
+- `analyze_disk_usage(path)` — Comprehensive disk usage analysis
+- `get_large_files(path, min_size_mb, max_files)` — Find large files
+- `get_cache_dirs(path, max_dirs)` — Find cache directories
+- `get_log_dirs(path, max_dirs)` — Find log directories
+- `get_temp_dirs(path, max_dirs)` — Find temporary directories
+- `suggest_cleanup_actions(path)` — Generate cleanup suggestions using heuristics
+
+**`ServiceDataScanner` methods:**
+
+- `scan_all_services()` — Scan all known services for data above threshold
+- `scan_service(service_type)` — Scan specific service type for data
+- `get_cleanup_plan(selected_services)` — Generate cleanup plan for services
+- `cleanup_service(service_type, dry_run)` — Execute cleanup for a specific service
+
+**`CleanupPlanner` methods:**
+
+- `group_by_category(suggestions)` — Group cleanup suggestions by category
+- `prioritize_actions(grouped_actions)` — Create prioritized list of all actions
+- `create_cleanup_plan(suggestions)` — Create comprehensive cleanup plan
+- `interactive_selection(plan)` — Interactive selection process (simulated for now)
+
+**`CommandExecutor` methods:**
+
+- `is_dangerous(command)` — Sprawdza czy komenda jest potencjalnie destruktywna.
+- `needs_sudo(command)`
+- `add_sudo(command)`
+- `check_idempotent(command)` — Zwraca komendę sprawdzającą stan (jeśli znana), None jeśli nie dotyczy.
+- `execute_sync(command, timeout, add_sudo, check_idempotent)` — Synchroniczne wykonanie komendy.
+- `execute(command, timeout, add_sudo)` — Asynchroniczne wykonanie komendy.
+
+**`Problem` methods:**
+
+- `is_actionable()`
+- `to_summary()`
+
+**`ProblemGraph` methods:**
+
+- `add(problem)`
+- `get(problem_id)`
+- `next_actionable()` — Zwraca pierwszy problem bez nierozwiązanych zależności.
+- `all_done()`
+- `pending_count()`
+- `summary()`
+- `render_tree()` — Renderuje drzewo problemów jako tekst.
+
+**`FixOrchestrator` methods:**
+
+- `load_from_diagnostics(diagnostics)` — Parsuje dane diagnostyczne przez LLM i buduje graf problemów.
+- `load_from_dict(problems_data)` — Ładuje problemy bezpośrednio z listy dict (bez LLM).
+- `run_sync(confirm_fn, progress_fn)` — Synchroniczna pętla napraw (dla trybu HITL).
+- `run_async(confirm_fn, progress_fn)` — Asynchroniczna wersja run_sync.
+
+**`LLMClient` methods:**
+
+- `chat(messages)` — Wysyła wiadomości do LLM i zwraca odpowiedź jako string.
+- `chat_stream(messages)` — Generator streamujący tokeny odpowiedzi.
+- `ping()` — Sprawdza czy API odpowiada (krótki test).
+
+**`LLMAnalyzer` methods:**
+
+- `analyze_disk_issues(disk_data)` — Use LLM to analyze disk issues when heuristics are insufficient
+- `analyze_failed_action(action, error)` — Analyze failed cleanup action and suggest alternatives
+- `analyze_complex_pattern(pattern_data)` — Analyze complex disk usage patterns that heuristics can't categorize
+- `enhance_heuristics_with_llm(heuristic_suggestions, disk_data)` — Enhance heuristic suggestions with LLM insights
+
+**`AnonymizationReport` methods:**
+
+- `add(category, count)`
+- `summary()`
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `run_autonomous_session` | `run_autonomous_session(diagnostics, config, show_data, max_fixes)` | 21 ⚠️ | Uruchamia autonomiczny tryb agenta. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L140) |
+| `run_hitl_session` | `run_hitl_session(diagnostics, config, show_data)` | 34 ⚠️ | Runs interactive HITL session with full transparency. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L226) |
+| `anonymize` | `anonymize(data_str)` | 5 | Anonimizuje wrażliwe dane w stringu. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L30) |
+| `get_sensitive_values` | `get_sensitive_values()` | 4 | Zbiera aktualne wrażliwe wartości systemowe do zamaskowania. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L12) |
+| `add_common_options` | `add_common_options(fn)` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L50) |
+| `add_shared_options` | `add_shared_options(func)` | 1 | Shared options for both scan and fix commands | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L55) |
+| `ask` | `ask(prompt, dry_run)` | 1 | Wykonaj polecenie w języku naturalnym. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L121) |
+| `cleanup_services` | `cleanup_services(threshold, services, json_output, cleanup, ...)` | 33 ⚠️ | Skanuje i czyści dane usług przekraczające próg. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1435) |
+| `cli` | `cli(ctx, dry_run)` | 2 | fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L92) |
+| `config` | `config()` | 1 | Zarządzanie konfiguracją fixos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1071) |
+| `config_init` | `config_init(force)` | 4 | Tworzy plik .env na podstawie szablonu .env.example. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1091) |
+| `config_set` | `config_set(key, value)` | 5 | Ustawia wartość w pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1123) |
+| `config_show` | `config_show()` | 3 | Wyświetla aktualną konfigurację. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1077) |
+| `execute_cleanup_actions` | `execute_cleanup_actions(actions, cfg, llm_fallback)` | 24 ⚠️ | Execute cleanup actions with safety checks | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L851) |
+| `fix` | `fix(provider, token, model, no_banner, ...)` | 18 ⚠️ | Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L665) |
+| `handle_disk_cleanup_mode` | `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive, ...)` | 13 ⚠️ | Handle disk cleanup mode with interactive planning | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L781) |
+| `llm_providers` | `llm_providers(free)` | 10 | Lista providerów LLM z linkami do generowania kluczy API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1155) |
+| `main` | `main()` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1584) |
+| `orchestrate` | `orchestrate(provider, token, model, no_banner, ...)` | 13 ⚠️ | Orkiestracja napraw z grafem kaskadowych problemów. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1295) |
+| `providers` | `providers()` | 3 | Lista dostępnych providerów LLM (skrócona). Użyj 'fixos llm' po więcej. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1231) |
+| `scan` | `scan(modules, output, show_raw, no_banner, ...)` | 10 | Przeprowadza diagnostykę systemu. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L494) |
+| `test_llm` | `test_llm(provider, token, model, no_banner)` | 5 | Testuje połączenie z wybranym providerem LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1251) |
+| `token` | `token()` | 1 | Zarządzanie tokenami API LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L966) |
+| `token_clear` | `token_clear(env_file)` | 7 | Usuwa token z pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1052) |
+| `token_set` | `token_set(key, provider, env_file)` | 18 ⚠️ | Zapisuje token API do pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L975) |
+| `token_show` | `token_show()` | 4 | Pokazuje aktualnie skonfigurowany token (zamaskowany). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1037) |
+| `try_llm_fallback_for_failures` | `try_llm_fallback_for_failures(failed_actions, cfg)` | 3 | Use LLM to analyze and suggest fixes for failed cleanup actions | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L937) |
+| `detect_provider_from_key` | `detect_provider_from_key(key)` | 3 | Wykrywa provider na podstawie prefiksu klucza API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L309) |
+| `get_providers_list` | `get_providers_list()` | 3 | Zwraca listę providerów jako listę słowników. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L410) |
+| `interactive_provider_setup` | `interactive_provider_setup()` | 24 ⚠️ | Interaktywny wybór providera gdy brak konfiguracji. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L317) |
+| `main` | `main()` | 1 | Test the disk analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L411) |
+| `main` | `main()` | 1 | Test the service data scanner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L887) |
+| `diagnose_audio` | `diagnose_audio()` | 1 | Diagnostyka dźwięku (ALSA/PipeWire/PulseAudio/SOF). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L49) |
+| `diagnose_hardware` | `diagnose_hardware()` | 1 | Diagnostyka sprzętu laptopa/desktopa (ACPI, kamera, touchpad, DMI). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L165) |
+| `diagnose_resources` | `diagnose_resources()` | 13 ⚠️ | Diagnostyka zasobów systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L384) |
+| `diagnose_security` | `diagnose_security()` | 4 | Diagnostyka bezpieczeństwa systemu i sieci. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L303) |
+| `diagnose_system` | `diagnose_system()` | 14 ⚠️ | System metrics – cross-platform: CPU, RAM, disks, processes. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L204) |
+| `diagnose_thumbnails` | `diagnose_thumbnails()` | 1 | Diagnostyka podglądów plików (thumbnails) w system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L106) |
+| `get_full_diagnostics` | `get_full_diagnostics(modules, progress_callback)` | 7 | Zbiera diagnostykę z wybranych modułów. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L482) |
+| `main` | `main()` | 1 | Test the cleanup planner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L385) |
+| `execute_command` | `execute_command(cmd)` | 10 | Wykonuje komendę systemową z potwierdzeniem użytkownika. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L67) |
+| `format_time` | `format_time(seconds)` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L59) |
+| `run_llm_shell` | `run_llm_shell(diagnostics_data, token, model, timeout, ...)` | 15 ⚠️ | Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L101) |
+| `cancel_signal_timeout` | `cancel_signal_timeout()` | 2 | Cancels the timeout signal (POSIX only). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L180) |
+| `elevate_cmd` | `elevate_cmd(cmd)` | 3 | Adds sudo (Linux/Mac) or wraps in PowerShell -Verb RunAs (Windows). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L61) |
+| `get_os_info` | `get_os_info()` | 5 | Returns basic OS information. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L22) |
+| `get_package_manager` | `get_package_manager()` | 8 | Detects the system package manager. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L123) |
+| `install_package_cmd` | `install_package_cmd(package)` | 2 | Returns the install command for the detected package manager. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L141) |
+| `is_dangerous` | `is_dangerous(cmd)` | 3 | Returns reason string if command is dangerous, None if safe. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L72) |
+| `needs_elevation` | `needs_elevation(cmd)` | 5 | Returns True if command likely needs admin/sudo. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L41) |
+| `run_command` | `run_command(cmd, timeout, shell)` | 5 | Runs a command cross-platform. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L91) |
+| `setup_signal_timeout` | `setup_signal_timeout(seconds, handler)` | 2 | Sets up a timeout signal. Returns True if supported (POSIX only). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L167) |
+| `main` | `main()` | 1 | Test the LLM analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L326) |
+| `get_cpu_info` | `get_cpu_info()` | 2 | Metryki CPU. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L32) |
+| `get_disk_info` | `get_disk_info()` | 3 | Metryki dysków dla wszystkich partycji. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L60) |
+| `get_fedora_specific` | `get_fedora_specific()` | 1 | Komendy specyficzne dla system: dnf, journalctl, systemctl. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L107) |
+| `get_full_diagnostics` | `get_full_diagnostics()` | 1 | Zbiera kompletne dane diagnostyczne systemu system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L128) |
+| `get_memory_info` | `get_memory_info()` | 1 | Metryki RAM i SWAP. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L45) |
+| `get_network_info` | `get_network_info()` | 4 | Statystyki sieciowe (bez wrażliwych danych - anonimizacja jest osobno). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L79) |
+| `get_top_processes` | `get_top_processes(n)` | 3 | Lista TOP N procesów według zużycia CPU. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L95) |
+| `run_cmd` | `run_cmd(cmd, timeout)` | 6 | Uruchamia komendę shell i zwraca output. Bezpieczny fallback przy błędzie. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L12) |
+| `anonymize` | `anonymize(data_str)` | 15 ⚠️ | Anonimizuje wrażliwe dane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L51) |
+| `display_anonymized_preview` | `display_anonymized_preview(data_str, report, max_lines)` | 5 | Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L139) |
+| `colorize` | `colorize(line)` | 1 | Return line unchanged – rich handles markup in render_md(). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L55) |
+| `print_cmd_block` | `print_cmd_block(cmd, comment, dry_run)` | 4 | Print a framed command preview panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L167) |
+| `print_problem_header` | `print_problem_header(problem_id, description, severity, status, ...)` | 3 | Print a colored problem header panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L231) |
+| `print_stderr_box` | `print_stderr_box(stderr, max_lines)` | 2 | Print stderr in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L196) |
+| `print_stdout_box` | `print_stdout_box(stdout, max_lines)` | 2 | Print stdout in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L183) |
+| `render_md` | `render_md(text)` | 16 ⚠️ | Print LLM markdown reply to terminal via rich. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L62) |
+| `render_tree_colored` | `render_tree_colored(nodes, execution_order)` | 8 | Render a ProblemGraph as a rich-markup string. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L258) |
+| `format_results_for_llm` | `format_results_for_llm(results)` | 3 | Formatuje wyniki wyszukiwania do wklejenia w prompt LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L245) |
+| `search_all` | `search_all(query, serpapi_key, max_per_source)` | 5 | Przeszukuje wszystkie dostępne źródła wiedzy. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L206) |
+| `search_arch_wiki` | `search_arch_wiki(query, max_results)` | 9 | Arch Wiki – doskonałe źródło dla problemów Linux (nie tylko Arch). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L87) |
+| `search_ask_fedora` | `search_ask_fedora(query, max_results)` | 4 | Szuka w Linux forums przez Discourse API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L65) |
+| `search_ddg` | `search_ddg(query, max_results)` | 8 | DuckDuckGo Instant Answer API (bez klucza, ograniczone). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L174) |
+| `search_fedora_bugzilla` | `search_fedora_bugzilla(query, max_results)` | 4 | Szuka w Linux Bugzilla przez REST API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L39) |
+| `search_github_issues` | `search_github_issues(query, max_results)` | 4 | GitHub Issues – linuxhardware, ALSA, PipeWire, PulseAudio repos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L115) |
+| `search_serpapi` | `search_serpapi(query, api_key, max_results)` | 5 | SerpAPI – Google/Bing search (wymaga klucza API). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L150) |
+
+## fixos
+
+### `fixos.agent` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `AgentReport` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L77) |
+| `FixAction` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L68) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L100) |
+| `CmdResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L76) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L67) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `run_autonomous_session` | `run_autonomous_session(diagnostics, config, show_data, max_fixes)` | 21 ⚠️ | Uruchamia autonomiczny tryb agenta. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L140) |
+| `run_hitl_session` | `run_hitl_session(diagnostics, config, show_data)` | 34 ⚠️ | Runs interactive HITL session with full transparency. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L226) |
+
+### `fixos.agent.autonomous` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `AgentReport` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L77) |
+| `FixAction` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L68) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L100) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `run_autonomous_session` | `run_autonomous_session(diagnostics, config, show_data, max_fixes)` | 21 ⚠️ | Uruchamia autonomiczny tryb agenta. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/autonomous.py#L140) |
+
+### `fixos.agent.hitl` [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `CmdResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L76) |
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L67) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `run_hitl_session` | `run_hitl_session(diagnostics, config, show_data)` | 34 ⚠️ | Runs interactive HITL session with full transparency. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/agent/hitl.py#L226) |
+
+### `fixos.anonymizer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `anonymize` | `anonymize(data_str)` | 5 | Anonimizuje wrażliwe dane w stringu. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L30) |
+| `get_sensitive_values` | `get_sensitive_values()` | 4 | Zbiera aktualne wrażliwe wartości systemowe do zamaskowania. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/anonymizer.py#L12) |
+
+### `fixos.cli` [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `NaturalLanguageGroup` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L81) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `add_common_options` | `add_common_options(fn)` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L50) |
+| `add_shared_options` | `add_shared_options(func)` | 1 | Shared options for both scan and fix commands | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L55) |
+| `ask` | `ask(prompt, dry_run)` | 1 | Wykonaj polecenie w języku naturalnym. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L121) |
+| `cleanup_services` | `cleanup_services(threshold, services, json_output, cleanup, ...)` | 33 ⚠️ | Skanuje i czyści dane usług przekraczające próg. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1435) |
+| `cli` | `cli(ctx, dry_run)` | 2 | fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L92) |
+| `config` | `config()` | 1 | Zarządzanie konfiguracją fixos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1071) |
+| `config_init` | `config_init(force)` | 4 | Tworzy plik .env na podstawie szablonu .env.example. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1091) |
+| `config_set` | `config_set(key, value)` | 5 | Ustawia wartość w pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1123) |
+| `config_show` | `config_show()` | 3 | Wyświetla aktualną konfigurację. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1077) |
+| `execute_cleanup_actions` | `execute_cleanup_actions(actions, cfg, llm_fallback)` | 24 ⚠️ | Execute cleanup actions with safety checks | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L851) |
+| `fix` | `fix(provider, token, model, no_banner, ...)` | 18 ⚠️ | Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L665) |
+| `handle_disk_cleanup_mode` | `handle_disk_cleanup_mode(disk_analysis, cfg, dry_run, interactive, ...)` | 13 ⚠️ | Handle disk cleanup mode with interactive planning | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L781) |
+| `llm_providers` | `llm_providers(free)` | 10 | Lista providerów LLM z linkami do generowania kluczy API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1155) |
+| `main` | `main()` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1584) |
+| `orchestrate` | `orchestrate(provider, token, model, no_banner, ...)` | 13 ⚠️ | Orkiestracja napraw z grafem kaskadowych problemów. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1295) |
+| `providers` | `providers()` | 3 | Lista dostępnych providerów LLM (skrócona). Użyj 'fixos llm' po więcej. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1231) |
+| `scan` | `scan(modules, output, show_raw, no_banner, ...)` | 10 | Przeprowadza diagnostykę systemu. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L494) |
+| `test_llm` | `test_llm(provider, token, model, no_banner)` | 5 | Testuje połączenie z wybranym providerem LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1251) |
+| `token` | `token()` | 1 | Zarządzanie tokenami API LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L966) |
+| `token_clear` | `token_clear(env_file)` | 7 | Usuwa token z pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1052) |
+| `token_set` | `token_set(key, provider, env_file)` | 18 ⚠️ | Zapisuje token API do pliku .env. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L975) |
+| `token_show` | `token_show()` | 4 | Pokazuje aktualnie skonfigurowany token (zamaskowany). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L1037) |
+| `try_llm_fallback_for_failures` | `try_llm_fallback_for_failures(failed_actions, cfg)` | 3 | Use LLM to analyze and suggest fixes for failed cleanup actions | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli.py#L937) |
+
+### `fixos.config` [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `FixOsConfig` | 3 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L156) |
+
+**`FixOsConfig` methods:**
+
+- `load(cls)` — Tworzy konfigurację z połączonych źródeł.
+- `validate()` — Zwraca listę błędów walidacji (pusta = OK).
+- `summary()` — Krótkie podsumowanie konfiguracji (bez klucza API).
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `detect_provider_from_key` | `detect_provider_from_key(key)` | 3 | Wykrywa provider na podstawie prefiksu klucza API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L309) |
+| `get_providers_list` | `get_providers_list()` | 3 | Zwraca listę providerów jako listę słowników. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L410) |
+| `interactive_provider_setup` | `interactive_provider_setup()` | 24 ⚠️ | Interaktywny wybór providera gdy brak konfiguracji. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py#L317) |
+
+### `fixos.diagnostics` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `DiskAnalyzer` | 6 | Analyzes disk usage and provides cleanup suggestions | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L15) |
+| `ServiceDataInfo` | 0 | Information about service data | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L70) |
+| `ServiceDataScanner` | 4 | Scans for large service data directories and allows cleanup | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L87) |
+| `ServiceType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L17) |
+
+**`DiskAnalyzer` methods:**
+
+- `analyze_disk_usage(path)` — Comprehensive disk usage analysis
+- `get_large_files(path, min_size_mb, max_files)` — Find large files
+- `get_cache_dirs(path, max_dirs)` — Find cache directories
+- `get_log_dirs(path, max_dirs)` — Find log directories
+- `get_temp_dirs(path, max_dirs)` — Find temporary directories
+- `suggest_cleanup_actions(path)` — Generate cleanup suggestions using heuristics
+
+**`ServiceDataScanner` methods:**
+
+- `scan_all_services()` — Scan all known services for data above threshold
+- `scan_service(service_type)` — Scan specific service type for data
+- `get_cleanup_plan(selected_services)` — Generate cleanup plan for services
+- `cleanup_service(service_type, dry_run)` — Execute cleanup for a specific service
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the disk analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L411) |
+| `main` | `main()` | 1 | Test the service data scanner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L887) |
+| `diagnose_audio` | `diagnose_audio()` | 1 | Diagnostyka dźwięku (ALSA/PipeWire/PulseAudio/SOF). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L49) |
+| `diagnose_hardware` | `diagnose_hardware()` | 1 | Diagnostyka sprzętu laptopa/desktopa (ACPI, kamera, touchpad, DMI). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L165) |
+| `diagnose_resources` | `diagnose_resources()` | 13 ⚠️ | Diagnostyka zasobów systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L384) |
+| `diagnose_security` | `diagnose_security()` | 4 | Diagnostyka bezpieczeństwa systemu i sieci. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L303) |
+| `diagnose_system` | `diagnose_system()` | 14 ⚠️ | System metrics – cross-platform: CPU, RAM, disks, processes. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L204) |
+| `diagnose_thumbnails` | `diagnose_thumbnails()` | 1 | Diagnostyka podglądów plików (thumbnails) w system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L106) |
+| `get_full_diagnostics` | `get_full_diagnostics(modules, progress_callback)` | 7 | Zbiera diagnostykę z wybranych modułów. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L482) |
+
+### `fixos.diagnostics.disk_analyzer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `DiskAnalyzer` | 6 | Analyzes disk usage and provides cleanup suggestions | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L15) |
+
+**`DiskAnalyzer` methods:**
+
+- `analyze_disk_usage(path)` — Comprehensive disk usage analysis
+- `get_large_files(path, min_size_mb, max_files)` — Find large files
+- `get_cache_dirs(path, max_dirs)` — Find cache directories
+- `get_log_dirs(path, max_dirs)` — Find log directories
+- `get_temp_dirs(path, max_dirs)` — Find temporary directories
+- `suggest_cleanup_actions(path)` — Generate cleanup suggestions using heuristics
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the disk analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py#L411) |
+
+### `fixos.diagnostics.service_scanner` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `ServiceDataInfo` | 0 | Information about service data | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L70) |
+| `ServiceDataScanner` | 4 | Scans for large service data directories and allows cleanup | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L87) |
+| `ServiceType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L17) |
+
+**`ServiceDataScanner` methods:**
+
+- `scan_all_services()` — Scan all known services for data above threshold
+- `scan_service(service_type)` — Scan specific service type for data
+- `get_cleanup_plan(selected_services)` — Generate cleanup plan for services
+- `cleanup_service(service_type, dry_run)` — Execute cleanup for a specific service
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the service data scanner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py#L887) |
+
+### `fixos.diagnostics.system_checks` [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `diagnose_audio` | `diagnose_audio()` | 1 | Diagnostyka dźwięku (ALSA/PipeWire/PulseAudio/SOF). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L49) |
+| `diagnose_hardware` | `diagnose_hardware()` | 1 | Diagnostyka sprzętu laptopa/desktopa (ACPI, kamera, touchpad, DMI). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L165) |
+| `diagnose_resources` | `diagnose_resources()` | 13 ⚠️ | Diagnostyka zasobów systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L384) |
+| `diagnose_security` | `diagnose_security()` | 4 | Diagnostyka bezpieczeństwa systemu i sieci. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L303) |
+| `diagnose_system` | `diagnose_system()` | 14 ⚠️ | System metrics – cross-platform: CPU, RAM, disks, processes. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L204) |
+| `diagnose_thumbnails` | `diagnose_thumbnails()` | 1 | Diagnostyka podglądów plików (thumbnails) w system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L106) |
+| `get_full_diagnostics` | `get_full_diagnostics(modules, progress_callback)` | 7 | Zbiera diagnostykę z wybranych modułów. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/system_checks.py#L482) |
+
+### `fixos.interactive` [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `CleanupAction` | 0 | Represents a cleanup action | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L32) |
+| `CleanupPlanner` | 4 | Interactive cleanup planning and grouping system | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L52) |
+| `CleanupType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L20) |
+| `Priority` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L13) |
+
+**`CleanupPlanner` methods:**
+
+- `group_by_category(suggestions)` — Group cleanup suggestions by category
+- `prioritize_actions(grouped_actions)` — Create prioritized list of all actions
+- `create_cleanup_plan(suggestions)` — Create comprehensive cleanup plan
+- `interactive_selection(plan)` — Interactive selection process (simulated for now)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the cleanup planner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L385) |
+
+### `fixos.interactive.cleanup_planner` [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `CleanupAction` | 0 | Represents a cleanup action | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L32) |
+| `CleanupPlanner` | 4 | Interactive cleanup planning and grouping system | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L52) |
+| `CleanupType` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L20) |
+| `Priority` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L13) |
+
+**`CleanupPlanner` methods:**
+
+- `group_by_category(suggestions)` — Group cleanup suggestions by category
+- `prioritize_actions(grouped_actions)` — Create prioritized list of all actions
+- `create_cleanup_plan(suggestions)` — Create comprehensive cleanup plan
+- `interactive_selection(plan)` — Interactive selection process (simulated for now)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the cleanup planner | [source](https://github.com/wronai/fixfedora/blob/main/fixos/interactive/cleanup_planner.py#L385) |
+
+### `fixos.llm_shell` [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `SessionTimeout` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L51) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `execute_command` | `execute_command(cmd)` | 10 | Wykonuje komendę systemową z potwierdzeniem użytkownika. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L67) |
+| `format_time` | `format_time(seconds)` | 1 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L59) |
+| `run_llm_shell` | `run_llm_shell(diagnostics_data, token, model, timeout, ...)` | 15 ⚠️ | Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/llm_shell.py#L101) |
+
+### `fixos.orchestrator` [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `CommandExecutor` | 6 | Bezpieczny executor komend z: | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L85) |
+| `CommandTimeoutError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L23) |
+| `DangerousCommandError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L16) |
+| `ExecutionResult` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L31) |
+| `Problem` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L19) |
+| `ProblemGraph` | 7 | DAG problemów systemowych z topological sort do wyznaczania kolejności napraw. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L46) |
+| `FixOrchestrator` | 4 | Orkiestrator napraw systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/orchestrator.py#L83) |
+
+**`CommandExecutor` methods:**
+
+- `is_dangerous(command)` — Sprawdza czy komenda jest potencjalnie destruktywna.
+- `needs_sudo(command)`
+- `add_sudo(command)`
+- `check_idempotent(command)` — Zwraca komendę sprawdzającą stan (jeśli znana), None jeśli nie dotyczy.
+- `execute_sync(command, timeout, add_sudo, check_idempotent)` — Synchroniczne wykonanie komendy.
+- `execute(command, timeout, add_sudo)` — Asynchroniczne wykonanie komendy.
+
+**`Problem` methods:**
+
+- `is_actionable()`
+- `to_summary()`
+
+**`ProblemGraph` methods:**
+
+- `add(problem)`
+- `get(problem_id)`
+- `next_actionable()` — Zwraca pierwszy problem bez nierozwiązanych zależności.
+- `all_done()`
+- `pending_count()`
+- `summary()`
+- `render_tree()` — Renderuje drzewo problemów jako tekst.
+
+**`FixOrchestrator` methods:**
+
+- `load_from_diagnostics(diagnostics)` — Parsuje dane diagnostyczne przez LLM i buduje graf problemów.
+- `load_from_dict(problems_data)` — Ładuje problemy bezpośrednio z listy dict (bez LLM).
+- `run_sync(confirm_fn, progress_fn)` — Synchroniczna pętla napraw (dla trybu HITL).
+- `run_async(confirm_fn, progress_fn)` — Asynchroniczna wersja run_sync.
+
+### `fixos.orchestrator.executor` [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `CommandExecutor` | 6 | Bezpieczny executor komend z: | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L85) |
+| `CommandTimeoutError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L23) |
+| `DangerousCommandError` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L16) |
+| `ExecutionResult` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/executor.py#L31) |
+
+**`CommandExecutor` methods:**
+
+- `is_dangerous(command)` — Sprawdza czy komenda jest potencjalnie destruktywna.
+- `needs_sudo(command)`
+- `add_sudo(command)`
+- `check_idempotent(command)` — Zwraca komendę sprawdzającą stan (jeśli znana), None jeśli nie dotyczy.
+- `execute_sync(command, timeout, add_sudo, check_idempotent)` — Synchroniczne wykonanie komendy.
+- `execute(command, timeout, add_sudo)` — Asynchroniczne wykonanie komendy.
+
+### `fixos.orchestrator.graph` [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `Problem` | 2 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L19) |
+| `ProblemGraph` | 7 | DAG problemów systemowych z topological sort do wyznaczania kolejności napraw. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/graph.py#L46) |
+
+**`Problem` methods:**
+
+- `is_actionable()`
+- `to_summary()`
+
+**`ProblemGraph` methods:**
+
+- `add(problem)`
+- `get(problem_id)`
+- `next_actionable()` — Zwraca pierwszy problem bez nierozwiązanych zależności.
+- `all_done()`
+- `pending_count()`
+- `summary()`
+- `render_tree()` — Renderuje drzewo problemów jako tekst.
+
+### `fixos.orchestrator.orchestrator` [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/orchestrator.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `FixOrchestrator` | 4 | Orkiestrator napraw systemowych. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/orchestrator/orchestrator.py#L83) |
+
+**`FixOrchestrator` methods:**
+
+- `load_from_diagnostics(diagnostics)` — Parsuje dane diagnostyczne przez LLM i buduje graf problemów.
+- `load_from_dict(problems_data)` — Ładuje problemy bezpośrednio z listy dict (bez LLM).
+- `run_sync(confirm_fn, progress_fn)` — Synchroniczna pętla napraw (dla trybu HITL).
+- `run_async(confirm_fn, progress_fn)` — Asynchroniczna wersja run_sync.
+
+### `fixos.platform_utils` [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `cancel_signal_timeout` | `cancel_signal_timeout()` | 2 | Cancels the timeout signal (POSIX only). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L180) |
+| `elevate_cmd` | `elevate_cmd(cmd)` | 3 | Adds sudo (Linux/Mac) or wraps in PowerShell -Verb RunAs (Windows). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L61) |
+| `get_os_info` | `get_os_info()` | 5 | Returns basic OS information. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L22) |
+| `get_package_manager` | `get_package_manager()` | 8 | Detects the system package manager. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L123) |
+| `install_package_cmd` | `install_package_cmd(package)` | 2 | Returns the install command for the detected package manager. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L141) |
+| `is_dangerous` | `is_dangerous(cmd)` | 3 | Returns reason string if command is dangerous, None if safe. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L72) |
+| `needs_elevation` | `needs_elevation(cmd)` | 5 | Returns True if command likely needs admin/sudo. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L41) |
+| `run_command` | `run_command(cmd, timeout, shell)` | 5 | Runs a command cross-platform. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L91) |
+| `setup_signal_timeout` | `setup_signal_timeout(seconds, handler)` | 2 | Sets up a timeout signal. Returns True if supported (POSIX only). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/platform_utils.py#L167) |
+
+### `fixos.providers` [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `LLMClient` | 4 | Wrapper nad openai.OpenAI kompatybilny z wieloma providerami. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L25) |
+| `LLMError` | 0 | Błąd komunikacji z LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L20) |
+| `LLMAnalysis` | 0 | Result of LLM analysis | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L12) |
+| `LLMAnalyzer` | 4 | Uses LLM to analyze disk issues when heuristics aren't sufficient | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L20) |
+
+**`LLMClient` methods:**
+
+- `chat(messages)` — Wysyła wiadomości do LLM i zwraca odpowiedź jako string.
+- `chat_stream(messages)` — Generator streamujący tokeny odpowiedzi.
+- `ping()` — Sprawdza czy API odpowiada (krótki test).
+
+**`LLMAnalyzer` methods:**
+
+- `analyze_disk_issues(disk_data)` — Use LLM to analyze disk issues when heuristics are insufficient
+- `analyze_failed_action(action, error)` — Analyze failed cleanup action and suggest alternatives
+- `analyze_complex_pattern(pattern_data)` — Analyze complex disk usage patterns that heuristics can't categorize
+- `enhance_heuristics_with_llm(heuristic_suggestions, disk_data)` — Enhance heuristic suggestions with LLM insights
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the LLM analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L326) |
+
+### `fixos.providers.llm` [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `LLMClient` | 4 | Wrapper nad openai.OpenAI kompatybilny z wieloma providerami. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L25) |
+| `LLMError` | 0 | Błąd komunikacji z LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm.py#L20) |
+
+**`LLMClient` methods:**
+
+- `chat(messages)` — Wysyła wiadomości do LLM i zwraca odpowiedź jako string.
+- `chat_stream(messages)` — Generator streamujący tokeny odpowiedzi.
+- `ping()` — Sprawdza czy API odpowiada (krótki test).
+
+### `fixos.providers.llm_analyzer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `LLMAnalysis` | 0 | Result of LLM analysis | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L12) |
+| `LLMAnalyzer` | 4 | Uses LLM to analyze disk issues when heuristics aren't sufficient | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L20) |
+
+**`LLMAnalyzer` methods:**
+
+- `analyze_disk_issues(disk_data)` — Use LLM to analyze disk issues when heuristics are insufficient
+- `analyze_failed_action(action, error)` — Analyze failed cleanup action and suggest alternatives
+- `analyze_complex_pattern(pattern_data)` — Analyze complex disk usage patterns that heuristics can't categorize
+- `enhance_heuristics_with_llm(heuristic_suggestions, disk_data)` — Enhance heuristic suggestions with LLM insights
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `main` | `main()` | 1 | Test the LLM analyzer | [source](https://github.com/wronai/fixfedora/blob/main/fixos/providers/llm_analyzer.py#L326) |
+
+### `fixos.system_checks` [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `get_cpu_info` | `get_cpu_info()` | 2 | Metryki CPU. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L32) |
+| `get_disk_info` | `get_disk_info()` | 3 | Metryki dysków dla wszystkich partycji. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L60) |
+| `get_fedora_specific` | `get_fedora_specific()` | 1 | Komendy specyficzne dla system: dnf, journalctl, systemctl. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L107) |
+| `get_full_diagnostics` | `get_full_diagnostics()` | 1 | Zbiera kompletne dane diagnostyczne systemu system. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L128) |
+| `get_memory_info` | `get_memory_info()` | 1 | Metryki RAM i SWAP. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L45) |
+| `get_network_info` | `get_network_info()` | 4 | Statystyki sieciowe (bez wrażliwych danych - anonimizacja jest osobno). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L79) |
+| `get_top_processes` | `get_top_processes(n)` | 3 | Lista TOP N procesów według zużycia CPU. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L95) |
+| `run_cmd` | `run_cmd(cmd, timeout)` | 6 | Uruchamia komendę shell i zwraca output. Bezpieczny fallback przy błędzie. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/system_checks.py#L12) |
+
+### `fixos.utils` [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/__init__.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `AnonymizationReport` | 2 | Raport anonimizacji – co zostało zmaskowane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L16) |
+| `SearchResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L19) |
+
+**`AnonymizationReport` methods:**
+
+- `add(category, count)`
+- `summary()`
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `anonymize` | `anonymize(data_str)` | 15 ⚠️ | Anonimizuje wrażliwe dane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L51) |
+| `display_anonymized_preview` | `display_anonymized_preview(data_str, report, max_lines)` | 5 | Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L139) |
+| `colorize` | `colorize(line)` | 1 | Return line unchanged – rich handles markup in render_md(). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L55) |
+| `print_cmd_block` | `print_cmd_block(cmd, comment, dry_run)` | 4 | Print a framed command preview panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L167) |
+| `print_problem_header` | `print_problem_header(problem_id, description, severity, status, ...)` | 3 | Print a colored problem header panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L231) |
+| `print_stderr_box` | `print_stderr_box(stderr, max_lines)` | 2 | Print stderr in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L196) |
+| `print_stdout_box` | `print_stdout_box(stdout, max_lines)` | 2 | Print stdout in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L183) |
+| `render_md` | `render_md(text)` | 16 ⚠️ | Print LLM markdown reply to terminal via rich. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L62) |
+| `render_tree_colored` | `render_tree_colored(nodes, execution_order)` | 8 | Render a ProblemGraph as a rich-markup string. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L258) |
+| `format_results_for_llm` | `format_results_for_llm(results)` | 3 | Formatuje wyniki wyszukiwania do wklejenia w prompt LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L245) |
+| `search_all` | `search_all(query, serpapi_key, max_per_source)` | 5 | Przeszukuje wszystkie dostępne źródła wiedzy. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L206) |
+| `search_arch_wiki` | `search_arch_wiki(query, max_results)` | 9 | Arch Wiki – doskonałe źródło dla problemów Linux (nie tylko Arch). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L87) |
+| `search_ask_fedora` | `search_ask_fedora(query, max_results)` | 4 | Szuka w Linux forums przez Discourse API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L65) |
+| `search_ddg` | `search_ddg(query, max_results)` | 8 | DuckDuckGo Instant Answer API (bez klucza, ograniczone). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L174) |
+| `search_fedora_bugzilla` | `search_fedora_bugzilla(query, max_results)` | 4 | Szuka w Linux Bugzilla przez REST API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L39) |
+| `search_github_issues` | `search_github_issues(query, max_results)` | 4 | GitHub Issues – linuxhardware, ALSA, PipeWire, PulseAudio repos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L115) |
+| `search_serpapi` | `search_serpapi(query, api_key, max_results)` | 5 | SerpAPI – Google/Bing search (wymaga klucza API). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L150) |
+
+### `fixos.utils.anonymizer` [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `AnonymizationReport` | 2 | Raport anonimizacji – co zostało zmaskowane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L16) |
+
+**`AnonymizationReport` methods:**
+
+- `add(category, count)`
+- `summary()`
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `anonymize` | `anonymize(data_str)` | 15 ⚠️ | Anonimizuje wrażliwe dane. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L51) |
+| `display_anonymized_preview` | `display_anonymized_preview(data_str, report, max_lines)` | 5 | Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/anonymizer.py#L139) |
+
+### `fixos.utils.terminal` [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py)
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `colorize` | `colorize(line)` | 1 | Return line unchanged – rich handles markup in render_md(). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L55) |
+| `print_cmd_block` | `print_cmd_block(cmd, comment, dry_run)` | 4 | Print a framed command preview panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L167) |
+| `print_problem_header` | `print_problem_header(problem_id, description, severity, status, ...)` | 3 | Print a colored problem header panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L231) |
+| `print_stderr_box` | `print_stderr_box(stderr, max_lines)` | 2 | Print stderr in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L196) |
+| `print_stdout_box` | `print_stdout_box(stdout, max_lines)` | 2 | Print stdout in a rich Panel. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L183) |
+| `render_md` | `render_md(text)` | 16 ⚠️ | Print LLM markdown reply to terminal via rich. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L62) |
+| `render_tree_colored` | `render_tree_colored(nodes, execution_order)` | 8 | Render a ProblemGraph as a rich-markup string. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/terminal.py#L258) |
+
+### `fixos.utils.web_search` [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py)
+
+| Class | Methods | Description | Source |
+|-------|---------|-------------|--------|
+| `SearchResult` | 0 | — | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L19) |
+
+| Function | Signature | CC | Description | Source |
+|----------|-----------|----|-----------  |--------|
+| `format_results_for_llm` | `format_results_for_llm(results)` | 3 | Formatuje wyniki wyszukiwania do wklejenia w prompt LLM. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L245) |
+| `search_all` | `search_all(query, serpapi_key, max_per_source)` | 5 | Przeszukuje wszystkie dostępne źródła wiedzy. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L206) |
+| `search_arch_wiki` | `search_arch_wiki(query, max_results)` | 9 | Arch Wiki – doskonałe źródło dla problemów Linux (nie tylko Arch). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L87) |
+| `search_ask_fedora` | `search_ask_fedora(query, max_results)` | 4 | Szuka w Linux forums przez Discourse API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L65) |
+| `search_ddg` | `search_ddg(query, max_results)` | 8 | DuckDuckGo Instant Answer API (bez klucza, ograniczone). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L174) |
+| `search_fedora_bugzilla` | `search_fedora_bugzilla(query, max_results)` | 4 | Szuka w Linux Bugzilla przez REST API. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L39) |
+| `search_github_issues` | `search_github_issues(query, max_results)` | 4 | GitHub Issues – linuxhardware, ALSA, PipeWire, PulseAudio repos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L115) |
+| `search_serpapi` | `search_serpapi(query, api_key, max_results)` | 5 | SerpAPI – Google/Bing search (wymaga klucza API). | [source](https://github.com/wronai/fixfedora/blob/main/fixos/utils/web_search.py#L150) |

@@ -54,6 +54,10 @@ def add_common_options(fn):
 
 def add_shared_options(func):
     """Shared options for both scan and fix commands"""
+    func = click.option("--show-raw", "show_raw", is_flag=True, default=False,
+                       help="Pokaż surowe dane diagnostyczne (JSON)")(func)
+    func = click.option("--no-banner", "no_banner", is_flag=True, default=False,
+                       help="Ukryj baner fixos")(func)
     func = click.option("--disc", is_flag=True, default=False,
                        help="Analiza zajętości dysku + grupowanie przyczyn")(func)
     func = click.option("--disk", "disc", is_flag=True, default=False,
@@ -417,6 +421,7 @@ def _print_welcome():
     commands = [
         ("fixos fix",         "", "Diagnostyka + sesja naprawcza z AI (HITL)"),
         ("fixos scan",        "", "Diagnostyka systemu bez AI"),
+        ("fixos cleanup",       "", "Skanuj i czyść dane usług (Docker, Ollama)"),
         ("fixos orchestrate", "", "Zaawansowana orkiestracja napraw (graf problemów)"),
         ("fixos llm",         "", "Lista 12 providerów LLM + linki do kluczy API"),
         ("fixos token set",   "", "Zapisz klucz API (auto-detekcja providera)"),
@@ -1408,6 +1413,168 @@ def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_i
             click.echo(click.style(f"\nLog sesji: {output}", fg="green"))
         except Exception as e:
             click.echo(f"Błąd zapisu: {e}")
+
+
+# ══════════════════════════════════════════════════════════
+#  fixos cleanup-services
+# ══════════════════════════════════════════════════════════
+
+@cli.command("cleanup")
+@click.option("--threshold", "-t", default=500, type=int,
+              help="Próg wielkości w MB (domyślnie 500MB)")
+@click.option("--services", "-s", default=None,
+              help="Usługi do przeskanowania: docker,ollama,npm,pip,... (domyślnie wszystkie)")
+@click.option("--json", "json_output", is_flag=True, default=False,
+              help="Wyjście w formacie JSON")
+@click.option("--cleanup", "-c", default=None,
+              help="Wyczyść konkretną usługę (docker, ollama, npm, ...)")
+@click.option("--dry-run", is_flag=True, default=False,
+              help="Symuluj czyszczenie bez faktycznego usuwania")
+@click.option("--list", "list_only", is_flag=True, default=False,
+              help="Tylko wyświetl listę bez interakcji")
+def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only):
+    """
+    Skanuje i czyści dane usług przekraczające próg.
+
+    \b
+    Wyszukuje dane usług (Docker, Ollama, npm, pip, yarn, pnpm, conda,
+    gradle, cargo, go, flutter, android, chrome, vscode, huggingface,
+    terraform, snap, flatpak, brew, nix, i wiele innych) które zajmują
+    więcej miejsca niż podany próg (domyślnie 500MB) i pozwala je usunąć.
+
+    \b
+    Dostępne usługi:
+      docker, ollama, podman          - kontenery
+      npm, yarn, pnpm                 - pakiety JS/Node
+      pip, conda, poetry              - pakiety Python
+      gradle, maven, cargo, go        - pakiety Java/Rust/Go
+      flutter, dart, android          - mobile development
+      apt, dnf, pacman, snap, flatpak - pakiety systemowe
+      chrome, firefox, edge           - przeglądarki
+      vscode, cursor, jetbrains       - edytory/IDE
+      huggingface                     - modele AI/ML
+      terraform, pulumi               - infrastructure as code
+      gcloud, aws, azure              - cloud CLI
+      vagrant, vbox, vmware           - wirtualizacja
+      nix, brew                       - menedżery pakietów
+      unity, unreal                   - silniki gier
+      thumbnails, trash, logs         - systemowe
+
+    \b
+    Przykłady:
+      fixos cleanup                    # skanuj wszystkie usługi
+      fixos cleanup -t 1000           # próg 1000MB (1GB)
+      fixos cleanup -s docker,ollama  # tylko Docker i Ollama
+      fixos cleanup -s npm,yarn,pnpm # wszystkie menedżery JS
+      fixos cleanup --list              # tylko lista, bez czyszczenia
+      fixos cleanup -c docker --dry-run  # symulacja czyszczenia Dockera
+      fixos cleanup -c chrome         # wyczyść cache Chrome
+    """
+    from .diagnostics.service_scanner import ServiceDataScanner, ServiceType
+
+    # Initialize scanner with threshold
+    scanner = ServiceDataScanner(threshold_mb=threshold)
+
+    # Handle specific cleanup
+    if cleanup:
+        if json_output:
+            result = scanner.cleanup_service(cleanup, dry_run=dry_run)
+            import json
+            click.echo(json.dumps(result, indent=2, default=str))
+        else:
+            click.echo(click.style(f"Czyszczenie usługi: {cleanup}", fg="yellow"))
+            if dry_run:
+                click.echo(click.style("[TRYB DRY-RUN] - brak faktycznych zmian", fg="cyan"))
+
+            result = scanner.cleanup_service(cleanup, dry_run=dry_run)
+
+            if result["success"]:
+                click.echo(click.style(f"Zakończono czyszczenie {cleanup}", fg="green"))
+                if result["space_freed_gb"] > 0:
+                    click.echo(f"  Zwolniono: {result['space_freed_gb']:.2f} GB")
+            else:
+                click.echo(click.style(f"Błąd: {result.get('error', 'Nieznany błąd')}", fg="red"))
+                if result.get("output"):
+                    click.echo(f"Output: {result['output']}")
+        return
+
+    # Parse services filter
+    service_filter = None
+    if services:
+        service_filter = [s.strip() for s in services.split(",")]
+
+    # Get cleanup plan
+    plan = scanner.get_cleanup_plan(selected_services=service_filter)
+
+    # JSON output
+    if json_output:
+        import json
+        click.echo(json.dumps(plan, indent=2, default=str))
+        return
+
+    # Display results
+    click.echo(click.style(f"\nSkanowanie usług (próg: {threshold} MB)...", fg="cyan"))
+    click.echo(click.style("═" * 60, fg="cyan"))
+
+    if plan["services_found"] == 0:
+        click.echo(click.style("\nNie znaleziono usług powyżej progu.", fg="green"))
+        return
+
+    click.echo(f"Znaleziono {plan['services_found']} usług:")
+    click.echo(f"  Całkowity rozmiar: {plan['total_size_gb']:.2f} GB")
+    click.echo(f"  Bezpieczne do usunięcia: {plan['safe_cleanup_gb']:.2f} GB")
+    click.echo(f"  Wymaga przeglądu: {plan['requires_review_gb']:.2f} GB")
+    click.echo()
+
+    # Display services
+    for svc in plan["services"]:
+        size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
+        safe_icon = " " if svc['safe_to_cleanup'] else " "
+        safe_text = "(bezpieczne)" if svc['safe_to_cleanup'] else "(wymaga przeglądu)"
+
+        click.echo(f"{safe_icon} {click.style(svc['name'], fg='yellow', bold=True)} - {size_str}")
+        click.echo(f"   {svc['description']}")
+        click.echo(f"   Ścieżka: {svc['path']}")
+        click.echo(f"   {safe_text}")
+
+        # Show details for specific services
+        if svc.get("details"):
+            if svc["service_type"] == "docker" and svc["details"].get("components"):
+                comps = svc["details"]["components"]
+                click.echo(f"   Komponenty: {comps}")
+            elif svc["service_type"] == "ollama" and svc["details"].get("models"):
+                models = svc["details"]["models"]
+                if models:
+                    click.echo(f"   Modele: {', '.join(models[:3])}{'...' if len(models) > 3 else ''}")
+        click.echo()
+
+    # Interactive mode (unless --list)
+    if not list_only and plan["safe_to_cleanup"]:
+        safe_total = sum(s['size_gb'] for s in plan["safe_to_cleanup"])
+        click.echo(click.style("Bezpieczne do wyczyszczenia:", fg="green"))
+        for svc in plan["safe_to_cleanup"]:
+            size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
+            click.echo(f"  • {svc['name']}: {size_str}")
+
+        click.echo()
+        if click.confirm(f"Wyczyścić bezpieczne usługi? (zwolni {safe_total:.2f} GB)"):
+            for svc in plan["safe_to_cleanup"]:
+                svc_type = svc["service_type"]
+                click.echo(f"Czyszczenie {svc_type}...")
+                result = scanner.cleanup_service(svc_type, dry_run=False)
+                if result["success"]:
+                    freed = result.get("space_freed_gb", 0)
+                    click.echo(click.style(f"  Zwolniono {freed:.2f} GB", fg="green"))
+                else:
+                    click.echo(click.style(f"  Błąd: {result.get('error', 'nieznany')}", fg="red"))
+
+    # Show cleanup hints for unsafe services
+    if plan["requires_review"] and not list_only:
+        click.echo()
+        click.echo(click.style("Usługi wymagające przeglądu:", fg="yellow"))
+        for svc in plan["requires_review"]:
+            click.echo(f"  • {svc['name']}: {svc['cleanup_command']}")
+
 
 
 # ══════════════════════════════════════════════════════════

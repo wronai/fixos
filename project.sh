@@ -11,4 +11,4 @@ rm project/analysis.json
 rm project/analysis.yaml
 
 pip install code2docs --upgrade
-code2docs ./ --readme-only
+code2docs ./

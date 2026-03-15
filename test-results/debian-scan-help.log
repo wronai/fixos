@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/usr/local/bin/fixos", line 5, in <module>
+    from fixos.cli import main
+  File "/app/fixos/cli.py", line 26, in <module>
+    from .utils.anonymizer import anonymize, display_anonymized_preview
+  File "/app/fixos/utils/__init__.py", line 1, in <module>
+    from .anonymizer import anonymize, display_anonymized_preview, AnonymizationReport
+  File "/app/fixos/utils/anonymizer.py", line 144
+    print(f"\n{_C.CYAN}{_C.BOLD}{'\u2550' * 65}{_C.RESET}")
+                                                          ^
+SyntaxError: f-string expression part cannot include a backslash

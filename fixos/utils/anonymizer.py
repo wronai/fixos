@@ -141,9 +141,10 @@ def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_l
     Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.
     Formatuje jako czytelny markdown z kolorami ANSI.
     """
-    print(f"\n{_C.CYAN}{_C.BOLD}{'\u2550' * 65}{_C.RESET}")
+    line_char = '\u2550' * 65
+    print(f"\n{_C.CYAN}{_C.BOLD}{line_char}{_C.RESET}")
     print(f"{_C.CYAN}{_C.BOLD}  📋 DANE DIAGNOSTYCZNE (zanonimizowane) – wysyłane do LLM{_C.RESET}")
-    print(f"{_C.CYAN}{_C.BOLD}{'\u2550' * 65}{_C.RESET}")
+    print(f"{_C.CYAN}{_C.BOLD}{line_char}{_C.RESET}")
 
     formatted = _format_diagnostics_markdown(data_str)
 
@@ -170,12 +171,13 @@ def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_l
             rendered = _colorize_md_line(line[:max_width - 3] + "...")
         print(f"  {rendered}")
 
-    print(f"\n{_C.DIM}{'\u2500' * 65}{_C.RESET}")
+    dash_line = f"{_C.DIM}{'\u2500' * 65}{_C.RESET}"
+    print(f"\n{dash_line}")
     print(f"{_C.BOLD}  🔒 Anonimizacja – co zostało ukryte:{_C.RESET}")
     for rep_line in report.summary().splitlines():
         print(f"{_C.GREEN}  {rep_line}{_C.RESET}")
     print(f"  {_C.DIM}Rozmiar: {report.original_length:,} → {report.anonymized_length:,} znaków{_C.RESET}")
-    print(f"{_C.DIM}{'\u2500' * 65}{_C.RESET}")
+    print(dash_line)
 
 
 def _colorize_md_line(line: str) -> str:

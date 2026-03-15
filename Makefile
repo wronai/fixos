@@ -5,6 +5,8 @@
 
 .PHONY: help install install-dev test test-unit test-e2e test-real \
         lint format clean build docker-build docker-test \
+        docker-test-fedora docker-test-ubuntu docker-test-debian \
+        docker-test-arch docker-test-alpine docker-test-all \
         config-init run-scan run-fix
 
 # ── Domyślna komenda ──────────────────────────────────────
@@ -28,11 +30,17 @@ help:
 	@echo "    make format         sformatuj kod (black)"
 	@echo ""
 	@echo "  Docker:"
-	@echo "    make docker-build   zbuduj wszystkie obrazy testowe"
-	@echo "    make docker-audio   testuj broken-audio w Docker"
-	@echo "    make docker-thumb   testuj broken-thumbnails w Docker"
-	@echo "    make docker-full    testuj broken-full w Docker"
-	@echo "    make docker-e2e     uruchom e2e testy w Docker"
+	@echo "    make docker-build        zbuduj wszystkie obrazy testowe"
+	@echo "    make docker-test-fedora  testuj na Fedora"
+	@echo "    make docker-test-ubuntu  testuj na Ubuntu"
+	@echo "    make docker-test-debian  testuj na Debian"
+	@echo "    make docker-test-arch    testuj na Arch Linux"
+	@echo "    make docker-test-alpine  testuj na Alpine"
+	@echo "    make docker-test-all     testuj na wszystkich systemach"
+	@echo "    make docker-audio        testuj broken-audio w Docker"
+	@echo "    make docker-thumb        testuj broken-thumbnails w Docker"
+	@echo "    make docker-full         testuj broken-full w Docker"
+	@echo "    make docker-e2e          uruchom e2e testy w Docker"
 	@echo ""
 	@echo "  Uruchomienie:"
 	@echo "    make config-init    utwórz plik .env"
@@ -93,6 +101,31 @@ docker-full:
 
 docker-e2e:
 	docker compose -f docker/docker-compose.yml run --rm e2e-tests
+
+# ── Multi-System Docker Tests ────────────────────────────
+docker-test-fedora:
+	@echo "🐧 Testing on Fedora..."
+	docker compose -f docker/docker-compose.multi-system.yml run --rm test-fedora
+
+docker-test-ubuntu:
+	@echo "🐧 Testing on Ubuntu..."
+	docker compose -f docker/docker-compose.multi-system.yml run --rm test-ubuntu
+
+docker-test-debian:
+	@echo "🐧 Testing on Debian..."
+	docker compose -f docker/docker-compose.multi-system.yml run --rm test-debian
+
+docker-test-arch:
+	@echo "🐧 Testing on Arch Linux..."
+	docker compose -f docker/docker-compose.multi-system.yml run --rm test-arch
+
+docker-test-alpine:
+	@echo "🐧 Testing on Alpine..."
+	docker compose -f docker/docker-compose.multi-system.yml run --rm test-alpine
+
+docker-test-all:
+	@echo "🐧 Testing on all systems..."
+	./docker/test-multi-system.sh
 
 # ── Uruchomienie ──────────────────────────────────────────
 config-init:

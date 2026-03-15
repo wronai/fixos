@@ -133,6 +133,47 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.24] - 2026-03-15
+
+### Docs
+- Update docker/README.md
+- Update docs/CONTRIBUTING.md
+- Update docs/README.md
+- Update docs/api-changelog.md
+- Update docs/api.md
+- Update docs/architecture.md
+- Update docs/configuration.md
+- Update docs/coverage.md
+- Update docs/dependency-graph.md
+- Update docs/examples/advanced_usage.py
+- ... and 6 more files
+
+### Test
+- Update test-results/debian-build.log
+- Update test-results/debian-scan-help.log
+- Update test-results/fedora-build.log
+- Update test-results/fedora-scan-help.log
+- Update test-results/fedora-unit-tests.log
+- Update test-results/fedora-version.log
+- Update test-results/ubuntu-build.log
+- Update test-results/ubuntu-scan-help.log
+- Update test-results/ubuntu-unit-tests.log
+- Update test-results/ubuntu-version.log
+- ... and 1 more files
+
+### Other
+- Update Makefile
+- Update docker/alpine/Dockerfile
+- Update docker/arch/Dockerfile
+- Update docker/debian/Dockerfile
+- Update docker/docker-compose.multi-system.yml
+- Update docker/fedora/Dockerfile
+- Update docker/test-multi-system.sh
+- Update docker/ubuntu/Dockerfile
+- Update fixos/cli.py
+- Update fixos/diagnostics/service_scanner.py
+- ... and 17 more files
+
 ## [2.1.16] - 2026-02-26
 
 ### Summary

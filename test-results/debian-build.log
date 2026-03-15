@@ -1,0 +1,244 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 817B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:12-slim
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 141B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/debian:12-slim@sha256:74d56e3931e0d5a1dd51f8c8a2466d21de84a271cd3b5a733b803aa91abf4421
+#4 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 1.92MB 0.5s done
+#5 DONE 0.5s
+
+#6 [2/5] RUN apt-get update && apt-get install -y     python3     python3-pip     python3-psutil     python3-venv     systemd     procps     util-linux     alsa-utils     pipewire     wireplumber     findutils     lsof     dbus     udev     sudo     curl     && apt-get clean     && rm -rf /var/lib/apt/lists/*
+#6 0.312 Get:1 http://deb.debian.org/debian bookworm InRelease [151 kB]
+#6 0.452 Get:2 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]
+#6 0.502 Get:3 http://deb.debian.org/debian-security bookworm-security InRelease [48.0 kB]
+#6 0.550 Get:4 http://deb.debian.org/debian bookworm/main amd64 Packages [8792 kB]
+#6 1.982 Get:5 http://deb.debian.org/debian bookworm-updates/main amd64 Packages [6924 B]
+#6 1.983 Get:6 http://deb.debian.org/debian-security bookworm-security/main amd64 Packages [294 kB]
+#6 2.846 Fetched 9348 kB in 3s (3530 kB/s)
+#6 2.846 Reading package lists...
+#6 3.406 Reading package lists...
+#6 3.942 Building dependency tree...
+#6 4.069 Reading state information...
+#6 4.212 util-linux is already the newest version (2.38.1-5+deb12u3).
+#6 4.212 util-linux set to manually installed.
+#6 4.212 findutils is already the newest version (4.9.0-4).
+#6 4.212 findutils set to manually installed.
+#6 4.212 The following additional packages will be installed:
+#6 4.212   alsa-topology-conf alsa-ucm-conf binutils binutils-common
+#6 4.212   binutils-x86-64-linux-gnu build-essential bzip2 ca-certificates cpp cpp-12
+#6 4.212   dbus-bin dbus-daemon dbus-session-bus-common dbus-system-bus-common
+#6 4.212   dbus-user-session dirmngr dmsetup dpkg-dev fakeroot fontconfig-config
+#6 4.213   fonts-dejavu-core g++ g++-12 gcc gcc-12 gnupg gnupg-l10n gnupg-utils gpg
+#6 4.213   gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm javascript-common kmod
+#6 4.213   krb5-locales libabsl20220623 libalgorithm-diff-perl
+#6 4.213   libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libapparmor1
+#6 4.213   libargon2-1 libasan8 libasound2 libasound2-data libassuan0 libasyncns0
+#6 4.213   libatomic1 libatopology2 libavahi-client3 libavahi-common-data
+#6 4.213   libavahi-common3 libavif15 libbinutils libbrotli1 libbsd0 libc-dev-bin
+#6 4.213   libc-devtools libc6-dev libcc1-0 libcrypt-dev libcryptsetup12 libctf-nobfd0
+#6 4.213   libctf0 libcurl4 libdav1d6 libdbus-1-3 libde265-0 libdeflate0
+#6 4.213   libdevmapper1.02.1 libdpkg-perl libduktape207 libexpat1 libexpat1-dev
+#6 4.213   libfakeroot libfdisk1 libfftw3-single3 libfile-fcntllock-perl libflac12
+#6 4.213   libfontconfig1 libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgdbm-compat4
+#6 4.213   libgdbm6 libglib2.0-0 libglib2.0-data libgomp1 libgpm2 libgprofng0
+#6 4.213   libgssapi-krb5-2 libheif1 libicu72 libip4tc2 libisl23 libitm1 libjansson4
+#6 4.213   libjbig0 libjpeg62-turbo libjs-jquery libjs-sphinxdoc libjs-underscore
+#6 4.213   libjson-c5 libk5crypto3 libkeyutils1 libkmod2 libkrb5-3 libkrb5support0
+#6 4.213   libksba8 libldap-2.5-0 libldap-common liblerc4 liblilv-0-0
+#6 4.213   liblocale-gettext-perl liblsan0 liblua5.3-0 libmp3lame0 libmpc3 libmpfr6
+#6 4.213   libmpg123-0 libncursesw6 libnghttp2-14 libnpth0 libnsl-dev libnsl2
+#6 4.213   libnss-systemd libnuma1 libogg0 libopus0 libpam-systemd libperl5.36
+#6 4.213   libpipewire-0.3-0 libpipewire-0.3-common libpipewire-0.3-modules libpng16-16
+#6 4.213   libpolkit-agent-1-0 libpolkit-gobject-1-0 libproc2-0 libpsl5 libpulse0
+#6 4.213   libpython3-dev libpython3-stdlib libpython3.11 libpython3.11-dev
+#6 4.213   libpython3.11-minimal libpython3.11-stdlib libquadmath0 librav1e0
+#6 4.213   libreadline8 librtmp1 libsamplerate0 libsasl2-2 libsasl2-modules
+#6 4.213   libsasl2-modules-db libserd-0-0 libsndfile1 libsord-0-0 libspa-0.2-modules
+#6 4.213   libsqlite3-0 libsratom-0-0 libssh2-1 libssl3 libstdc++-12-dev libsvtav1enc1
+#6 4.213   libsystemd-shared libtiff6 libtirpc-common libtirpc-dev libtirpc3 libtsan2
+#6 4.213   libubsan1 libvorbis0a libvorbisenc2 libwebp7 libwebrtc-audio-processing1
+#6 4.213   libwireplumber-0.4-0 libx11-6 libx11-data libx11-xcb1 libx265-199 libxau6
+#6 4.213   libxcb1 libxdmcp6 libxml2 libxpm4 libyuv0 linux-libc-dev make manpages
+#6 4.213   manpages-dev media-types netbase openssl patch perl perl-modules-5.36
+#6 4.213   pinentry-curses pipewire-bin pipewire-pulse polkitd psmisc publicsuffix
+#6 4.213   python3-dev python3-distutils python3-lib2to3 python3-minimal
+#6 4.213   python3-pip-whl python3-pkg-resources python3-setuptools
+#6 4.213   python3-setuptools-whl python3-wheel python3.11 python3.11-dev
+#6 4.213   python3.11-minimal python3.11-venv readline-common rpcsvc-proto rtkit
+#6 4.213   sgml-base shared-mime-info systemd-sysv systemd-timesyncd xdg-user-dirs
+#6 4.213   xml-core xz-utils zlib1g-dev
+#6 4.214 Suggested packages:
+#6 4.214   dialog binutils-doc bzip2-doc cpp-doc gcc-12-locales cpp-12-doc
+#6 4.214   pinentry-gnome3 tor debian-keyring g++-multilib g++-12-multilib gcc-12-doc
+#6 4.214   gcc-multilib autoconf automake libtool flex bison gdb gcc-doc
+#6 4.214   gcc-12-multilib parcimonie xloadimage scdaemon apache2 | lighttpd | httpd
+#6 4.214   libasound2-plugins glibc-doc sensible-utils git bzr libfftw3-bin
+#6 4.214   libfftw3-dev libgd-tools gdbm-l10n low-memory-monitor gpm krb5-doc krb5-user
+#6 4.214   opus-tools pulseaudio libsasl2-modules-gssapi-mit
+#6 4.214   | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp
+#6 4.214   libsasl2-modules-sql serdi sordi libstdc++-12-doc make-doc man-browser ed
+#6 4.214   diffutils-doc perl-doc libterm-readline-gnu-perl
+#6 4.214   | libterm-readline-perl-perl libtap-harness-archive-perl pinentry-doc
+#6 4.214   libspa-0.2-bluetooth pulseaudio-utils polkitd-pkla python3-doc python3-tk
+#6 4.214   python-psutil-doc python-setuptools-doc python3.11-doc binfmt-support
+#6 4.214   readline-doc sgml-base-doc systemd-container systemd-homed systemd-userdbd
+#6 4.214   systemd-boot systemd-resolved libfido2-1 libqrencode4 libtss2-esys-3.0.2-0
+#6 4.214   libtss2-mu0 libtss2-rc0 wireplumber-doc debhelper
+#6 5.344 The following NEW packages will be installed:
+#6 5.344   alsa-topology-conf alsa-ucm-conf alsa-utils binutils binutils-common
+#6 5.344   binutils-x86-64-linux-gnu build-essential bzip2 ca-certificates cpp cpp-12
+#6 5.344   curl dbus dbus-bin dbus-daemon dbus-session-bus-common
+#6 5.344   dbus-system-bus-common dbus-user-session dirmngr dmsetup dpkg-dev fakeroot
+#6 5.344   fontconfig-config fonts-dejavu-core g++ g++-12 gcc gcc-12 gnupg gnupg-l10n
+#6 5.344   gnupg-utils gpg gpg-agent gpg-wks-client gpg-wks-server gpgconf gpgsm
+#6 5.344   javascript-common kmod krb5-locales libabsl20220623 libalgorithm-diff-perl
+#6 5.344   libalgorithm-diff-xs-perl libalgorithm-merge-perl libaom3 libapparmor1
+#6 5.344   libargon2-1 libasan8 libasound2 libasound2-data libassuan0 libasyncns0
+#6 5.344   libatomic1 libatopology2 libavahi-client3 libavahi-common-data
+#6 5.344   libavahi-common3 libavif15 libbinutils libbrotli1 libbsd0 libc-dev-bin
+#6 5.344   libc-devtools libc6-dev libcc1-0 libcrypt-dev libcryptsetup12 libctf-nobfd0
+#6 5.344   libctf0 libcurl4 libdav1d6 libdbus-1-3 libde265-0 libdeflate0
+#6 5.344   libdevmapper1.02.1 libdpkg-perl libduktape207 libexpat1 libexpat1-dev
+#6 5.344   libfakeroot libfdisk1 libfftw3-single3 libfile-fcntllock-perl libflac12
+#6 5.344   libfontconfig1 libfreetype6 libgav1-1 libgcc-12-dev libgd3 libgdbm-compat4
+#6 5.344   libgdbm6 libglib2.0-0 libglib2.0-data libgomp1 libgpm2 libgprofng0
+#6 5.344   libgssapi-krb5-2 libheif1 libicu72 libip4tc2 libisl23 libitm1 libjansson4
+#6 5.344   libjbig0 libjpeg62-turbo libjs-jquery libjs-sphinxdoc libjs-underscore
+#6 5.344   libjson-c5 libk5crypto3 libkeyutils1 libkmod2 libkrb5-3 libkrb5support0
+#6 5.344   libksba8 libldap-2.5-0 libldap-common liblerc4 liblilv-0-0
+#6 5.344   liblocale-gettext-perl liblsan0 liblua5.3-0 libmp3lame0 libmpc3 libmpfr6
+#6 5.344   libmpg123-0 libncursesw6 libnghttp2-14 libnpth0 libnsl-dev libnsl2
+#6 5.344   libnss-systemd libnuma1 libogg0 libopus0 libpam-systemd libperl5.36
+#6 5.344   libpipewire-0.3-0 libpipewire-0.3-common libpipewire-0.3-modules libpng16-16
+#6 5.344   libpolkit-agent-1-0 libpolkit-gobject-1-0 libproc2-0 libpsl5 libpulse0
+#6 5.344   libpython3-dev libpython3-stdlib libpython3.11 libpython3.11-dev
+#6 5.344   libpython3.11-minimal libpython3.11-stdlib libquadmath0 librav1e0
+#6 5.345   libreadline8 librtmp1 libsamplerate0 libsasl2-2 libsasl2-modules
+#6 5.345   libsasl2-modules-db libserd-0-0 libsndfile1 libsord-0-0 libspa-0.2-modules
+#6 5.345   libsqlite3-0 libsratom-0-0 libssh2-1 libssl3 libstdc++-12-dev libsvtav1enc1
+#6 5.345   libsystemd-shared libtiff6 libtirpc-common libtirpc-dev libtirpc3 libtsan2
+#6 5.345   libubsan1 libvorbis0a libvorbisenc2 libwebp7 libwebrtc-audio-processing1
+#6 5.345   libwireplumber-0.4-0 libx11-6 libx11-data libx11-xcb1 libx265-199 libxau6
+#6 5.345   libxcb1 libxdmcp6 libxml2 libxpm4 libyuv0 linux-libc-dev lsof make manpages
+#6 5.345   manpages-dev media-types netbase openssl patch perl perl-modules-5.36
+#6 5.345   pinentry-curses pipewire pipewire-bin pipewire-pulse polkitd procps psmisc
+#6 5.345   publicsuffix python3 python3-dev python3-distutils python3-lib2to3
+#6 5.345   python3-minimal python3-pip python3-pip-whl python3-pkg-resources
+#6 5.345   python3-psutil python3-setuptools python3-setuptools-whl python3-venv
+#6 5.345   python3-wheel python3.11 python3.11-dev python3.11-minimal python3.11-venv
+#6 5.345   readline-common rpcsvc-proto rtkit sgml-base shared-mime-info sudo systemd
+#6 5.345   systemd-sysv systemd-timesyncd udev wireplumber xdg-user-dirs xml-core
+#6 5.345   xz-utils zlib1g-dev
+#6 5.474 0 upgraded, 243 newly installed, 0 to remove and 0 not upgraded.
+#6 5.474 Need to get 159 MB of archives.
+#6 5.474 After this operation, 612 MB of additional disk space will be used.
+#6 5.474 Get:1 http://deb.debian.org/debian-security bookworm-security/main amd64 libssl3 amd64 3.0.18-1~deb12u2 [2030 kB]
+#6 5.966 Get:2 http://deb.debian.org/debian bookworm/main amd64 libargon2-1 amd64 0~20171227-0.3+deb12u1 [19.4 kB]
+#6 5.969 Get:3 http://deb.debian.org/debian bookworm/main amd64 dmsetup amd64 2:1.02.185-2 [82.0 kB]
+#6 6.052 Get:4 http://deb.debian.org/debian bookworm/main amd64 libdevmapper1.02.1 amd64 2:1.02.185-2 [133 kB]
+#6 6.107 Get:5 http://deb.debian.org/debian bookworm/main amd64 libjson-c5 amd64 0.16-2 [44.1 kB]
+#6 6.136 Get:6 http://deb.debian.org/debian bookworm/main amd64 libcryptsetup12 amd64 2:2.6.1-4~deb12u2 [223 kB]
+#6 6.234 Get:7 http://deb.debian.org/debian bookworm/main amd64 libfdisk1 amd64 2.38.1-5+deb12u3 [194 kB]
+#6 6.324 Get:8 http://deb.debian.org/debian bookworm/main amd64 libkmod2 amd64 30+20221128-1 [57.9 kB]
+#6 6.328 Get:9 http://deb.debian.org/debian bookworm/main amd64 libapparmor1 amd64 3.0.8-3 [41.2 kB]
+#6 6.328 Get:10 http://deb.debian.org/debian bookworm/main amd64 libip4tc2 amd64 1.8.9-2 [19.0 kB]
+#6 6.373 Get:11 http://deb.debian.org/debian bookworm/main amd64 libsystemd-shared amd64 252.39-1~deb12u1 [1695 kB]
+#6 7.213 Get:12 http://deb.debian.org/debian bookworm/main amd64 systemd amd64 252.39-1~deb12u1 [3042 kB]
+#6 8.375 Get:13 http://deb.debian.org/debian bookworm/main amd64 systemd-sysv amd64 252.39-1~deb12u1 [42.6 kB]
+#6 8.388 Get:14 http://deb.debian.org/debian bookworm/main amd64 libdbus-1-3 amd64 1.14.10-1~deb12u1 [201 kB]
+#6 8.458 Get:15 http://deb.debian.org/debian bookworm/main amd64 dbus-bin amd64 1.14.10-1~deb12u1 [105 kB]
+#6 8.494 Get:16 http://deb.debian.org/debian bookworm/main amd64 dbus-session-bus-common all 1.14.10-1~deb12u1 [78.2 kB]
+#6 8.522 Get:17 http://deb.debian.org/debian bookworm/main amd64 libexpat1 amd64 2.5.0-1+deb12u2 [99.9 kB]
+#6 8.551 Get:18 http://deb.debian.org/debian bookworm/main amd64 dbus-daemon amd64 1.14.10-1~deb12u1 [184 kB]
+#6 8.613 Get:19 http://deb.debian.org/debian bookworm/main amd64 dbus-system-bus-common all 1.14.10-1~deb12u1 [79.3 kB]
+#6 8.642 Get:20 http://deb.debian.org/debian bookworm/main amd64 dbus amd64 1.14.10-1~deb12u1 [97.4 kB]
+#6 8.745 Get:21 http://deb.debian.org/debian bookworm/main amd64 perl-modules-5.36 all 5.36.0-7+deb12u3 [2815 kB]
+#6 9.881 Get:22 http://deb.debian.org/debian bookworm/main amd64 libgdbm6 amd64 1.23-3 [72.2 kB]
+#6 9.908 Get:23 http://deb.debian.org/debian bookworm/main amd64 libgdbm-compat4 amd64 1.23-3 [48.2 kB]
+#6 9.924 Get:24 http://deb.debian.org/debian bookworm/main amd64 libperl5.36 amd64 5.36.0-7+deb12u3 [4196 kB]
+#6 11.30 Get:25 http://deb.debian.org/debian bookworm/main amd64 perl amd64 5.36.0-7+deb12u3 [239 kB]
+#6 11.38 Get:26 http://deb.debian.org/debian bookworm/main amd64 liblocale-gettext-perl amd64 1.07-5 [15.4 kB]
+#6 11.43 Get:27 http://deb.debian.org/debian bookworm/main amd64 libpython3.11-minimal amd64 3.11.2-6+deb12u6 [817 kB]
+#6 11.82 Get:28 http://deb.debian.org/debian bookworm/main amd64 python3.11-minimal amd64 3.11.2-6+deb12u6 [2064 kB]
+#6 12.82 Get:29 http://deb.debian.org/debian bookworm/main amd64 python3-minimal amd64 3.11.2-1+b1 [26.3 kB]
+#6 12.83 Get:30 http://deb.debian.org/debian bookworm/main amd64 media-types all 10.0.0 [26.1 kB]
+#6 12.84 Get:31 http://deb.debian.org/debian bookworm/main amd64 libncursesw6 amd64 6.4-4 [134 kB]
+#6 12.90 Get:32 http://deb.debian.org/debian bookworm/main amd64 libkrb5support0 amd64 1.20.1-2+deb12u4 [33.2 kB]
+#6 12.92 Get:33 http://deb.debian.org/debian bookworm/main amd64 libk5crypto3 amd64 1.20.1-2+deb12u4 [79.8 kB]
+#6 12.95 Get:34 http://deb.debian.org/debian bookworm/main amd64 libkeyutils1 amd64 1.6.3-2 [8808 B]
+#6 12.96 Get:35 http://deb.debian.org/debian bookworm/main amd64 libkrb5-3 amd64 1.20.1-2+deb12u4 [334 kB]
+#6 13.10 Get:36 http://deb.debian.org/debian bookworm/main amd64 libgssapi-krb5-2 amd64 1.20.1-2+deb12u4 [135 kB]
+#6 13.15 Get:37 http://deb.debian.org/debian bookworm/main amd64 libtirpc-common all 1.3.3+ds-1 [14.0 kB]
+#6 13.16 Get:38 http://deb.debian.org/debian bookworm/main amd64 libtirpc3 amd64 1.3.3+ds-1 [85.2 kB]
+#6 13.19 Get:39 http://deb.debian.org/debian bookworm/main amd64 libnsl2 amd64 1.3.0-2 [39.5 kB]
+#6 13.21 Get:40 http://deb.debian.org/debian bookworm/main amd64 readline-common all 8.2-1.3 [69.0 kB]
+#6 13.28 Get:41 http://deb.debian.org/debian bookworm/main amd64 libreadline8 amd64 8.2-1.3 [166 kB]
+#6 13.42 Get:42 http://deb.debian.org/debian bookworm/main amd64 libsqlite3-0 amd64 3.40.1-2+deb12u2 [839 kB]
+#6 13.84 Get:43 http://deb.debian.org/debian bookworm/main amd64 libpython3.11-stdlib amd64 3.11.2-6+deb12u6 [1798 kB]
+#6 14.71 Get:44 http://deb.debian.org/debian bookworm/main amd64 python3.11 amd64 3.11.2-6+deb12u6 [573 kB]
+#6 15.04 Get:45 http://deb.debian.org/debian bookworm/main amd64 libpython3-stdlib amd64 3.11.2-1+b1 [9312 B]
+#6 15.04 Get:46 http://deb.debian.org/debian bookworm/main amd64 python3 amd64 3.11.2-1+b1 [26.3 kB]
+#6 15.06 Get:47 http://deb.debian.org/debian bookworm/main amd64 sgml-base all 1.31 [15.4 kB]
+#6 15.06 Get:48 http://deb.debian.org/debian bookworm/main amd64 sudo amd64 1.9.13p3-1+deb12u3 [1890 kB]
+#6 16.17 Get:49 http://deb.debian.org/debian bookworm/main amd64 kmod amd64 30+20221128-1 [95.2 kB]
+#6 16.25 Get:50 http://deb.debian.org/debian bookworm/main amd64 netbase all 6.4 [12.8 kB]
+#6 16.25 Get:51 http://deb.debian.org/debian bookworm/main amd64 libproc2-0 amd64 2:4.0.2-3 [62.8 kB]
+#6 16.28 Get:52 http://deb.debian.org/debian bookworm/main amd64 procps amd64 2:4.0.2-3 [709 kB]
+#6 16.67 Get:53 http://deb.debian.org/debian bookworm/main amd64 udev amd64 252.39-1~deb12u1 [1720 kB]
+#6 17.52 Get:54 http://deb.debian.org/debian bookworm/main amd64 bzip2 amd64 1.0.8-5+b1 [49.8 kB]
+#6 17.58 Get:55 http://deb.debian.org/debian-security bookworm-security/main amd64 openssl amd64 3.0.18-1~deb12u2 [1433 kB]
+#6 18.41 Get:56 http://deb.debian.org/debian bookworm/main amd64 ca-certificates all 20230311+deb12u1 [155 kB]
+#6 18.55 Get:57 http://deb.debian.org/debian bookworm/main amd64 krb5-locales all 1.20.1-2+deb12u4 [63.4 kB]
+#6 18.63 Get:58 http://deb.debian.org/debian bookworm/main amd64 libnss-systemd amd64 252.39-1~deb12u1 [163 kB]
+#6 18.77 Get:59 http://deb.debian.org/debian bookworm/main amd64 libpam-systemd amd64 252.39-1~deb12u1 [225 kB]
+#6 18.93 Get:60 http://deb.debian.org/debian bookworm/main amd64 lsof amd64 4.95.0-1 [318 kB]
+#6 19.21 Get:61 http://deb.debian.org/debian bookworm/main amd64 manpages all 6.03-2 [1332 kB]
+#6 19.83 Get:62 http://deb.debian.org/debian bookworm/main amd64 systemd-timesyncd amd64 252.39-1~deb12u1 [63.8 kB]
+#6 19.88 Get:63 http://deb.debian.org/debian bookworm/main amd64 xz-utils amd64 5.4.1-1 [471 kB]
+#6 20.11 Get:64 http://deb.debian.org/debian bookworm/main amd64 alsa-topology-conf all 1.2.5.1-2 [15.2 kB]
+#6 20.11 Get:65 http://deb.debian.org/debian bookworm/main amd64 libasound2-data all 1.2.8-1 [20.5 kB]
+#6 20.13 Get:66 http://deb.debian.org/debian bookworm/main amd64 libasound2 amd64 1.2.8-1+b1 [362 kB]
+#6 20.27 Get:67 http://deb.debian.org/debian bookworm/main amd64 alsa-ucm-conf all 1.2.8-1 [51.7 kB]
+#6 20.30 Get:68 http://deb.debian.org/debian bookworm/main amd64 libatopology2 amd64 1.2.8-1+b1 [50.4 kB]
+#6 20.31 Get:69 http://deb.debian.org/debian bookworm/main amd64 libgomp1 amd64 12.2.0-14+deb12u1 [116 kB]
+#6 20.36 Get:70 http://deb.debian.org/debian bookworm/main amd64 libfftw3-single3 amd64 3.3.10-1 [806 kB]
+#6 20.66 Get:71 http://deb.debian.org/debian bookworm/main amd64 libsamplerate0 amd64 0.2.2-3 [952 kB]
+#6 21.04 Get:72 http://deb.debian.org/debian bookworm/main amd64 alsa-utils amd64 1.2.8-1 [1098 kB]
+#6 21.57 Get:73 http://deb.debian.org/debian bookworm/main amd64 binutils-common amd64 2.40-2 [2487 kB]
+#6 22.80 Get:74 http://deb.debian.org/debian bookworm/main amd64 libbinutils amd64 2.40-2 [572 kB]
+#6 23.05 Get:75 http://deb.debian.org/debian bookworm/main amd64 libctf-nobfd0 amd64 2.40-2 [153 kB]
+#6 23.11 Get:76 http://deb.debian.org/debian bookworm/main amd64 libctf0 amd64 2.40-2 [89.8 kB]
+#6 23.15 Get:77 http://deb.debian.org/debian bookworm/main amd64 libgprofng0 amd64 2.40-2 [812 kB]
+#6 23.48 Get:78 http://deb.debian.org/debian bookworm/main amd64 libjansson4 amd64 2.14-2 [40.8 kB]
+#6 23.50 Get:79 http://deb.debian.org/debian bookworm/main amd64 binutils-x86-64-linux-gnu amd64 2.40-2 [2246 kB]
+#6 24.33 Get:80 http://deb.debian.org/debian bookworm/main amd64 binutils amd64 2.40-2 [65.0 kB]
+#6 24.35 Get:81 http://deb.debian.org/debian bookworm/main amd64 libc-dev-bin amd64 2.36-9+deb12u13 [47.4 kB]
+#6 24.41 Get:82 http://deb.debian.org/debian-security bookworm-security/main amd64 linux-libc-dev amd64 6.1.164-1 [2240 kB]
+#6 25.38 Get:83 http://deb.debian.org/debian bookworm/main amd64 libcrypt-dev amd64 1:4.4.33-2 [118 kB]
+#6 25.44 Get:84 http://deb.debian.org/debian bookworm/main amd64 libtirpc-dev amd64 1.3.3+ds-1 [191 kB]
+#6 25.50 Get:85 http://deb.debian.org/debian bookworm/main amd64 libnsl-dev amd64 1.3.0-2 [66.4 kB]
+#6 25.53 Get:86 http://deb.debian.org/debian bookworm/main amd64 rpcsvc-proto amd64 1.4.3-1 [63.3 kB]
+#6 25.56 Get:87 http://deb.debian.org/debian bookworm/main amd64 libc6-dev amd64 2.36-9+deb12u13 [1904 kB]
+#6 26.29 Get:88 http://deb.debian.org/debian bookworm/main amd64 libisl23 amd64 0.25-1.1 [683 kB]
+#6 26.67 Get:89 http://deb.debian.org/debian bookworm/main amd64 libmpfr6 amd64 4.2.0-1 [701 kB]
+#6 27.09 Get:90 http://deb.debian.org/debian bookworm/main amd64 libmpc3 amd64 1.3.1-1 [51.5 kB]
+#6 27.11 Get:91 http://deb.debian.org/debian bookworm/main amd64 cpp-12 amd64 12.2.0-14+deb12u1 [9768 kB]
+#6 30.86 Get:92 http://deb.debian.org/debian bookworm/main amd64 cpp amd64 4:12.2.0-3 [6836 B]
+#6 30.86 Get:93 http://deb.debian.org/debian bookworm/main amd64 libcc1-0 amd64 12.2.0-14+deb12u1 [41.7 kB]
+#6 30.87 Get:94 http://deb.debian.org/debian bookworm/main amd64 libitm1 amd64 12.2.0-14+deb12u1 [26.1 kB]
+#6 30.88 Get:95 http://deb.debian.org/debian bookworm/main amd64 libatomic1 amd64 12.2.0-14+deb12u1 [9376 B]
+#6 30.95 Get:96 http://deb.debian.org/debian bookworm/main amd64 libasan8 amd64 12.2.0-14+deb12u1 [2193 kB]
+#6 31.83 Get:97 http://deb.debian.org/debian bookworm/main amd64 liblsan0 amd64 12.2.0-14+deb12u1 [969 kB]
+#6 32.28 Get:98 http://deb.debian.org/debian bookworm/main amd64 libtsan2 amd64 12.2.0-14+deb12u1 [2197 kB]
+#6 33.16 Get:99 http://deb.debian.org/debian bookworm/main amd64 libubsan1 amd64 12.2.0-14+deb12u1 [883 kB]

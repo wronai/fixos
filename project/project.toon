@@ -1,0 +1,337 @@
+# fixOS | 48f 11186L | python:48
+# Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
+M[48]:
+  docs/examples/advanced_usage.py,6
+  docs/examples/quickstart.py,7
+  fixos/__init__.py,2
+  fixos/agent/__init__.py,3
+  fixos/agent/autonomous.py,281
+  fixos/agent/hitl.py,389
+  fixos/anonymizer.py,64
+  fixos/cli.py,1247
+  fixos/config.py,355
+  fixos/diagnostics/__init__.py,2
+  fixos/diagnostics/disk_analyzer.py,353
+  fixos/diagnostics/service_scanner.py,748
+  fixos/diagnostics/system_checks.py,383
+  fixos/fixes/__init__.py,3
+  fixos/interactive/__init__.py,0
+  fixos/interactive/cleanup_planner.py,344
+  fixos/llm_shell.py,187
+  fixos/orchestrator/__init__.py,8
+  fixos/orchestrator/executor.py,231
+  fixos/orchestrator/graph.py,132
+  fixos/orchestrator/orchestrator.py,325
+  fixos/platform_utils.py,159
+  fixos/providers/__init__.py,2
+  fixos/providers/llm.py,125
+  fixos/providers/llm_analyzer.py,256
+  fixos/system_checks.py,138
+  fixos/utils/__init__.py,3
+  fixos/utils/anonymizer.py,222
+  fixos/utils/terminal.py,245
+  fixos/utils/web_search.py,225
+  setup.py,43
+  test_kwarg.py,8
+  tests/__init__.py,0
+  tests/conftest.py,192
+  tests/e2e/__init__.py,0
+  tests/e2e/test_anonymization_layers.py,465
+  tests/e2e/test_audio_broken.py,179
+  tests/e2e/test_cli.py,224
+  tests/e2e/test_executor.py,180
+  tests/e2e/test_multi_system.py,131
+  tests/e2e/test_network_broken.py,232
+  tests/e2e/test_thumbnails_broken.py,196
+  tests/test_fixos.py,7
+  tests/unit/__init__.py,0
+  tests/unit/test_anonymizer.py,164
+  tests/unit/test_core.py,101
+  tests/unit/test_executor.py,174
+  tests/unit/test_orchestrator.py,245
+D:
+  fixos/agent/autonomous.py:
+    i: re,signal,subprocess,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.anonymize
+    e: FORBIDDEN_COMMANDS,SUDO_PREFIXES,SYSTEM_PROMPT_AUTONOMOUS,FixAction,AgentReport,SessionTimeout,run_autonomous_session
+    FixAction: 
+    AgentReport: summary(0)
+    SessionTimeout: 
+    _timeout_handler(signum;frame)
+    _is_forbidden(cmd:str)->Optional[str]
+    _add_sudo(cmd:str)->str
+    _execute(cmd:str)->tuple[bool, str]
+    run_autonomous_session(diagnostics:dict;config:FixOsConfig;show_data:bool=True;max_fixes:int=10)
+    _parse_agent_json(text:str)->Optional[dict]
+  fixos/agent/hitl.py:
+    i: re,sys,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.{anonymize,display_anonymized_preview}
+    e: SYSTEM_PROMPT,SessionTimeout,CmdResult,run_hitl_session
+    SessionTimeout: 
+    CmdResult: 
+    _timeout(signum;frame)
+    _sep(char:str='─';width:int=65)
+    _print_cmd_preview(cmd:str;comment:str='')
+    _print_cmd_result(result:CmdResult)
+    _run_cmd(cmd:str;comment:str='')->CmdResult
+    _extract_fixes(reply:str)->list[tuple[str, str]]
+    _print_action_menu(fixes:list[tuple[str;str]];rem_time:str;tokens:int)
+    _ask_user_problem()->str
+  fixos/anonymizer.py:
+    i: re,socket,getpass,os
+    e: get_sensitive_values,anonymize
+    get_sensitive_values()->dict
+    anonymize(data_str:str)->str
+  fixos/cli.py:
+    i: json,os,sys,click,config.FixOsConfig,pathlib.Path,typing.{Any,Dict,List,Optional}
+    e: BANNER,COMMON_OPTIONS,add_common_options,add_shared_options,NaturalLanguageGroup,cli,ask,scan
+    NaturalLanguageGroup: resolve_command(2)
+    add_common_options(fn)
+    add_shared_options(func)
+    cli(ctx;dry_run)
+    ask(prompt;dry_run)
+    _handle_natural_command(prompt:str;dry_run:bool=False)
+    _validate_result_with_llm(prompt:str;cmd_str:str;result;cfg)
+    _print_welcome()
+    scan(modules;output;show_raw;no_banner;disc;dry_run;...+1)
+  fixos/config.py:
+    i: os,sys,dataclasses.{dataclass,field},dotenv.load_dotenv,pathlib.Path,typing.Optional
+    e: ENV_SEARCH_PATHS,PROVIDER_DEFAULTS,FixOsConfig,KEY_PREFIXES,detect_provider_from_key,interactive_provider_setup,get_providers_list
+    FixOsConfig: load(0),validate(0),summary(0)
+    _load_env_files()
+    detect_provider_from_key(key:str)->Optional[str]
+    interactive_provider_setup()->Optional["FixOsConfig"]
+    get_providers_list()->list[dict]
+  fixos/diagnostics/disk_analyzer.py:
+    i: os,shutil,json,datetime,datetime.timedelta,pathlib.Path,typing.{Any,Dict,List,Tuple}
+    e: DiskAnalyzer,main
+    DiskAnalyzer: __init__(1),analyze_disk_usage(1),_get_disk_status(1),get_large_files(3),get_cache_dirs(2)  # Analyzes disk usage and provides clea...
+    main()
+  fixos/diagnostics/service_scanner.py:
+    i: os,shutil,json,subprocess,pathlib.Path,typing.{Any,Dict,List,Optional,Tuple}
+    e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
+    ServiceType: 
+    ServiceDataInfo:   # Information about service data
+    ServiceDataScanner: __init__(1),scan_all_services(0),scan_service(1),_analyze_service_path(2),_get_path_size_mb(1)  # Scans for large service data director...
+    main()
+  fixos/diagnostics/system_checks.py:
+    i: subprocess,psutil,platform,datetime,platform_utils.{_IS_LINUX,_IS_MAC,_IS_WINDOWS,_SYSTEM},typing.Any
+    e: diagnose_audio,diagnose_thumbnails,diagnose_hardware,diagnose_system,diagnose_security,diagnose_resources,DIAGNOSTIC_MODULES,get_full_diagnostics
+    _psutil_required()->bool
+    _cmd(cmd:str;timeout:int=20)->str
+    diagnose_audio()->dict[str, Any]
+    diagnose_thumbnails()->dict[str, Any]
+    diagnose_hardware()->dict[str, Any]
+    diagnose_system()->dict[str, Any]
+    diagnose_security()->dict[str, Any]
+    diagnose_resources()->dict[str, Any]
+  fixos/interactive/cleanup_planner.py:
+    i: json,dataclasses.dataclass,enum.Enum,typing.{Any,Dict,List,Tuple}
+    e: Priority,CleanupType,CleanupAction,CleanupPlanner,main
+    Priority: 
+    CleanupType: 
+    CleanupAction: __post_init__(0)  # Represents a cleanup action
+    CleanupPlanner: __init__(0),group_by_category(1),prioritize_actions(1),create_cleanup_plan(1),interactive_selection(1)  # Interactive cleanup planning and grou...
+    main()
+  fixos/llm_shell.py:
+    i: signal,subprocess,sys,time,openai,anonymizer.anonymize,prompt_toolkit.PromptSession,prompt_toolkit.formatted_text.HTML,prompt_toolkit.styles.Style,typing.Optional
+    e: SESSION_TIMEOUT,SYSTEM_PROMPT,SessionTimeout,format_time,execute_command,run_llm_shell
+    SessionTimeout: 
+    _timeout_handler(signum;frame)
+    format_time(seconds:int)->str
+    execute_command(cmd:str)->tuple[bool, str]
+    run_llm_shell(diagnostics_data:dict;token:str;model:str='gpt-4o-mini';timeout:int=SESSION_TIMEOUT;verbose:bool=False;base_url:Optional[str]=None)
+  fixos/orchestrator/executor.py:
+    i: asyncio,re,shlex,subprocess,dataclasses.{dataclass,field},typing.Optional
+    e: DangerousCommandError,CommandTimeoutError,ExecutionResult,DANGEROUS_PATTERNS,NEEDS_SUDO_PREFIXES,IDEMPOTENT_CHECK,CommandExecutor
+    DangerousCommandError: __init__(2)
+    CommandTimeoutError: __init__(2)
+    ExecutionResult: success(0),to_context(0)
+    CommandExecutor: __init__(3),is_dangerous(1),needs_sudo(1),add_sudo(1),_make_noninteractive(1)  # Bezpieczny executor komend z:
+  fixos/orchestrator/graph.py:
+    i: collections.deque,dataclasses.{dataclass,field},typing.{Literal,Optional}
+    e: Problem,ProblemGraph
+    Problem: is_actionable(0),to_summary(0)
+    ProblemGraph: __init__(0),add(1),get(1),next_actionable(0),all_done(0)  # DAG problemów systemowych z topologic...
+  fixos/orchestrator/orchestrator.py:
+    i: asyncio,json,time,uuid,config.FixOsConfig,providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.anonymize,utils.terminal._C
+    e: DIAGNOSE_PROMPT,EVALUATE_PROMPT,FixOrchestrator
+    _SkipAll:   # Rzucany gdy user wpisuje 's' – pomija...
+    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),run_sync(2),run_async(2)  # Orkiestrator napraw systemowych.
+  fixos/platform_utils.py:
+    i: os,platform,subprocess,sys,pathlib.Path,typing.Optional
+    e: SYSTEM,IS_LINUX,IS_WINDOWS,IS_MAC,IS_POSIX,get_os_info,needs_elevation,elevate_cmd
+    get_os_info()->dict
+    needs_elevation(cmd:str)->bool
+    elevate_cmd(cmd:str)->str
+    is_dangerous(cmd:str)->Optional[str]
+    run_command(cmd:str;timeout:int=120;shell:bool=True)->tuple[bool, str, str, int]
+    get_package_manager()->Optional[str]
+    install_package_cmd(package:str)->str
+    _cmd_exists(cmd:str)->bool
+  fixos/providers/llm.py:
+    i: time,openai,config.FixOsConfig,typing.{Iterator,Optional}
+    e: LLMError,LLMClient
+    LLMError:   # Błąd komunikacji z LLM.
+    LLMClient: __init__(1),chat(1),chat_stream(1),total_tokens(0),ping(0)  # Wrapper nad openai.OpenAI kompatybiln...
+  fixos/providers/llm_analyzer.py:
+    i: json,dataclasses.dataclass,typing.{Any,Dict,List,Optional}
+    e: LLMAnalysis,LLMAnalyzer,main
+    LLMAnalysis:   # Result of LLM analysis
+    LLMAnalyzer: __init__(1),analyze_disk_issues(1),analyze_failed_action(2),analyze_complex_pattern(1),_sanitize_suggestion(1)  # Uses LLM to analyze disk issues when...
+    main()
+  fixos/system_checks.py:
+    i: subprocess,psutil,platform,datetime
+    e: run_cmd,get_cpu_info,get_memory_info,get_disk_info,get_network_info,get_top_processes,get_fedora_specific,get_full_diagnostics
+    run_cmd(cmd:str;timeout:int=30)->str
+    get_cpu_info()->dict
+    get_memory_info()->dict
+    get_disk_info()->dict
+    get_network_info()->dict
+    get_top_processes(n:int=10)->list
+    get_fedora_specific()->dict
+    get_full_diagnostics()->dict
+  fixos/utils/anonymizer.py:
+    i: re,socket,getpass,os,dataclasses.{dataclass,field},terminal._C
+    e: AnonymizationReport,anonymize,display_anonymized_preview
+    AnonymizationReport: add(2),summary(0)  # Raport anonimizacji – co zostało zmas...
+    _get_sensitive()->dict
+    anonymize(data_str:str)->tuple[str, AnonymizationReport]
+    display_anonymized_preview(data_str:str;report:AnonymizationReport;max_lines:int=80)
+    _colorize_md_line(line:str)->str
+    _format_diagnostics_markdown(data_str:str)->str
+    _dict_to_markdown(data:dict;indent:int=0)->str
+    _format_key_title(key:str)->str
+  fixos/utils/terminal.py:
+    i: re,rich.console.Console,rich.markdown.Markdown,rich.panel.Panel,rich.rule.Rule,rich.syntax.Syntax,rich.text.Text,rich.theme.Theme,typing.Optional
+    e: colorize,render_md,print_cmd_block,print_stdout_box,print_stderr_box,SEVERITY_COLOR,SEVERITY_ICON,STATUS_ICON
+    _C:   # No-op stubs – kept so existing caller...
+    colorize(line:str)->str
+    render_md(text:str)->None
+    print_cmd_block(cmd:str;comment:str='';dry_run:bool=False)->None
+    print_stdout_box(stdout:str;max_lines:int=30)->None
+    print_stderr_box(stderr:str;max_lines:int=15)->None
+    print_problem_header(problem_id:str;description:str;severity:str;status:Optional[str]=None;attempts:int=0;max_attempts:int=3)->None
+    render_tree_colored(nodes:dict;execution_order:list[str])->str
+    _wrap(text:str;width:int)->list[str]
+  fixos/utils/web_search.py:
+    i: json,re,dataclasses.dataclass,typing.Optional,urllib.{error,parse,request}
+    e: SearchResult,search_fedora_bugzilla,search_ask_fedora,search_arch_wiki,search_github_issues,search_serpapi,search_ddg,search_all
+    SearchResult: 
+    _http_get(url:str;timeout:int=8)->Optional[str]
+    search_fedora_bugzilla(query:str;max_results:int=3)->list[SearchResult]
+    search_ask_fedora(query:str;max_results:int=3)->list[SearchResult]
+    search_arch_wiki(query:str;max_results:int=2)->list[SearchResult]
+    search_github_issues(query:str;max_results:int=3)->list[SearchResult]
+    search_serpapi(query:str;api_key:str;max_results:int=5)->list[SearchResult]
+    search_ddg(query:str;max_results:int=5)->list[SearchResult]
+    search_all(query:str;serpapi_key:Optional[str]=None;max_per_source:int=3)->list[SearchResult]
+  test_kwarg.py:
+    i: click
+    e: cli
+    cli(disc)
+  tests/conftest.py:
+    i: os,json,pytest,fixos.config.FixOsConfig,pathlib.Path,typing.Any,unittest.mock.{MagicMock,patch}
+    e: real_api_available,test_config,mock_config,mock_llm_client,broken_audio_diagnostics,broken_thumbnails_diagnostics,full_broken_diagnostics,broken_network_diagnostics
+    _env(key:str;default:str='')->str
+    _has_real_token()->bool
+    real_api_available()->bool
+    test_config()->FixOsConfig
+    mock_config()->FixOsConfig
+    mock_llm_client(mock_config)
+    broken_audio_diagnostics()->dict[str, Any]
+    broken_thumbnails_diagnostics()->dict[str, Any]
+  tests/e2e/test_anonymization_layers.py:
+    i: getpass,json,os,re,socket,pytest,fixos.utils.anonymizer.{AnonymizationReport,anonymize},unittest.mock.{MagicMock,patch}
+    e: REAL_HOSTNAME,REAL_USER,REAL_HOME,mock_cfg,TestAnonymizePatterns,TestDiagnosticsAnonymization,TestHITLAnonymizationLayer,TestAutonomousAnonymizationLayer
+    TestAnonymizePatterns: test_hostname_replaced(0),test_username_replaced(0),test_home_path_replaced(0),test_home_slash_pattern(0),test_ipv4_last_octets_masked(0)
+    TestDiagnosticsAnonymization: _make_diag(0),test_hostname_not_in_anonymized(0),test_username_not_in_anonymized(0),test_home_path_not_in_anonymized(0),test_pactl_info_anonymized(0)
+    TestHITLAnonymizationLayer: test_llm_prompt_no_hostname(2),test_llm_prompt_no_username(2),test_user_rejects_send_no_llm_call(1)
+    TestAutonomousAnonymizationLayer: test_command_output_anonymized(0),test_exec_output_anonymized_before_llm(2)
+    TestOrchestratorAnonymizationLayer: test_diagnostics_anonymized_in_prompt(2),test_stdout_stderr_anonymized_in_evaluate(2)
+    _assert_no_sensitive(text:str;label:str='')
+    mock_cfg()
+    _make_sensitive_string()->str
+  tests/e2e/test_audio_broken.py:
+    i: json,os,re,pytest,fixos.diagnostics.system_checks.{diagnose_audio,diagnose_hardware},fixos.utils.anonymizer.anonymize,unittest.mock.{MagicMock,patch}
+    e: TestAudioAnonymization,TestAudioDiagnosticsDetection,TestAudioDiagnosticsMockLLM,TestAudioDiagnosticsReal
+    TestAudioAnonymization: test_anonymize_hostname(1),test_anonymize_ipv4(0),test_anonymize_mac(0),test_anonymize_api_token(0),test_anonymize_home_path(0)  # Testy anonimizacji danych audio.
+    TestAudioDiagnosticsDetection: test_detect_missing_sof_firmware(1),test_detect_no_alsa_cards(1),test_detect_pipewire_failed(1),test_detect_lenovo_hardware(1),test_kernel_dmesg_sof_error(1)  # Testy wykrywania problemów audio z da...
+    TestAudioDiagnosticsMockLLM: test_llm_receives_anonymized_data(2),test_anonymization_report_not_empty(1),test_llm_called_with_sof_context(3),test_llm_rate_limit_retry(2)  # Testy z mock LLM – weryfikacja że dan...
+    TestAudioDiagnosticsReal: test_real_llm_analyzes_audio(2)  # Testy z prawdziwym API – uruchamiane...
+  tests/e2e/test_cli.py:
+    i: os,tempfile,pytest,click.testing.CliRunner,fixos.cli,pathlib.Path,unittest.mock.patch
+    e: runner,tmp_env,TestWelcomeScreen,TestLlmCommand,TestTokenCommands,TestProvidersCommand,TestConfigCommands
+    TestWelcomeScreen: test_welcome_shows_banner(1),test_welcome_shows_commands(1),test_welcome_shows_status_section(1),test_welcome_shows_tip_when_no_key(1)  # Testy ekranu powitalnego (fixos bez a...
+    TestLlmCommand: test_llm_shows_all_providers(1),test_llm_shows_urls(1),test_llm_shows_free_paid_badges(1),test_llm_free_filter(1),test_llm_shows_token_set_commands(1)  # Testy komendy fixos llm.
+    TestTokenCommands: test_token_set_gemini_auto_detect(2),test_token_set_openai_auto_detect(2),test_token_set_openrouter_auto_detect(2),test_token_set_anthropic_auto_detect(2),test_token_set_groq_auto_detect(2)  # Testy komend fixos token set/show/clear.
+    TestProvidersCommand: test_providers_shows_list(1),test_providers_shows_free_paid(1),test_providers_suggests_llm_command(1)  # Testy komendy fixos providers.
+    TestConfigCommands: test_config_show_runs(1),test_config_init_creates_env(2),test_config_set_writes_value(2)  # Testy komend fixos config.
+    runner()
+    tmp_env(tmp_path)
+  tests/e2e/test_executor.py:
+    i: subprocess,sys,pytest,fixos.orchestrator.executor.{CommandExecutor,DangerousCommandError}
+    e: ex_live,ex_dry,TestNonInteractiveInjection,TestSudoLogic,TestDangerousCommandBlocking,TestLiveExecution,TestIdempotencyCheck
+    TestNonInteractiveInjection: test_apt_get_install_y_injected(1),test_apt_install_y_injected(1),test_dnf_install_y_injected(1),test_dnf_upgrade_y_injected(1),test_apt_get_upgrade_y_injected(1)  # Testy wstrzykiwania -y do komend paki...
+    TestSudoLogic: test_systemctl_user_no_sudo(1),test_systemctl_user_start_no_sudo(1),test_systemctl_system_gets_sudo(1),test_dnf_gets_sudo(1),test_echo_no_sudo(1)  # Testy logiki sudo w executor.
+    TestDangerousCommandBlocking: test_rm_rf_root_blocked(1),test_mkfs_blocked(1),test_wget_pipe_sh_blocked(1),test_fork_bomb_blocked(1),test_safe_echo_not_blocked(1)  # Testy blokowania niebezpiecznych komend.
+    TestLiveExecution: test_echo_executes_correctly(1),test_false_command_returns_nonzero(1),test_uname_returns_output(1),test_timeout_handling(0),test_nonexistent_command_fails_gracefully(1)  # Testy faktycznego wykonania bezpieczn...
+    TestIdempotencyCheck: test_mkdir_skipped_if_exists(1),test_mkdir_executed_if_not_exists(1)  # Testy sprawdzania idempotentności prz...
+    ex_live()
+    ex_dry()
+  tests/e2e/test_multi_system.py:
+    i: subprocess,sys,os,pytest
+    e: IN_DOCKER,TestMultiSystemBasic,TestSystemDetection,TestCliCommands,TestDockerEnvironment,TestSystemServices
+    TestMultiSystemBasic: test_fixos_import(0),test_fixos_cli_exists(0),test_config_load(0),test_diagnostics_import(0)  # Podstawowe testy działające na każdym...
+    TestSystemDetection: test_os_detection(0),test_distro_detection(0),test_python_version(0)  # Testy detekcji systemu operacyjnego.
+    TestCliCommands: fixos_path(0),test_help_command(1),test_scan_help(1),test_config_show(1)  # Testy CLI fixos - wymagają zainstalow...
+    TestDockerEnvironment: test_docker_environment_detected(0),test_required_commands_available(0),test_disk_space_available(0)  # Testy specyficzne dla środowiska Docker.
+    TestSystemServices: test_systemd_or_init(0),test_dbus_availability(0)  # Testy usług systemowych (tylko w Dock...
+  tests/e2e/test_network_broken.py:
+    i: os,pytest,fixos.utils.anonymizer.anonymize,unittest.mock.{MagicMock,patch}
+    e: broken_network_diagnostics,broken_dns_diagnostics,TestNetworkProblemsDetection,TestNetworkAnonymization,TestNetworkMockLLM,TestNetworkExecutorIntegration,TestNetworkRealLLM
+    TestNetworkProblemsDetection: test_detect_networkmanager_failed(1),test_detect_dns_failure(1),test_detect_rfkill_blocked(1),test_detect_no_wifi_device(1),test_detect_network_unreachable(1)  # Testy wykrywania problemów sieciowych...
+    TestNetworkAnonymization: test_ip_in_network_data_masked(0),test_mac_in_network_data_masked(0),test_hostname_in_network_data_masked(0),test_private_ip_range_masked(0)  # Testy anonimizacji danych sieciowych.
+    TestNetworkMockLLM: test_llm_suggests_rfkill_unblock(3),test_llm_suggests_dns_fix(3),test_llm_network_commands_no_sudo_for_rfkill(3)  # Testy z mock LLM dla scenariusza brok...
+    TestNetworkExecutorIntegration: test_systemctl_user_network_no_sudo(0),test_networkmanager_restart_gets_sudo(0),test_ip_command_no_sudo(0),test_rfkill_no_sudo(0),test_firewall_cmd_needs_sudo(0)  # Testy integracji executor + network c...
+    TestNetworkRealLLM: test_real_llm_analyzes_network(2)  # Testy z prawdziwym API – tylko gdy to...
+    broken_network_diagnostics()
+    broken_dns_diagnostics()
+  tests/e2e/test_thumbnails_broken.py:
+    i: os,pytest,fixos.utils.anonymizer.anonymize,unittest.mock.{MagicMock,patch}
+    e: TestThumbnailsDetection,TestThumbnailsAnonymization,TestThumbnailsMockLLM,TestWebSearchFallback,TestFullBrokenScenario
+    TestThumbnailsDetection: test_detect_missing_ffmpegthumbnailer(1),test_detect_missing_totem_thumbnailer(1),test_detect_empty_thumbnail_cache(1),test_detect_high_fail_count(1),test_detect_missing_thumbnailer_packages(1)  # Testy wykrywania problemów z thumbnails.
+    TestThumbnailsAnonymization: test_home_path_in_cache_anonymized(1),test_xdg_cache_path_anonymized(0)  # Testy anonimizacji danych thumbnails.
+    TestThumbnailsMockLLM: test_llm_suggests_ffmpegthumbnailer(3),test_llm_suggests_cache_clear(3)  # Testy z mock LLM dla scenariusza thum...
+    TestWebSearchFallback: test_search_arch_wiki_thumbnails(0),test_search_fedora_bugzilla_audio(0),test_format_results_for_llm(0),test_empty_results_handled(0)  # Testy wyszukiwania zewnętrznego jako...
+    TestFullBrokenScenario: test_all_modules_detected(1),test_combined_issues_anonymized(1),test_full_scenario_llm_comprehensive(3),test_real_llm_full_scenario(2)  # Testy pełnego scenariusza (audio + th...
+  tests/test_fixos.py:
+    e: test_placeholder,test_import
+    test_placeholder()
+    test_import()
+  tests/unit/test_anonymizer.py:
+    i: getpass,socket,pytest,fixos.utils.anonymizer.{AnonymizationReport,anonymize}
+    e: TestHomePaths,TestAnonymizerOrder,TestAnonymizerEdgeCases
+    TestHomePaths: test_pyenv_full_path_anonymized(0),test_deep_nested_home_path(0),test_multiple_home_paths_all_masked(0),test_home_path_with_spaces_in_context(0),test_home_path_in_error_message(0)  # Testy anonimizacji ścieżek /home – fi...
+    TestAnonymizerOrder: test_hostname_replaced_before_username(0),test_home_path_replaced_before_username_word(0),test_report_categories_present(0),test_report_summary_format(0)  # Testy kolejności zastąpień – fix v2.2.
+    TestAnonymizerEdgeCases: test_empty_string(0),test_none_converted_to_string(0),test_dict_converted_to_string(0),test_very_long_path(0),test_path_with_special_chars(0)  # Testy przypadków brzegowych.
+  tests/unit/test_core.py:
+    i: os,pytest,unittest.mock.patch
+    e: TestConfig,TestAnonymizer,TestWebSearch
+    TestConfig: test_default_provider_is_gemini(0),test_model_default_gemini(0),test_invalid_provider_fallback(0),test_validate_missing_key(0),test_validate_ollama_no_key_needed(0)
+    TestAnonymizer: test_empty_string(0),test_non_string_input(0),test_no_sensitive_data(0),test_ipv6_not_mangled(0),test_multiple_ips_all_masked(0)
+    TestWebSearch: test_format_empty_results(0),test_format_single_result(0),test_http_get_timeout(0)
+  tests/unit/test_executor.py:
+    i: pytest,fixos.orchestrator.executor.{CommandExecutor,DangerousCommandError}
+    e: ex,TestMakeNoninteractive,TestNeedsSudo,TestAddSudo,TestIsDangerous,TestCheckIdempotent,TestExecuteSyncDryRun
+    TestMakeNoninteractive: test_apt_get_install_gets_y(1),test_apt_install_gets_y(1),test_dnf_install_gets_y(1),test_yum_install_gets_y(1),test_apt_get_upgrade_gets_y(1)  # Testy _make_noninteractive() – fix v2.2.
+    TestNeedsSudo: test_systemctl_user_no_sudo(1),test_systemctl_user_start_no_sudo(1),test_systemctl_user_stop_no_sudo(1),test_systemctl_system_needs_sudo(1),test_systemctl_enable_needs_sudo(1)  # Testy needs_sudo() – fix v2.2 (system...
+    TestAddSudo: test_systemctl_user_no_sudo_added(1),test_dnf_gets_sudo(1),test_already_sudo_unchanged(1)  # Testy add_sudo() – integracja z needs...
+    TestIsDangerous: test_rm_rf_root_blocked(1),test_mkfs_blocked(1),test_fork_bomb_blocked(1),test_wget_pipe_sh_blocked(1),test_curl_pipe_sh_blocked(1)  # Testy is_dangerous() – walidacja nieb...
+    TestCheckIdempotent: test_dnf_install_has_check(1),test_systemctl_enable_has_check(1),test_systemctl_start_has_check(1),test_mkdir_has_check(1),test_echo_no_check(1)  # Testy check_idempotent() – sprawdzani...
+    ex()->CommandExecutor
+  tests/unit/test_orchestrator.py:
+    i: pytest,fixos.orchestrator.executor.{CommandExecutor,CommandTimeoutError,DangerousCommandError,ExecutionResult},fixos.orchestrator.graph.{Problem,ProblemGraph},unittest.mock.{MagicMock,patch}
+    e: TestProblem,TestProblemGraph,TestCommandExecutor,TestFixOrchestrator
+    TestProblem: test_is_actionable_pending(0),test_is_actionable_resolved(0),test_is_actionable_max_attempts(0),test_to_summary_keys(0)
+    TestProblemGraph: test_add_and_get(0),test_next_actionable_no_deps(0),test_next_actionable_blocked_by_dep(0),test_next_actionable_dep_resolved(0),test_all_done_when_all_resolved(0)
+    TestCommandExecutor: test_is_dangerous_rm_rf_root(0),test_is_dangerous_safe_command(0),test_is_dangerous_dd_disk(0),test_is_dangerous_fork_bomb(0),test_needs_sudo_dnf(0)
+    TestFixOrchestrator: mock_cfg(0),test_load_from_dict(1),test_graph_render_after_load(1),test_run_sync_dry_run_no_confirm(1),test_load_from_diagnostics_mock_llm(2)

@@ -1,5 +1,5 @@
 """
-Konfiguracja testów e2e / unit fixfedora.
+Konfiguracja testów e2e / unit fixos.
 Fixtures: mock LLM, mock diagnostics, simulated broken environments.
 """
 

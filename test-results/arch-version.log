@@ -1,0 +1,4 @@
+Usage: fixos [OPTIONS] COMMAND [ARGS]...
+Try 'fixos --help' for help.
+
+Error: No such option: --version

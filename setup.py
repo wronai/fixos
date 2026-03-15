@@ -5,7 +5,7 @@ long_description = (Path(__file__).parent / "README.md").read_text(encoding="utf
 
 setup(
     name="fixos",
-    version="2.1.0",
+    version="2.1.24",
     description="AI-powered Linux/Windows diagnostics and repair with anonymization",
     long_description=long_description,
     long_description_content_type="text/markdown",

@@ -133,6 +133,28 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.25] - 2026-03-15
+
+### Test
+- Update test-results/alpine-build.log
+- Update test-results/arch-build.log
+- Update test-results/arch-scan-help.log
+- Update test-results/arch-unit-tests.log
+- Update test-results/arch-version.log
+- Update test-results/debian-build.log
+- Update test-results/debian-scan-help.log
+- Update test-results/debian-unit-tests.log
+- Update test-results/debian-version.log
+- Update test-results/ubuntu-build.log
+- ... and 2 more files
+
+### Other
+- Update .env.example
+- Update docker/debian/Dockerfile
+- Update docker/test-multi-system.sh
+- Update docker/ubuntu/Dockerfile
+- Update fixos/utils/anonymizer.py
+
 ## [2.1.24] - 2026-03-15
 
 ### Docs

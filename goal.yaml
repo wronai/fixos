@@ -13,7 +13,7 @@
 
 version: '1.0'
 project:
-  name: fixfedora
+  name: fixos
   type:
   - python
   description: ''
@@ -225,7 +225,7 @@ strategies:
   python:
     test: pytest tests/ -v
     build: python -m build
-    publish: twine upload dist/goal-{version}*
+    publish: twine upload dist/fixos-{version}*
     publish_enabled: true
     dependencies:
       file: requirements.txt

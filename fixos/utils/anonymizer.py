@@ -171,7 +171,8 @@ def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_l
             rendered = _colorize_md_line(line[:max_width - 3] + "...")
         print(f"  {rendered}")
 
-    dash_line = f"{_C.DIM}{'\u2500' * 65}{_C.RESET}"
+    dash_char = '\u2500'
+    dash_line = f"{_C.DIM}{dash_char * 65}{_C.RESET}"
     print(f"\n{dash_line}")
     print(f"{_C.BOLD}  🔒 Anonimizacja – co zostało ukryte:{_C.RESET}")
     for rep_line in report.summary().splitlines():

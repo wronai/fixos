@@ -1,0 +1,115 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 526B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/alpine:3.19
+#2 DONE 1.8s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 141B done
+#3 DONE 0.0s
+
+#4 [1/5] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#4 resolve docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 0.0s done
+#4 sha256:17a39c0ba978cc27001e9c56a480f98106e1ab74bd56eb302f9fd4cf758ea43f 0B / 3.42MB 0.1s
+#4 sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1 8.08kB / 8.08kB done
+#4 sha256:b58899f069c47216f6002a6850143dc6fae0d35eb8b0df9300bbe6327b9c2171 1.02kB / 1.02kB done
+#4 sha256:83b2b6703a620bf2e001ab57f7adc414d891787b3c59859b1b62909e48dd2242 581B / 581B done
+#4 ...
+
+#5 [internal] load build context
+#5 transferring context: 2.29MB 0.4s done
+#5 DONE 0.5s
+
+#4 [1/5] FROM docker.io/library/alpine:3.19@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1
+#4 sha256:17a39c0ba978cc27001e9c56a480f98106e1ab74bd56eb302f9fd4cf758ea43f 2.10MB / 3.42MB 0.8s
+#4 sha256:17a39c0ba978cc27001e9c56a480f98106e1ab74bd56eb302f9fd4cf758ea43f 3.42MB / 3.42MB 0.9s done
+#4 extracting sha256:17a39c0ba978cc27001e9c56a480f98106e1ab74bd56eb302f9fd4cf758ea43f 0.1s done
+#4 DONE 1.0s
+
+#6 [2/5] RUN apk add --no-cache     python3     py3-pip     py3-psutil     procps     util-linux-misc     alsa-utils     pipewire     wireplumber     findutils     lsof     dbus     sudo     bash     curl
+#6 0.175 fetch https://dl-cdn.alpinelinux.org/alpine/v3.19/main/x86_64/APKINDEX.tar.gz
+#6 0.684 fetch https://dl-cdn.alpinelinux.org/alpine/v3.19/community/x86_64/APKINDEX.tar.gz
+#6 1.225 (1/87) Installing ncurses-terminfo-base (6.4_p20231125-r0)
+#6 1.282 (2/87) Installing libncursesw (6.4_p20231125-r0)
+#6 1.370 (3/87) Installing dialog (1.3.20231002-r0)
+#6 1.461 (4/87) Installing alsa-ucm-conf (1.2.10-r0)
+#6 1.577 (5/87) Installing alsa-lib (1.2.10-r0)
+#6 1.709 (6/87) Installing fftw-single-libs (3.3.10-r5)
+#6 1.919 (7/87) Installing libformw (6.4_p20231125-r0)
+#6 1.975 (8/87) Installing libmenuw (6.4_p20231125-r0)
+#6 2.029 (9/87) Installing libpanelw (6.4_p20231125-r0)
+#6 2.083 (10/87) Installing alsa-utils (1.2.10-r0)
+#6 2.365 (11/87) Installing readline (8.2.1-r2)
+#6 2.434 (12/87) Installing bash (5.2.21-r0)
+#6 2.559 Executing bash-5.2.21-r0.post-install
+#6 2.564 (13/87) Installing ca-certificates (20250911-r0)
+#6 2.653 (14/87) Installing brotli-libs (1.1.0-r1)
+#6 2.769 (15/87) Installing c-ares (1.27.0-r0)
+#6 2.831 (16/87) Installing libunistring (1.1-r2)
+#6 2.978 (17/87) Installing libidn2 (2.3.4-r4)
+#6 3.044 (18/87) Installing nghttp2-libs (1.58.0-r0)
+#6 3.106 (19/87) Installing libpsl (0.21.5-r0)
+#6 3.167 (20/87) Installing libcurl (8.14.1-r2)
+#6 3.263 (21/87) Installing curl (8.14.1-r2)
+#6 3.336 (22/87) Installing dbus-libs (1.14.10-r0)
+#6 3.406 (23/87) Installing libexpat (2.7.3-r0)
+#6 3.468 (24/87) Installing dbus (1.14.10-r0)
+#6 3.555 Executing dbus-1.14.10-r0.pre-install
+#6 3.583 Executing dbus-1.14.10-r0.post-install
+#6 3.588 (25/87) Installing dbus-daemon-launch-helper (1.14.10-r0)
+#6 3.642 (26/87) Installing findutils (4.9.0-r5)
+#6 3.714 (27/87) Installing lsof (4.99.0-r0)
+#6 3.799 (28/87) Installing libintl (0.22.3-r0)
+#6 3.856 (29/87) Installing avahi-libs (0.8-r16)
+#6 3.915 (30/87) Installing libgcc (13.2.1_git20231014-r0)
+#6 3.979 (31/87) Installing libstdc++ (13.2.1_git20231014-r0)
+#6 4.207 (32/87) Installing libcamera-ipa (0.1.0-r1)
+#6 4.267 (33/87) Installing gmp (6.3.0-r0)
+#6 4.350 (34/87) Installing nettle (3.9.1-r0)
+#6 4.448 (35/87) Installing libffi (3.4.4-r3)
+#6 4.504 (36/87) Installing libtasn1 (4.20.0-r0)
+#6 4.561 (37/87) Installing p11-kit (0.25.3-r0)
+#6 4.667 (38/87) Installing gnutls (3.8.4-r0)
+#6 4.853 (39/87) Installing eudev-libs (3.2.14-r1)
+#6 4.910 (40/87) Installing xz-libs (5.4.5-r1)
+#6 4.979 (41/87) Installing libunwind (1.7.2-r1)
+#6 5.041 (42/87) Installing yaml (0.2.5-r2)
+#6 5.100 (43/87) Installing libcamera (0.1.0-r1)
+#6 5.218 (44/87) Installing libblkid (2.39.3-r0)
+#6 5.284 (45/87) Installing libmount (2.39.3-r0)
+#6 5.356 (46/87) Installing pcre2 (10.42-r2)
+#6 5.447 (47/87) Installing glib (2.78.6-r0)
+#6 5.720 (48/87) Installing opus (1.4-r0)
+#6 5.801 (49/87) Installing speexdsp (1.2.1-r2)
+#6 5.859 (50/87) Installing libuv (1.47.0-r0)
+#6 5.928 (51/87) Installing roc-toolkit-libs (0.3.0-r0)
+#6 6.023 (52/87) Installing libogg (1.3.5-r5)
+#6 6.078 (53/87) Installing libflac (1.4.3-r1)
+#6 6.156 (54/87) Installing libvorbis (1.3.7-r2)
+#6 6.232 (55/87) Installing libsndfile (1.2.2-r1)
+#6 6.314 (56/87) Installing webrtc-audio-processing-1 (1.3-r0)
+#6 6.435 (57/87) Installing pipewire-libs (1.0.0-r0)
+#6 6.799 (58/87) Installing pipewire (1.0.0-r0)
+#6 6.887 Executing pipewire-1.0.0-r0.post-install
+#6 6.900 (59/87) Installing libproc2 (4.0.4-r0)
+#6 6.961 (60/87) Installing procps-ng (4.0.4-r0)
+#6 7.064 (61/87) Installing libbz2 (1.0.8-r6)
+#6 7.131 (62/87) Installing gdbm (1.23-r1)
+#6 7.189 (63/87) Installing mpdecimal (2.5.1-r2)
+#6 7.253 (64/87) Installing sqlite-libs (3.44.2-r2)
+#6 7.407 (65/87) Installing python3 (3.11.14-r0)
+#6 8.782 (66/87) Installing python3-pycache-pyc0 (3.11.14-r0)
+#6 9.624 (67/87) Installing pyc (3.11.14-r0)
+#6 9.676 (68/87) Installing py3-setuptools-pyc (70.3.0-r0)
+#6 9.977 (69/87) Installing py3-pip-pyc (23.3.1-r0)
+#6 10.47 (70/87) Installing py3-parsing (3.1.1-r0)
+#6 10.54 (71/87) Installing py3-parsing-pyc (3.1.1-r0)
+#6 10.62 (72/87) Installing py3-packaging-pyc (23.2-r0)
+#6 10.69 (73/87) Installing python3-pyc (3.11.14-r0)
+#6 10.74 (74/87) Installing py3-packaging (23.2-r0)
+#6 10.80 (75/87) Installing py3-setuptools (70.3.0-r0)
+#6 10.99 (76/87) Installing py3-pip (23.3.1-r0)
+#6 11.36 (77/87) Installing py3-psutil (5.9.6-r0)

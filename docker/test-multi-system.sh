@@ -65,9 +65,12 @@ test_system() {
     # Run unit tests in container
     echo "  Running unit tests..."
     if ! docker run --rm "fixos-test:$system" bash -c "
-        cd /app && \
-        pip install pytest pytest-mock --quiet && \
-        python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
+        cd /app && 
+        if [ '$system' = 'ubuntu' ] || [ '$system' = 'debian' ]; then
+          python3 -m venv test_env && source test_env/bin/activate && pip install pytest pytest-mock --quiet --break-system-packages && python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
+        else
+          pip install pytest pytest-mock --quiet && python -m pytest tests/unit/ -v --tb=short -x 2>&1 | head -100
+        fi
     " > "$RESULTS_DIR/$system-unit-tests.log" 2>&1; then
         echo -e "  ${RED}✗ Unit tests failed${NC}"
         tail -50 "$RESULTS_DIR/$system-unit-tests.log"

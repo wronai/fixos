@@ -1,4 +1,4 @@
-# fixOS/flow | 203 func | 12 pipelines | 4 hub-types | 2026-03-15
+# fixOS/flow | 275 func | 12 pipelines | 4 hub-types | 2026-03-15
 
 PIPELINES[12] (Analysis:2, Refactor:10):
   Fixos [Refactor]: List[str] → Dict[str, Any]
@@ -58,11 +58,11 @@ PIPELINES[12] (Analysis:2, Refactor:10):
               PURITY: 1/4 pure  BOTTLENECK: _handle_natural_command(CC=37)
 
   Fixos [Refactor]: modules → str
-              → scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback) CC=10   IO ▶
+              → scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile) CC=12   IO ▶
               → get_full_diagnostics() → dict           CC=1    IO
               → get_fedora_specific() → dict            CC=1    pure
               → run_cmd(cmd:str, timeout:int) → str     CC=6    pure ■
-              PURITY: 2/4 pure  BOTTLENECK: scan(CC=10)
+              PURITY: 2/4 pure  BOTTLENECK: scan(CC=12)
 
   Fixos [Refactor]: provider → AnalysisResult
               → orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output) CC=13   IO ▶
@@ -98,15 +98,15 @@ TRANSFORMS (fan-out ≥10):
   run_llm_shell(diagnostics_data:dict, token:str, model:str, timeout:int, verbose:bool, base_url:Optional[str]) fan=23   !! side-effects
   interactive_provider_setup() → Optional[FixOsConfig]    fan=23   !! side-effects
   token_set(key, provider, env_file)                      fan=23   !! side-effects
+  report(output_format, output, modules, profile)         fan=22   !! side-effects
   fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes, disc, dry_run, interactive, json_output, llm_fallback) fan=21   !! side-effects
   execute_cleanup_actions(actions:List[Dict], cfg, llm_fallback:bool) fan=21   !! side-effects
   diagnose_system() → dict[str, Any]                      fan=19   fan=19
   render_md(text:str) → None                              fan=19   fan=19
   load_from_diagnostics(diagnostics:dict) → list[Problem] fan=18   PIPELINE:FixOrchestrator.entry
+  diagnose() → DiagnosticResult                           fan=18   PIPELINE:Plugin.entry
   _handle_natural_command(prompt:str, dry_run:bool)       fan=18   fan=18
   diagnose_resources() → dict[str, Any]                   fan=17   fan=17
-  cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only) fan=17   fan=17
-  run_sync(confirm_fn, progress_fn) → dict                fan=15   PIPELINE:FixOrchestrator.entry
 
 CONTRACTS:
   Pipeline: Fixos
@@ -282,10 +282,10 @@ CONTRACTS:
       SIDE-EFFECT: IO(read_text)
 
   Pipeline: Fixos
-    scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback)
-      IN:  modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback
+    scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile)
+      IN:  modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile
       OUT: None
-      SIDE-EFFECT: IO(dumps, write_text, dumps)
+      SIDE-EFFECT: IO(load, dumps, write_text)
 
     get_full_diagnostics() → dict
       IN:  ()
@@ -371,43 +371,43 @@ CONTRACTS:
       OUT: dict
 
 
-DATA_TYPES (by cross-function usage) [168 annotated, 0 inferred / 203 functions]:
-  str                  consumed:83  produced:40   !! HUB-TYPE → split interface
-  int                  consumed:36  produced:2    !! HUB-TYPE → split interface
-  bool                 consumed:19  produced:10   !! HUB-TYPE → split interface
-  dict                 consumed:9   produced:17 
+DATA_TYPES (by cross-function usage) [221 annotated, 0 inferred / 275 functions]:
+  str                  consumed:92  produced:41   !! HUB-TYPE → split interface
+  dict                 consumed:9   produced:45 
+  int                  consumed:41  produced:2    !! HUB-TYPE → split interface
+  bool                 consumed:22  produced:11   !! HUB-TYPE → split interface
   str, Any             consumed:7   produced:13 
   Dict                 consumed:6   produced:7  
   Path                 consumed:11  produced:0    !! HUB-TYPE → split interface
   list[SearchResult]   consumed:1   produced:7    output-heavy
-  dict[str, Any]       consumed:0   produced:7    output-heavy
+  list[dict]           consumed:4   produced:4  
+  dict[str, Any]       consumed:0   produced:8    output-heavy
   ServiceType          consumed:7   produced:0    input-heavy (read-only flow)
+  DiagnosticResult     consumed:0   produced:7    output-heavy
   FixOsConfig          consumed:4   produced:2  
+  list[str]            consumed:2   produced:4  
   Problem              consumed:4   produced:2  
   CleanupAction        consumed:3   produced:2  
+  ServiceDataInfo      consumed:1   produced:3    narrow scope
   ExecutionResult      consumed:2   produced:2    narrow scope
   LLMAnalysis          consumed:0   produced:4    narrow scope
-  list[dict]           consumed:3   produced:1    narrow scope
-  ServiceDataInfo      consumed:1   produced:3    narrow scope
-  float                consumed:2   produced:2    narrow scope
-  tuple[bool, str]     consumed:0   produced:3    narrow scope
-  list[str]            consumed:1   produced:2    narrow scope
+  AnalysisResult       consumed:0   produced:4    narrow scope
 
   HUB TYPES (consumed ≥10):
-    str → 83 consumers → split into:
+    str → 92 consumers → split into:
       - (analyze consumers to suggest sub-interfaces)
-    int → 36 consumers → split into:
+    int → 41 consumers → split into:
       - (analyze consumers to suggest sub-interfaces)
-    bool → 19 consumers → split into:
+    bool → 22 consumers → split into:
       - (analyze consumers to suggest sub-interfaces)
     Path → 11 consumers → split into:
       - (analyze consumers to suggest sub-interfaces)
 
 SIDE_EFFECTS:
-  IO:        get_os_info, get_full_diagnostics, execute_command, run_llm_shell, get_full_diagnostics, main, _sep, _print_cmd_result, _run_cmd, _print_action_menu
-  Cache:     DiskAnalyzer.analyze_disk_usage, DiskAnalyzer.get_cache_dirs, DiskAnalyzer.suggest_cleanup_actions, ServiceDataScanner._get_service_details
-  Mutation:  get_top_processes, diagnose_system, diagnose_security, diagnose_resources, DiskAnalyzer.__init__, DiskAnalyzer.get_large_files, DiskAnalyzer.get_log_dirs, DiskAnalyzer.get_temp_dirs, _extract_fixes, FixOsConfig.validate
-  Pure:      needs_elevation, elevate_cmd, is_dangerous, run_command, get_package_manager, install_package_cmd, _cmd_exists, setup_signal_timeout, cancel_signal_timeout, run_cmd
+  IO:        WatchDaemon.run, get_os_info, get_full_diagnostics, execute_command, run_llm_shell, get_full_diagnostics, main, _sep, _print_cmd_result, _run_cmd
+  Cache:     DiskAnalyzer.analyze_disk_usage, DiskAnalyzer.get_cache_dirs, DiskAnalyzer.suggest_cleanup_actions, ServiceDataScanner._get_service_details, Plugin.diagnose
+  Mutation:  WatchDaemon.__init__, WatchDaemon.stop, WatchDaemon._check_for_new_issues, get_top_processes, diagnose_system, diagnose_security, diagnose_resources, DiskAnalyzer.__init__, DiskAnalyzer.get_large_files, DiskAnalyzer.get_log_dirs
+  Pure:      WatchDaemon._notify, needs_elevation, elevate_cmd, is_dangerous, run_command, get_package_manager, install_package_cmd, _cmd_exists, setup_signal_timeout, cancel_signal_timeout
 
   PIPELINE PURITY:
     Fixos           ██░░ 50% pure

@@ -133,6 +133,37 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.27] - 2026-03-15
+
+### Docs
+- Update docs/README.md
+- Update docs/api-changelog.md
+- Update docs/api.md
+- Update docs/architecture.md
+- Update docs/coverage.md
+- Update docs/dependency-graph.md
+- Update docs/modules.md
+- Update project/README.md
+- Update project/context.md
+
+### Test
+- Update test-results/fedora-build.log
+- Update test-results/fedora-scan-help.log
+- Update test-results/ubuntu-build.log
+
+### Other
+- Update fixos/diagnostics/flatpak_analyzer.py
+- Update project/analysis.toon
+- Update project/analysis.yaml
+- Update project/calls.mmd
+- Update project/calls.png
+- Update project/compact_flow.mmd
+- Update project/compact_flow.png
+- Update project/dashboard.html
+- Update project/evolution.toon
+- Update project/flow.mmd
+- ... and 6 more files
+
 ## [2.1.26] - 2026-03-15
 
 ### Docs

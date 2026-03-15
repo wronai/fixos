@@ -1,7 +1,7 @@
 <!-- code2docs:start --># fixOS
 
-![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-203-green)
-> **203** functions | **31** classes | **32** files | CC̄ = 6.0
+![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-275-green)
+> **275** functions | **49** classes | **47** files | CC̄ = 5.6
 
 > Auto-generated project documentation from source code analysis.
 
@@ -146,28 +146,34 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 fixOS/
-├── setup    ├── platform_utils    ├── system_checks├── fixos/    ├── anonymizer    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── hitl    ├── cli    ├── agent/        ├── llm    ├── config    ├── providers/    ├── utils/        ├── anonymizer        ├── autonomous        ├── web_search    ├── fixes/    ├── orchestrator/        ├── terminal        ├── service_scanner        ├── executor        ├── orchestrator    ├── interactive/        ├── quickstart        ├── advanced_usage├── project        ├── graph        ├── cleanup_planner        ├── llm_analyzer```
+├── setup    ├── watch    ├── platform_utils├── fixos/    ├── system_checks    ├── anonymizer    ├── llm_shell    ├── diagnostics/        ├── system_checks        ├── disk_analyzer        ├── hitl    ├── cli    ├── agent/        ├── base        ├── registry    ├── plugins/    ├── config        ├── llm_analyzer        ├── autonomous    ├── providers/    ├── utils/        ├── llm        ├── anonymizer        ├── timeout        ├── service_scanner    ├── fixes/    ├── orchestrator/        ├── web_search        ├── terminal        ├── executor        ├── orchestrator        ├── graph    ├── interactive/    ├── profiles/            ├── resources            ├── audio            ├── security        ├── builtin/            ├── hardware            ├── disk            ├── thumbnails        ├── quickstart        ├── advanced_usage├── project        ├── rollback        ├── cleanup_planner        ├── schemas```
 
 ## API Overview
 
 ### Classes
 
-- **`SessionTimeout`** — —
+- **`WatchDaemon`** — Daemon wykonujący cykliczną diagnostykę z powiadomieniami.
 - **`DiskAnalyzer`** — Analyzes disk usage and provides cleanup suggestions
-- **`SessionTimeout`** — —
 - **`CmdResult`** — —
 - **`NaturalLanguageGroup`** — —
-- **`LLMError`** — Błąd komunikacji z LLM.
-- **`LLMClient`** — Wrapper nad openai.OpenAI kompatybilny z wieloma providerami.
+- **`Severity`** — Severity level for diagnostic findings.
+- **`Finding`** — Single finding from a diagnostic plugin.
+- **`DiagnosticResult`** — Result of a diagnostic plugin run.
+- **`DiagnosticPlugin`** — Bazowa klasa dla pluginów diagnostycznych fixOS.
+- **`PluginRegistry`** — Registry for diagnostic plugins with autodiscovery.
 - **`FixOsConfig`** — —
-- **`AnonymizationReport`** — Raport anonimizacji – co zostało zmaskowane.
+- **`LLMAnalysis`** — Result of LLM analysis
+- **`LLMAnalyzer`** — Uses LLM to analyze disk issues when heuristics aren't sufficient
 - **`FixAction`** — —
 - **`AgentReport`** — —
-- **`SessionTimeout`** — —
-- **`SearchResult`** — —
+- **`LLMError`** — Błąd komunikacji z LLM.
+- **`LLMClient`** — Wrapper nad openai.OpenAI kompatybilny z wieloma providerami.
+- **`AnonymizationReport`** — Raport anonimizacji – co zostało zmaskowane.
+- **`SessionTimeout`** — Wyjątek rzucany po przekroczeniu limitu czasu sesji.
 - **`ServiceType`** — —
 - **`ServiceDataInfo`** — Information about service data
 - **`ServiceDataScanner`** — Scans for large service data directories and allows cleanup
+- **`SearchResult`** — —
 - **`DangerousCommandError`** — —
 - **`CommandTimeoutError`** — —
 - **`ExecutionResult`** — —
@@ -175,12 +181,24 @@ fixOS/
 - **`FixOrchestrator`** — Orkiestrator napraw systemowych.
 - **`Problem`** — —
 - **`ProblemGraph`** — DAG problemów systemowych z topological sort do wyznaczania kolejności napraw.
+- **`Profile`** — Profil diagnostyczny z zestawem modułów i progów.
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`Plugin`** — —
+- **`RollbackEntry`** — Single recorded operation with its rollback command.
+- **`RollbackSession`** — A session of recorded operations that can be rolled back.
 - **`Priority`** — —
 - **`CleanupType`** — —
 - **`CleanupAction`** — Represents a cleanup action
 - **`CleanupPlanner`** — Interactive cleanup planning and grouping system
-- **`LLMAnalysis`** — Result of LLM analysis
-- **`LLMAnalyzer`** — Uses LLM to analyze disk issues when heuristics aren't sufficient
+- **`RiskLevel`** — —
+- **`FixSuggestion`** — Pojedyncza sugestia naprawy od LLM.
+- **`LLMDiagnosticResponse`** — Strukturalna odpowiedź LLM na dane diagnostyczne.
+- **`NLPIntent`** — Rozpoznana intencja z polecenia NLP.
+- **`CommandValidation`** — Wynik walidacji komendy przez LLM.
 
 ### Functions
 
@@ -237,13 +255,27 @@ fixOS/
 - `test_llm(provider, token, model, no_banner)` — Testuje połączenie z wybranym providerem LLM.
 - `orchestrate(provider, token, model, no_banner)` — Orkiestracja napraw z grafem kaskadowych problemów.
 - `cleanup_services(threshold, services, json_output, cleanup)` — Skanuje i czyści dane usług przekraczające próg.
+- `rollback()` — Zarządzanie cofaniem operacji fixOS.
+- `rollback_list(limit)` — Pokaż historię sesji naprawczych.
+- `rollback_show(session_id)` — Pokaż szczegóły sesji rollback.
+- `rollback_undo(session_id, last, dry_run)` — Cofnij operacje z podanej sesji.
+- `watch(interval, modules, alert_on, max_iterations)` — Monitorowanie systemu w tle z powiadomieniami.
+- `profile()` — Zarządzanie profilami diagnostycznymi.
+- `profile_list()` — Pokaż dostępne profile diagnostyczne.
+- `profile_show(name)` — Pokaż szczegóły profilu diagnostycznego.
+- `quickfix(dry_run, modules)` — Natychmiastowe naprawy bez API — baza znanych bugów.
+- `report(output_format, output, modules, profile)` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
+- `history(limit, json_output)` — Historia napraw fixOS.
 - `main()` — —
 - `detect_provider_from_key(key)` — Wykrywa provider na podstawie prefiksu klucza API.
 - `interactive_provider_setup()` — Interaktywny wybór providera gdy brak konfiguracji.
 - `get_providers_list()` — Zwraca listę providerów jako listę słowników.
+- `main()` — Test the LLM analyzer
+- `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Uruchamia autonomiczny tryb agenta.
 - `anonymize(data_str)` — Anonimizuje wrażliwe dane.
 - `display_anonymized_preview(data_str, report, max_lines)` — Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.
-- `run_autonomous_session(diagnostics, config, show_data, max_fixes)` — Uruchamia autonomiczny tryb agenta.
+- `timeout_handler(signum, frame)` — Signal handler dla SIGALRM — rzuca SessionTimeout.
+- `main()` — Test the service data scanner
 - `search_fedora_bugzilla(query, max_results)` — Szuka w Linux Bugzilla przez REST API.
 - `search_ask_fedora(query, max_results)` — Szuka w Linux forums przez Discourse API.
 - `search_arch_wiki(query, max_results)` — Arch Wiki – doskonałe źródło dla problemów Linux (nie tylko Arch).
@@ -259,9 +291,7 @@ fixOS/
 - `print_stderr_box(stderr, max_lines)` — Print stderr in a rich Panel.
 - `print_problem_header(problem_id, description, severity, status)` — Print a colored problem header panel.
 - `render_tree_colored(nodes, execution_order)` — Render a ProblemGraph as a rich-markup string.
-- `main()` — Test the service data scanner
 - `main()` — Test the cleanup planner
-- `main()` — Test the LLM analyzer
 
 
 ## Project Structure
@@ -270,10 +300,10 @@ fixOS/
 📄 `docs.examples.quickstart`
 📦 `fixos`
 📦 `fixos.agent`
-📄 `fixos.agent.autonomous` (7 functions, 3 classes)
-📄 `fixos.agent.hitl` (10 functions, 2 classes)
+📄 `fixos.agent.autonomous` (7 functions, 2 classes)
+📄 `fixos.agent.hitl` (10 functions, 1 classes)
 📄 `fixos.anonymizer` (2 functions)
-📄 `fixos.cli` (30 functions, 1 classes)
+📄 `fixos.cli` (41 functions, 1 classes)
 📄 `fixos.config` (7 functions, 1 classes)
 📦 `fixos.diagnostics`
 📄 `fixos.diagnostics.disk_analyzer` (15 functions, 1 classes)
@@ -282,20 +312,35 @@ fixOS/
 📦 `fixos.fixes`
 📦 `fixos.interactive`
 📄 `fixos.interactive.cleanup_planner` (12 functions, 4 classes)
-📄 `fixos.llm_shell` (4 functions, 1 classes)
+📄 `fixos.llm_shell` (4 functions)
 📦 `fixos.orchestrator`
 📄 `fixos.orchestrator.executor` (11 functions, 4 classes)
 📄 `fixos.orchestrator.graph` (11 functions, 2 classes)
 📄 `fixos.orchestrator.orchestrator` (11 functions, 2 classes)
+📄 `fixos.orchestrator.rollback` (6 functions, 2 classes)
 📄 `fixos.platform_utils` (10 functions)
+📦 `fixos.plugins`
+📄 `fixos.plugins.base` (4 functions, 4 classes)
+📦 `fixos.plugins.builtin`
+📄 `fixos.plugins.builtin.audio` (5 functions, 1 classes)
+📄 `fixos.plugins.builtin.disk` (4 functions, 1 classes)
+📄 `fixos.plugins.builtin.hardware` (6 functions, 1 classes)
+📄 `fixos.plugins.builtin.resources` (6 functions, 1 classes)
+📄 `fixos.plugins.builtin.security` (6 functions, 1 classes)
+📄 `fixos.plugins.builtin.thumbnails` (5 functions, 1 classes)
+📄 `fixos.plugins.registry` (8 functions, 1 classes)
+📦 `fixos.profiles` (3 functions, 1 classes)
 📦 `fixos.providers`
-📄 `fixos.providers.llm` (4 functions, 2 classes)
+📄 `fixos.providers.llm` (6 functions, 2 classes)
 📄 `fixos.providers.llm_analyzer` (8 functions, 2 classes)
+📄 `fixos.providers.schemas` (5 classes)
 📄 `fixos.system_checks` (8 functions)
 📦 `fixos.utils`
 📄 `fixos.utils.anonymizer` (9 functions, 1 classes)
 📄 `fixos.utils.terminal` (8 functions, 1 classes)
+📄 `fixos.utils.timeout` (1 functions, 1 classes)
 📄 `fixos.utils.web_search` (9 functions, 1 classes)
+📄 `fixos.watch` (5 functions, 1 classes)
 📄 `project`
 📄 `setup`
 

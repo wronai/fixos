@@ -1,14 +1,14 @@
-# fixOS | 48f 11187L | python:48
+# fixOS | 63f 13170L | python:63
 # Keys: M=modules, D=details, i=imports, c=classes, f=functions, m=methods
-M[48]:
+M[63]:
   docs/examples/advanced_usage.py,6
   docs/examples/quickstart.py,7
   fixos/__init__.py,2
   fixos/agent/__init__.py,3
-  fixos/agent/autonomous.py,281
-  fixos/agent/hitl.py,389
+  fixos/agent/autonomous.py,280
+  fixos/agent/hitl.py,388
   fixos/anonymizer.py,64
-  fixos/cli.py,1247
+  fixos/cli.py,1618
   fixos/config.py,355
   fixos/diagnostics/__init__.py,2
   fixos/diagnostics/disk_analyzer.py,353
@@ -17,20 +17,35 @@ M[48]:
   fixos/fixes/__init__.py,3
   fixos/interactive/__init__.py,0
   fixos/interactive/cleanup_planner.py,344
-  fixos/llm_shell.py,187
+  fixos/llm_shell.py,186
   fixos/orchestrator/__init__.py,8
   fixos/orchestrator/executor.py,231
   fixos/orchestrator/graph.py,132
   fixos/orchestrator/orchestrator.py,325
+  fixos/orchestrator/rollback.py,144
   fixos/platform_utils.py,159
+  fixos/plugins/__init__.py,10
+  fixos/plugins/base.py,82
+  fixos/plugins/builtin/__init__.py,1
+  fixos/plugins/builtin/audio.py,88
+  fixos/plugins/builtin/disk.py,97
+  fixos/plugins/builtin/hardware.py,105
+  fixos/plugins/builtin/resources.py,115
+  fixos/plugins/builtin/security.py,146
+  fixos/plugins/builtin/thumbnails.py,97
+  fixos/plugins/registry.py,103
+  fixos/profiles/__init__.py,53
   fixos/providers/__init__.py,2
-  fixos/providers/llm.py,125
+  fixos/providers/llm.py,183
   fixos/providers/llm_analyzer.py,256
+  fixos/providers/schemas.py,57
   fixos/system_checks.py,138
   fixos/utils/__init__.py,3
   fixos/utils/anonymizer.py,223
   fixos/utils/terminal.py,245
+  fixos/utils/timeout.py,11
   fixos/utils/web_search.py,225
+  fixos/watch.py,101
   setup.py,43
   test_kwarg.py,8
   tests/__init__.py,0
@@ -52,10 +67,9 @@ M[48]:
 D:
   fixos/agent/autonomous.py:
     i: re,signal,subprocess,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.anonymize
-    e: FORBIDDEN_COMMANDS,SUDO_PREFIXES,SYSTEM_PROMPT_AUTONOMOUS,FixAction,AgentReport,SessionTimeout,run_autonomous_session
+    e: FORBIDDEN_COMMANDS,SUDO_PREFIXES,SYSTEM_PROMPT_AUTONOMOUS,FixAction,AgentReport,run_autonomous_session
     FixAction: 
     AgentReport: summary(0)
-    SessionTimeout: 
     _timeout_handler(signum;frame)
     _is_forbidden(cmd:str)->Optional[str]
     _add_sudo(cmd:str)->str
@@ -64,8 +78,7 @@ D:
     _parse_agent_json(text:str)->Optional[dict]
   fixos/agent/hitl.py:
     i: re,sys,time,dataclasses.{dataclass,field},providers.llm.{LLMClient,LLMError},typing.Optional,utils.anonymizer.{anonymize,display_anonymized_preview}
-    e: SYSTEM_PROMPT,SessionTimeout,CmdResult,run_hitl_session
-    SessionTimeout: 
+    e: SYSTEM_PROMPT,CmdResult,run_hitl_session
     CmdResult: 
     _timeout(signum;frame)
     _sep(char:str='─';width:int=65)
@@ -133,8 +146,7 @@ D:
     main()
   fixos/llm_shell.py:
     i: signal,subprocess,sys,time,openai,anonymizer.anonymize,prompt_toolkit.PromptSession,prompt_toolkit.formatted_text.HTML,prompt_toolkit.styles.Style,typing.Optional
-    e: SESSION_TIMEOUT,SYSTEM_PROMPT,SessionTimeout,format_time,execute_command,run_llm_shell
-    SessionTimeout: 
+    e: SESSION_TIMEOUT,SYSTEM_PROMPT,format_time,execute_command,run_llm_shell
     _timeout_handler(signum;frame)
     format_time(seconds:int)->str
     execute_command(cmd:str)->tuple[bool, str]
@@ -156,6 +168,11 @@ D:
     e: DIAGNOSE_PROMPT,EVALUATE_PROMPT,FixOrchestrator
     _SkipAll:   # Rzucany gdy user wpisuje 's' – pomija...
     FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),run_sync(2),run_async(2)  # Orkiestrator napraw systemowych.
+  fixos/orchestrator/rollback.py:
+    i: json,subprocess,uuid,datetime,dataclasses.{asdict,dataclass,field},pathlib.Path,typing.Optional
+    e: RollbackEntry,RollbackSession
+    RollbackEntry:   # Single recorded operation with its ro...
+    RollbackSession: record(6),get_rollback_commands(0),rollback_last(2),_save(0),load(1)  # A session of recorded operations that...
   fixos/platform_utils.py:
     i: os,platform,subprocess,sys,pathlib.Path,typing.Optional
     e: SYSTEM,IS_LINUX,IS_WINDOWS,IS_MAC,IS_POSIX,get_os_info,needs_elevation,elevate_cmd
@@ -167,17 +184,64 @@ D:
     get_package_manager()->Optional[str]
     install_package_cmd(package:str)->str
     _cmd_exists(cmd:str)->bool
+  fixos/plugins/base.py:
+    i: abc.{ABC,abstractmethod},dataclasses.{dataclass,field},enum.Enum,typing.Any
+    e: Severity,Finding,DiagnosticResult,DiagnosticPlugin
+    Severity:   # Severity level for diagnostic findings.
+    Finding:   # Single finding from a diagnostic plugin.
+    DiagnosticResult: to_dict(0)  # Result of a diagnostic plugin run.
+    DiagnosticPlugin: diagnose(0),can_run(0),get_metadata(0)  # Bazowa klasa dla pluginów diagnostycz...
+  fixos/plugins/builtin/audio.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_alsa(0),_check_pipewire(0),_check_wireplumber(0),_check_sof(0)
+  fixos/plugins/builtin/disk.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_usage(0),_check_inodes(0),_check_readonly(0)
+  fixos/plugins/builtin/hardware.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_gpu(0),_check_battery(0),_check_touchpad(0),_check_camera(0)
+  fixos/plugins/builtin/resources.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_cpu(0),_check_ram(0),_check_top_processes(0),_check_zombies(0)
+  fixos/plugins/builtin/security.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_firewall(0),_check_selinux(0),_check_open_ports(0),_check_ssh(0)
+  fixos/plugins/builtin/thumbnails.py:
+    i: fixos.platform_utils.run_command,fixos.plugins.base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity}
+    e: Plugin
+    Plugin: diagnose(0),_check_cache(0),_check_ffmpegthumbnailer(0),_check_totem(0),_check_gstreamer(0)
+  fixos/plugins/registry.py:
+    i: logging,time,base.{DiagnosticPlugin,DiagnosticResult,Finding,Severity},importlib.metadata,typing.{Callable,Optional}
+    e: PluginRegistry
+    PluginRegistry: __init__(0),discover(0),_register_builtins(0),_register_external(0),register(1)  # Registry for diagnostic plugins with...
+  fixos/profiles/__init__.py:
+    i: yaml,dataclasses.{dataclass,field},pathlib.Path,typing.Optional
+    e: PROFILES_DIR,Profile
+    Profile: load(1),list_available(0),to_dict(0)  # Profil diagnostyczny z zestawem moduł...
   fixos/providers/llm.py:
-    i: time,openai,config.FixOsConfig,typing.{Iterator,Optional}
+    i: json,time,openai,config.FixOsConfig,typing.{Iterator,Optional,Type}
     e: LLMError,LLMClient
     LLMError:   # Błąd komunikacji z LLM.
-    LLMClient: __init__(1),chat(1),chat_stream(1),total_tokens(0),ping(0)  # Wrapper nad openai.OpenAI kompatybiln...
+    LLMClient: __init__(1),chat(1),chat_stream(1),total_tokens(0),chat_structured(2)  # Wrapper nad openai.OpenAI kompatybiln...
   fixos/providers/llm_analyzer.py:
     i: json,dataclasses.dataclass,typing.{Any,Dict,List,Optional}
     e: LLMAnalysis,LLMAnalyzer,main
     LLMAnalysis:   # Result of LLM analysis
     LLMAnalyzer: __init__(1),analyze_disk_issues(1),analyze_failed_action(2),analyze_complex_pattern(1),_sanitize_suggestion(1)  # Uses LLM to analyze disk issues when...
     main()
+  fixos/providers/schemas.py:
+    i: enum.Enum,pydantic.{BaseModel,Field},typing.Optional
+    e: RiskLevel,FixSuggestion,LLMDiagnosticResponse,NLPIntent,CommandValidation
+    RiskLevel: 
+    FixSuggestion:   # Pojedyncza sugestia naprawy od LLM.
+    LLMDiagnosticResponse:   # Strukturalna odpowiedź LLM na dane di...
+    NLPIntent:   # Rozpoznana intencja z polecenia NLP.
+    CommandValidation:   # Wynik walidacji komendy przez LLM.
   fixos/system_checks.py:
     i: subprocess,psutil,platform,datetime
     e: run_cmd,get_cpu_info,get_memory_info,get_disk_info,get_network_info,get_top_processes,get_fedora_specific,get_full_diagnostics
@@ -212,6 +276,10 @@ D:
     print_problem_header(problem_id:str;description:str;severity:str;status:Optional[str]=None;attempts:int=0;max_attempts:int=3)->None
     render_tree_colored(nodes:dict;execution_order:list[str])->str
     _wrap(text:str;width:int)->list[str]
+  fixos/utils/timeout.py:
+    e: SessionTimeout,timeout_handler
+    SessionTimeout:   # Wyjątek rzucany po przekroczeniu limi...
+    timeout_handler(signum;frame)
   fixos/utils/web_search.py:
     i: json,re,dataclasses.dataclass,typing.Optional,urllib.{error,parse,request}
     e: SearchResult,search_fedora_bugzilla,search_ask_fedora,search_arch_wiki,search_github_issues,search_serpapi,search_ddg,search_all
@@ -224,6 +292,10 @@ D:
     search_serpapi(query:str;api_key:str;max_results:int=5)->list[SearchResult]
     search_ddg(query:str;max_results:int=5)->list[SearchResult]
     search_all(query:str;serpapi_key:Optional[str]=None;max_per_source:int=3)->list[SearchResult]
+  fixos/watch.py:
+    i: logging,platform,subprocess,time,fixos.plugins.base.Severity,fixos.plugins.registry.PluginRegistry,typing.Optional
+    e: WatchDaemon
+    WatchDaemon: __init__(4),run(0),stop(0),_check_for_new_issues(1),_notify(1)  # Daemon wykonujący cykliczną diagnosty...
   test_kwarg.py:
     i: click
     e: cli

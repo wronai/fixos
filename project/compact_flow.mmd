@@ -1,19 +1,24 @@
 flowchart TD
     fixos_agent["fixos.agent<br/>17 funcs"]
     fixos_anonymizer["fixos.anonymizer<br/>2 funcs"]
-    fixos_cli["fixos.cli<br/>30 funcs"]
+    fixos_cli["fixos.cli<br/>41 funcs"]
     fixos_config["fixos.config<br/>7 funcs"]
     fixos_llm_shell["fixos.llm_shell<br/>4 funcs"]
-    fixos_orchestrator["fixos.orchestrator<br/>33 funcs"]
+    fixos_orchestrator["fixos.orchestrator<br/>39 funcs"]
     fixos_platform_utils["fixos.platform_utils<br/>10 funcs"]
+    fixos_plugins["fixos.plugins<br/>44 funcs"]
+    fixos_profiles["fixos.profiles<br/>3 funcs"]
     fixos_system_checks["fixos.system_checks<br/>8 funcs"]
-    fixos_utils["fixos.utils<br/>26 funcs"]
+    fixos_utils["fixos.utils<br/>27 funcs"]
+    fixos_plugins ==>|32| fixos_platform_utils
     fixos_agent ==>|14| fixos_utils
     fixos_cli ==>|13| fixos_config
     fixos_agent ==>|8| fixos_anonymizer
     fixos_agent ==>|7| fixos_platform_utils
     fixos_orchestrator ==>|4| fixos_anonymizer
     fixos_orchestrator ==>|4| fixos_utils
+    fixos_cli ==>|4| fixos_orchestrator
+    fixos_cli ==>|4| fixos_profiles
     fixos_cli -->|3| fixos_system_checks
     fixos_cli -->|2| fixos_agent
     fixos_cli -->|2| fixos_utils

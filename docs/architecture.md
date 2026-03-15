@@ -1,6 +1,6 @@
 # fixOS — Architecture
 
-> 32 modules | 203 functions | 31 classes
+> 47 modules | 275 functions | 49 classes
 
 ## How It Works
 
@@ -38,11 +38,11 @@ Source files  ──►  code2llm (tree-sitter + AST)  ──►  AnalysisResult
 
 ```mermaid
 graph TD
-    Other["Other<br/>22 modules"]
+    Other["Other<br/>35 modules"]
     API___CLI["API / CLI<br/>1 modules"]
     Config["Config<br/>1 modules"]
     Analysis["Analysis<br/>3 modules"]
-    Core["Core<br/>5 modules"]
+    Core["Core<br/>7 modules"]
     Other --> API___CLI
     API___CLI --> Config
     Config --> Analysis
@@ -68,9 +68,22 @@ graph TD
 - `fixos.orchestrator.executor`
 - `fixos.orchestrator.graph`
 - `fixos.orchestrator.orchestrator`
+- `fixos.orchestrator.rollback`
+- `fixos.plugins`
+- `fixos.plugins.builtin`
+- `fixos.plugins.builtin.audio`
+- `fixos.plugins.builtin.disk`
+- `fixos.plugins.builtin.hardware`
+- `fixos.plugins.builtin.resources`
+- `fixos.plugins.builtin.security`
+- `fixos.plugins.builtin.thumbnails`
+- `fixos.plugins.registry`
+- `fixos.profiles`
 - `fixos.providers`
 - `fixos.providers.llm`
+- `fixos.providers.schemas`
 - `fixos.system_checks`
+- `fixos.watch`
 - `project`
 - `setup`
 
@@ -91,9 +104,11 @@ graph TD
 ### Core
 
 - `fixos.platform_utils`
+- `fixos.plugins.base`
 - `fixos.utils`
 - `fixos.utils.anonymizer`
 - `fixos.utils.terminal`
+- `fixos.utils.timeout`
 - `fixos.utils.web_search`
 
 ## Module Dependency Graph
@@ -151,6 +166,17 @@ classDiagram
         -_get_category_for_action(self, action) None
         ... +2 more
     }
+    class PluginRegistry {
+        -__init__(self) None
+        +discover(self) None
+        -_register_builtins(self) None
+        -_register_external(self) None
+        +register(self, plugin) None
+        +list_plugins(self, runnable_only) None
+        +get_plugin(self, name) None
+        +run(self, modules, progress_callback) None
+        ... +1 more
+    }
     class ProblemGraph {
         -__init__(self) None
         +add(self, problem) None
@@ -186,33 +212,55 @@ classDiagram
         +chat(self, messages) None
         +chat_stream(self, messages) None
         +fixos.providers.llm.LLMClient.total_tokens()
+        +chat_structured(self, messages, response_model) None
+        -_extract_json(text) None
         +ping(self) None
     }
-    class FixOsConfig {
-        +load(cls) None
-        +validate(self) None
-        +summary(self) None
+    class Plugin {
+        +diagnose(self) None
+        -_check_cpu(self) None
+        -_check_ram(self) None
+        -_check_top_processes(self) None
+        -_check_zombies(self) None
+        -_check_swap(self) None
     }
-    class AnonymizationReport {
-        +add(self, category, count) None
-        +summary(self) None
+    class Plugin {
+        +diagnose(self) None
+        -_check_firewall(self) None
+        -_check_selinux(self) None
+        -_check_open_ports(self) None
+        -_check_ssh(self) None
+        -_check_fail2ban(self) None
     }
-    class ExecutionResult {
-        +fixos.orchestrator.executor.ExecutionResult.success()
-        +to_context(self) None
+    class Plugin {
+        +diagnose(self) None
+        -_check_gpu(self) None
+        -_check_battery(self) None
+        -_check_touchpad(self) None
+        -_check_camera(self) None
+        -_check_dmi(self) None
     }
-    class Problem {
-        +is_actionable(self) None
-        +to_summary(self) None
+    class RollbackSession {
+        +record(self, command, rollback_cmd) None
+        +get_rollback_commands(self) None
+        +rollback_last(self, n, dry_run) None
+        -_save(self) None
+        +load(cls, session_id) None
+        +list_sessions(cls, limit) None
     }
-    class NaturalLanguageGroup {
-        +resolve_command(self, ctx, args) None
+    class WatchDaemon {
+        -__init__(self, interval, modules) None
+        +run(self) None
+        +stop(self) None
+        -_check_for_new_issues(self, results) None
+        -_notify(message) None
     }
-    class AgentReport {
-        +summary(self) None
-    }
-    class DangerousCommandError {
-        -__init__(self, command, reason) None
+    class Plugin {
+        +diagnose(self) None
+        -_check_alsa(self) None
+        -_check_pipewire(self) None
+        -_check_wireplumber(self) None
+        -_check_sof(self) None
     }
 ```
 
@@ -250,23 +298,35 @@ classDiagram
 - `fixos.cli.test_llm` — Testuje połączenie z wybranym providerem LLM.
 - `fixos.cli.orchestrate` — Orkiestracja napraw z grafem kaskadowych problemów.
 - `fixos.cli.cleanup_services` — Skanuje i czyści dane usług przekraczające próg.
+- `fixos.cli.rollback` — Zarządzanie cofaniem operacji fixOS.
+- `fixos.cli.rollback_list` — Pokaż historię sesji naprawczych.
+- `fixos.cli.rollback_show` — Pokaż szczegóły sesji rollback.
+- `fixos.cli.rollback_undo` — Cofnij operacje z podanej sesji.
+- `fixos.cli.watch` — Monitorowanie systemu w tle z powiadomieniami.
+- `fixos.cli.profile` — Zarządzanie profilami diagnostycznymi.
+- `fixos.cli.profile_list` — Pokaż dostępne profile diagnostyczne.
+- `fixos.cli.profile_show` — Pokaż szczegóły profilu diagnostycznego.
+- `fixos.cli.quickfix` — Natychmiastowe naprawy bez API — baza znanych bugów.
+- `fixos.cli.report` — Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
+- `fixos.cli.history` — Historia napraw fixOS.
 - `fixos.cli.main`
 - `fixos.config.detect_provider_from_key` — Wykrywa provider na podstawie prefiksu klucza API.
+- `fixos.providers.llm_analyzer.main` — Test the LLM analyzer
 - `fixos.utils.anonymizer.anonymize` — Anonimizuje wrażliwe dane.
+- `fixos.utils.timeout.timeout_handler` — Signal handler dla SIGALRM — rzuca SessionTimeout.
+- `fixos.diagnostics.service_scanner.main` — Test the service data scanner
 - `fixos.utils.terminal.colorize` — Return line unchanged – rich handles markup in render_md().
 - `fixos.utils.terminal.render_md` — Print LLM markdown reply to terminal via rich.
-- `fixos.diagnostics.service_scanner.main` — Test the service data scanner
 - `fixos.interactive.cleanup_planner.main` — Test the cleanup planner
-- `fixos.providers.llm_analyzer.main` — Test the LLM analyzer
 
 ## Metrics Summary
 
 | Metric | Value |
 |--------|-------|
-| Modules | 32 |
-| Functions | 203 |
-| Classes | 31 |
-| CFG Nodes | 1261 |
+| Modules | 47 |
+| Functions | 275 |
+| Classes | 49 |
+| CFG Nodes | 1684 |
 | Patterns | 1 |
-| Avg Complexity | 6.0 |
-| Analysis Time | 3.38s |
+| Avg Complexity | 5.6 |
+| Analysis Time | 4.1s |

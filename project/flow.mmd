@@ -31,7 +31,7 @@ flowchart TD
         fixos__cli___handle_natural_command{{_handle_natural_command CC=37}}
         fixos__cli___validate_result_with_llm("_validate_result_with_llm CC=13")
         fixos__cli___print_welcome["_print_welcome"]
-        fixos__cli__scan("scan CC=10")
+        fixos__cli__scan("scan CC=12")
         fixos__cli___run_disk_analysis{{_run_disk_analysis CC=18}}
         fixos__cli___print_quick_issues("_print_quick_issues CC=14")
         fixos__cli__fix{{fix CC=18}}
@@ -52,6 +52,17 @@ flowchart TD
         fixos__cli__test_llm["test_llm"]
         fixos__cli__orchestrate("orchestrate CC=13")
         fixos__cli__cleanup_services{{cleanup_services CC=33}}
+        fixos__cli__rollback["rollback"]
+        fixos__cli__rollback_list["rollback_list"]
+        fixos__cli__rollback_show["rollback_show"]
+        fixos__cli__rollback_undo["rollback_undo"]
+        fixos__cli__watch["watch"]
+        fixos__cli__profile["profile"]
+        fixos__cli__profile_list["profile_list"]
+        fixos__cli__profile_show["profile_show"]
+        fixos__cli__quickfix("quickfix CC=12")
+        fixos__cli__report{{report CC=16}}
+        fixos__cli__history["history"]
         fixos__cli__main["main"]
     end
     subgraph fixos_config
@@ -161,6 +172,12 @@ flowchart TD
         fixos___session_summary["_session_summary"]
         fixos___default_confirm["_default_confirm"]
         fixos___default_progress("_default_progress CC=8")
+        fixos__record["record"]
+        fixos__get_rollback_commands["get_rollback_commands"]
+        fixos__rollback_last["rollback_last"]
+        fixos___save["_save"]
+        fixos__load["load"]
+        fixos__list_sessions["list_sessions"]
     end
     subgraph fixos_platform_utils
         fixos__platform_utils__get_os_info["get_os_info"]
@@ -174,10 +191,63 @@ flowchart TD
         fixos__platform_utils__setup_signal_timeout["setup_signal_timeout"]
         fixos__platform_utils__cancel_signal_timeout["cancel_signal_timeout"]
     end
+    subgraph fixos_plugins
+        fixos__plugins__registry__PluginRegistry____init__["__init__"]
+        fixos__plugins__registry__PluginRegistry__discover["discover"]
+        fixos___register_builtins["_register_builtins"]
+        fixos___register_external["_register_external"]
+        fixos__plugins__registry__PluginRegistry__register["register"]
+        fixos__list_plugins["list_plugins"]
+        fixos__get_plugin["get_plugin"]
+        fixos__plugins__registry__PluginRegistry__run["run"]
+        fixos__plugins__base__DiagnosticResult__to_dict["to_dict"]
+        fixos__plugins__base__DiagnosticPlugin__diagnose["diagnose"]
+        fixos__plugins__base__DiagnosticPlugin__can_run["can_run"]
+        fixos__get_metadata["get_metadata"]
+        fixos__diagnose("diagnose CC=14")
+        fixos___check_cpu["_check_cpu"]
+        fixos___check_ram["_check_ram"]
+        fixos___check_top_processes["_check_top_processes"]
+        fixos___check_zombies["_check_zombies"]
+        fixos___check_swap["_check_swap"]
+        fixos__diagnose{{diagnose CC=16}}
+        fixos___check_firewall("_check_firewall CC=8")
+        fixos___check_selinux["_check_selinux"]
+        fixos___check_open_ports["_check_open_ports"]
+        fixos___check_ssh("_check_ssh CC=8")
+        fixos___check_fail2ban["_check_fail2ban"]
+        fixos__plugins__builtin__audio__Plugin__diagnose("diagnose CC=10")
+        fixos___check_alsa["_check_alsa"]
+        fixos___check_pipewire["_check_pipewire"]
+        fixos___check_wireplumber["_check_wireplumber"]
+        fixos__plugins__builtin__audio__Plugin___check_sof["_check_sof"]
+        fixos__plugins__builtin__disk__Plugin__diagnose("diagnose CC=12")
+        fixos___check_usage["_check_usage"]
+        fixos___check_inodes["_check_inodes"]
+        fixos___check_readonly["_check_readonly"]
+        fixos__diagnose("diagnose CC=12")
+        fixos___check_gpu["_check_gpu"]
+        fixos___check_battery("_check_battery CC=8")
+        fixos___check_touchpad["_check_touchpad"]
+        fixos___check_camera["_check_camera"]
+        fixos___check_dmi["_check_dmi"]
+        fixos__diagnose("diagnose CC=10")
+        fixos___check_cache["_check_cache"]
+        fixos___check_ffmpegthumbnailer["_check_ffmpegthumbnailer"]
+        fixos___check_totem["_check_totem"]
+        fixos___check_gstreamer["_check_gstreamer"]
+    end
+    subgraph fixos_profiles
+        fixos__profiles__Profile__load["load"]
+        fixos__profiles__Profile__list_available["list_available"]
+        fixos__profiles__Profile__to_dict["to_dict"]
+    end
     subgraph fixos_providers
         fixos__providers__llm__LLMClient____init__["__init__"]
         fixos__providers__llm__LLMClient__chat{{chat CC=15}}
         fixos__providers__llm__LLMClient__chat_stream["chat_stream"]
+        fixos__providers__llm__LLMClient__chat_structured["chat_structured"]
+        fixos__providers__llm__LLMClient___extract_json["_extract_json"]
         fixos__providers__llm__LLMClient__ping["ping"]
         fixos____init__["__init__"]
         fixos__analyze_disk_issues["analyze_disk_issues"]
@@ -199,6 +269,7 @@ flowchart TD
         fixos__system_checks__get_full_diagnostics["get_full_diagnostics"]
     end
     subgraph fixos_utils
+        fixos__utils__timeout__timeout_handler["timeout_handler"]
         fixos__utils__anonymizer__AnonymizationReport__add["add"]
         fixos__summary["summary"]
         fixos__utils__anonymizer___get_sensitive["_get_sensitive"]
@@ -226,9 +297,17 @@ flowchart TD
         fixos__utils__terminal__render_tree_colored("render_tree_colored CC=8")
         fixos__utils__terminal___wrap["_wrap"]
     end
+    subgraph fixos_watch
+        fixos__watch__WatchDaemon____init__["__init__"]
+        fixos__watch__WatchDaemon__run("run CC=12")
+        fixos__watch__WatchDaemon__stop["stop"]
+        fixos__watch__WatchDaemon___check_for_new_issues["_check_for_new_issues"]
+        fixos__watch__WatchDaemon___notify["_notify"]
+    end
     fixos__platform_utils__elevate_cmd --> fixos__platform_utils__needs_elevation
     fixos__platform_utils__get_package_manager --> fixos__platform_utils___cmd_exists
     fixos__platform_utils__install_package_cmd --> fixos__platform_utils__get_package_manager
+    fixos__anonymizer__anonymize --> fixos__anonymizer__get_sensitive_values
     fixos__system_checks__get_fedora_specific --> fixos__system_checks__run_cmd
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_cpu_info
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_memory_info
@@ -236,7 +315,6 @@ flowchart TD
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_network_info
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_top_processes
     fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_fedora_specific
-    fixos__anonymizer__anonymize --> fixos__anonymizer__get_sensitive_values
     fixos__llm_shell__run_llm_shell --> fixos__anonymizer__anonymize
     fixos__diagnostics__system_checks__diagnose_audio --> fixos__diagnostics__system_checks___cmd
     fixos__diagnose_thumbnails --> fixos__diagnostics__system_checks___cmd
@@ -280,6 +358,30 @@ flowchart TD
     fixos___default_confirm --> fixos__utils__terminal__print_cmd_block
     fixos___default_progress --> fixos__utils__terminal__print_stdout_box
     fixos___default_progress --> fixos__utils__terminal__print_stderr_box
+    fixos___check_cpu --> fixos__platform_utils__run_command
+    fixos___check_top_processes --> fixos__platform_utils__run_command
+    fixos___check_zombies --> fixos__platform_utils__run_command
+    fixos___check_firewall --> fixos__platform_utils__run_command
+    fixos___check_selinux --> fixos__platform_utils__run_command
+    fixos___check_open_ports --> fixos__platform_utils__run_command
+    fixos___check_ssh --> fixos__platform_utils__run_command
+    fixos___check_fail2ban --> fixos__platform_utils__run_command
+    fixos___check_alsa --> fixos__platform_utils__run_command
+    fixos___check_pipewire --> fixos__platform_utils__run_command
+    fixos___check_wireplumber --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__audio__Plugin___check_sof --> fixos__platform_utils__run_command
+    fixos___check_usage --> fixos__platform_utils__run_command
+    fixos___check_inodes --> fixos__platform_utils__run_command
+    fixos___check_readonly --> fixos__platform_utils__run_command
+    fixos___check_gpu --> fixos__platform_utils__run_command
+    fixos___check_battery --> fixos__platform_utils__run_command
+    fixos___check_touchpad --> fixos__platform_utils__run_command
+    fixos___check_camera --> fixos__platform_utils__run_command
+    fixos___check_dmi --> fixos__platform_utils__run_command
+    fixos___check_cache --> fixos__platform_utils__run_command
+    fixos___check_ffmpegthumbnailer --> fixos__platform_utils__run_command
+    fixos___check_totem --> fixos__platform_utils__run_command
+    fixos___check_gstreamer --> fixos__platform_utils__run_command
     fixos__cli__cli --> fixos__cli___print_welcome
     fixos__cli__ask --> fixos__cli___handle_natural_command
     fixos__cli___handle_natural_command --> fixos__config__FixOsConfig__load
@@ -297,9 +399,16 @@ flowchart TD
     fixos__cli__test_llm --> fixos__config__FixOsConfig__load
     fixos__cli__orchestrate --> fixos__config__FixOsConfig__load
     fixos__cli__orchestrate --> fixos__system_checks__get_full_diagnostics
+    fixos__cli__rollback_list --> fixos__list_sessions
+    fixos__cli__rollback_show --> fixos__load
+    fixos__cli__rollback_undo --> fixos__load
+    fixos__cli__profile_list --> fixos__profiles__Profile__list_available
+    fixos__cli__profile_list --> fixos__profiles__Profile__load
+    fixos__cli__profile_show --> fixos__profiles__Profile__load
+    fixos__cli__history --> fixos__list_sessions
     fixos__cli__main --> fixos__cli__cli
 
     classDef highCC fill:#ff6b6b,stroke:#c92a2a,color:#fff
     classDef medCC fill:#ffd43b,stroke:#f08c00,color:#000
-    class fixos__llm_shell__run_llm_shell,fixos___identify_cache_type,fixos__agent__hitl__run_hitl_session,fixos__config__interactive_provider_setup,fixos__providers__llm__LLMClient__chat,fixos__agent__autonomous__run_autonomous_session,fixos__utils__anonymizer__anonymize,fixos__utils__anonymizer___dict_to_markdown,fixos___get_docker_details,fixos__utils__terminal__render_md,fixos___generate_recommendations,fixos__run_sync,fixos__cli___handle_natural_command,fixos__cli___run_disk_analysis,fixos__cli__fix,fixos__cli__execute_cleanup_actions,fixos__cli__token_set,fixos__cli__cleanup_services highCC
-    class fixos__platform_utils__get_package_manager,fixos__llm_shell__execute_command,fixos__diagnostics__system_checks__diagnose_system,fixos__diagnose_resources,fixos__get_cache_dirs,fixos__get_log_dirs,fixos__get_temp_dirs,fixos__suggest_cleanup_actions,fixos___categorize_file,fixos__agent__hitl___print_cmd_result,fixos__agent__hitl___extract_fixes,fixos__config___load_env_files,fixos__config__FixOsConfig__load,fixos___sanitize_suggestion,fixos__enhance_heuristics_with_llm,fixos__utils__anonymizer___colorize_md_line,fixos__utils__web_search__search_arch_wiki,fixos__utils__web_search__search_ddg,fixos__get_cleanup_plan,fixos__utils__terminal__render_tree_colored,fixos__execute_sync,fixos__execute,fixos__prioritize_actions,fixos__create_cleanup_plan,fixos___get_category_for_action,fixos___recalculate_order,fixos___evaluate_and_rediagnose,fixos___default_progress,fixos__cli___validate_result_with_llm,fixos__cli__scan medCC
+    class fixos__llm_shell__run_llm_shell,fixos___identify_cache_type,fixos__agent__hitl__run_hitl_session,fixos__config__interactive_provider_setup,fixos__agent__autonomous__run_autonomous_session,fixos___get_docker_details,fixos__providers__llm__LLMClient__chat,fixos__utils__anonymizer__anonymize,fixos__utils__anonymizer___dict_to_markdown,fixos__utils__terminal__render_md,fixos__run_sync,fixos___generate_recommendations,fixos__diagnose,fixos__cli___handle_natural_command,fixos__cli___run_disk_analysis,fixos__cli__fix,fixos__cli__execute_cleanup_actions,fixos__cli__token_set,fixos__cli__cleanup_services,fixos__cli__report highCC
+    class fixos__watch__WatchDaemon__run,fixos__platform_utils__get_package_manager,fixos__llm_shell__execute_command,fixos__diagnostics__system_checks__diagnose_system,fixos__diagnose_resources,fixos__get_cache_dirs,fixos__get_log_dirs,fixos__get_temp_dirs,fixos__suggest_cleanup_actions,fixos___categorize_file,fixos__agent__hitl___print_cmd_result,fixos__agent__hitl___extract_fixes,fixos__config___load_env_files,fixos__config__FixOsConfig__load,fixos__get_cleanup_plan,fixos___sanitize_suggestion,fixos__enhance_heuristics_with_llm,fixos__utils__anonymizer___colorize_md_line,fixos__utils__web_search__search_arch_wiki,fixos__utils__web_search__search_ddg,fixos__utils__terminal__render_tree_colored,fixos__execute_sync,fixos__execute,fixos___recalculate_order,fixos___evaluate_and_rediagnose,fixos___default_progress,fixos__prioritize_actions,fixos__create_cleanup_plan,fixos___get_category_for_action,fixos__diagnose medCC

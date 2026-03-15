@@ -1,9 +1,9 @@
-# code2llm/evolution | 203 func | 20f | 2026-03-15
+# code2llm/evolution | 275 func | 32f | 2026-03-15
 
 NEXT[10] (ranked by impact):
   [1] !! SPLIT           fixos/cli.py
-      WHY: 1589L, 1 classes, max CC=37
-      EFFORT: ~4h  IMPACT: 58793
+      WHY: 2048L, 1 classes, max CC=37
+      EFFORT: ~4h  IMPACT: 75776
 
   [2] !! SPLIT           fixos/diagnostics/service_scanner.py
       WHY: 895L, 3 classes, max CC=18
@@ -43,16 +43,16 @@ NEXT[10] (ranked by impact):
 
 
 RISKS[3]:
-  ⚠ Splitting fixos/cli.py may break 30 import paths
+  ⚠ Splitting fixos/cli.py may break 41 import paths
   ⚠ Splitting fixos/diagnostics/service_scanner.py may break 18 import paths
   ⚠ Splitting tests/e2e/test_anonymization_layers.py may break 0 import paths
 
 METRICS-TARGET:
-  CC̄:          6.0 → ≤4.2
+  CC̄:          5.6 → ≤3.9
   max-CC:      37 → ≤18
   god-modules: 4 → 0
-  high-CC(≥15): 18 → ≤9
+  high-CC(≥15): 20 → ≤10
   hub-types:   0 → ≤0
 
 HISTORY:
-  prev CC̄=6.0 → now CC̄=6.0
+  prev CC̄=5.6 → now CC̄=5.6

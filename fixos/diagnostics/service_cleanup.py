@@ -3,6 +3,7 @@ Service Cleanup for fixOS
 Handles planning and execution of service data cleanup operations.
 """
 
+import shlex
 import subprocess
 from typing import Dict, Any, List
 
@@ -260,7 +261,7 @@ class ServiceCleaner:
             ServiceType.NIX: "nix-collect-garbage -d || nix store gc",
             ServiceType.BREW: "brew cleanup --prune=all && brew autoremove",
             # Browsers
-            ServiceType.CHROME: "rm -rf ~/.cache/google-chrome ~/.config/google-chrome/Default/Service\\ Worker",
+            ServiceType.CHROME: ServiceCleaner._chrome_cleanup_command(path),
             ServiceType.FIREFOX: "rm -rf ~/.cache/mozilla ~/.mozilla/firefox/*/cache2",
             ServiceType.EDGE: "rm -rf ~/.cache/microsoft-edge",
             # IDEs
@@ -285,6 +286,31 @@ class ServiceCleaner:
             ServiceType.LOGS: "find ~/.cache/log ~/.local/state -name '*.log' -mtime +7 -delete 2>/dev/null; journalctl --vacuum-time=7d 2>/dev/null || true",
         }
         return commands.get(service_type, f"rm -rf {path}")
+
+    @staticmethod
+    def _chrome_cleanup_command(path: str) -> str:
+        """Build a path-aware Chrome cleanup command.
+
+        Chrome keeps cache data both in the dedicated cache directory and
+        inside the profile tree. Cleaning only the global cache leaves the
+        largest profile caches untouched, so we remove common cache
+        directories under the scanned profile path as well.
+        """
+        quoted_path = shlex.quote(path)
+        cache_dir_names = [
+            "Cache",
+            "Code Cache",
+            "GPUCache",
+            "DawnCache",
+            "GrShaderCache",
+            "ShaderCache",
+            "Service Worker",
+        ]
+        find_expr = " -o ".join(f"-name {shlex.quote(name)}" for name in cache_dir_names)
+        return (
+            "rm -rf ~/.cache/google-chrome && "
+            f"find {quoted_path} -type d \\( {find_expr} \\) -prune -exec rm -rf {{}} +"
+        )
 
     @staticmethod
     def get_preview_command(service_type, path: str) -> str:

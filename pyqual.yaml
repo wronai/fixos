@@ -59,12 +59,6 @@ pipeline:
       when: first_iteration
       timeout: 300
 
-    - name: calibrate
-      run: python3 scripts/pyqual-calibrate.py --margin 10
-      when: first_iteration
-      optional: true
-      timeout: 60
-
     - name: lint
       tool: ruff
       optional: true

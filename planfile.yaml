@@ -1759,6 +1759,46 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
+  - id: ticket-7f8
+  - id: ticket-65c5aee3
+    name: Fix relative-imports issues
+    description: Resolve 8 relative-imports issues in docs/examples/quickstart.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - docs/examples/quickstart.py
+    rule_id: relative-imports
+    count: 8
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-96fc09ae
+    name: Fix duplicate-imports issues
+    description: Resolve 6 duplicate-imports issues in docs/examples/quickstart.py
+    task_type: prefactor
+    priority: high
+    estimate: 2d
+    files:
+    - docs/examples/quickstart.py
+    rule_id: duplicate-imports
+    count: 6
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-81dc86cc
+    name: Fix duplicate-imports issues
+    description: Resolve 2 duplicate-imports issues in fixos/agent/__init__.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - fixos/agent/__init__.py
+    rule_id: duplicate-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
   - id: ticket-7f862d55
     name: Fix magic-numbers issues
     description: Resolve 6 magic-numbers issues in fixos/plugins/builtin/disk.py
@@ -1772,29 +1812,29 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-013b6f61
+  - id: ticket-813724b8
     name: Fix unused-imports issues
-    description: Resolve 2 unused-imports issues in fixos/plugins/builtin/hardware.py
+    description: Resolve 2 unused-imports issues in fixos/plugins/builtin/security.py
     task_type: prefactor
     priority: medium
     estimate: 1d
     files:
-    - fixos/plugins/builtin/hardware.py
+    - fixos/plugins/builtin/security.py
     rule_id: unused-imports
     count: 2
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-41d416e8
+  - id: ticket-d0f04435
     name: Fix magic-numbers issues
-    description: Resolve 4 magic-numbers issues in fixos/plugins/builtin/hardware.py
+    description: Resolve 8 magic-numbers issues in fixos/plugins/builtin/security.py
     task_type: prefactor
-    priority: medium
+    priority: high
     estimate: 2d
     files:
-    - fixos/plugins/builtin/hardware.py
+    - fixos/plugins/builtin/security.py
     rule_id: magic-numbers
-    count: 4
+    count: 8
     model_hints:
       planning: balanced
       implementation: balanced
@@ -1837,29 +1877,29 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-813724b8
+  - id: ticket-013b6f61
     name: Fix unused-imports issues
-    description: Resolve 2 unused-imports issues in fixos/plugins/builtin/security.py
+    description: Resolve 2 unused-imports issues in fixos/plugins/builtin/hardware.py
     task_type: prefactor
     priority: medium
     estimate: 1d
     files:
-    - fixos/plugins/builtin/security.py
+    - fixos/plugins/builtin/hardware.py
     rule_id: unused-imports
     count: 2
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-d0f04435
+  - id: ticket-41d416e8
     name: Fix magic-numbers issues
-    description: Resolve 8 magic-numbers issues in fixos/plugins/builtin/security.py
+    description: Resolve 4 magic-numbers issues in fixos/plugins/builtin/hardware.py
     task_type: prefactor
-    priority: high
+    priority: medium
     estimate: 2d
     files:
-    - fixos/plugins/builtin/security.py
+    - fixos/plugins/builtin/hardware.py
     rule_id: magic-numbers
-    count: 8
+    count: 4
     model_hints:
       planning: balanced
       implementation: balanced
@@ -2071,19 +2111,6 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-7ae8265e
-    name: Fix magic-numbers issues
-    description: Resolve 1 magic-numbers issues in fixos/system_checks.py
-    task_type: prefactor
-    priority: medium
-    estimate: 1d
-    files:
-    - fixos/system_checks.py
-    rule_id: magic-numbers
-    count: 1
-    model_hints:
-      planning: balanced
-      implementation: balanced
   - id: ticket-7752b135
     name: Fix relative-imports issues
     description: Resolve 4 relative-imports issues in fixos/utils/__init__.py
@@ -2094,6 +2121,19 @@ sprints:
     - fixos/utils/__init__.py
     rule_id: relative-imports
     count: 4
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-7ae8265e
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in fixos/system_checks.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - fixos/system_checks.py
+    rule_id: magic-numbers
+    count: 1
     model_hints:
       planning: balanced
       implementation: balanced
@@ -2175,32 +2215,6 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-2fc4fc8a
-    name: Fix smart-return-type issues
-    description: Resolve 1 smart-return-type issues in fixos/utils/timeout.py
-    task_type: prefactor
-    priority: medium
-    estimate: 1d
-    files:
-    - fixos/utils/timeout.py
-    rule_id: smart-return-type
-    count: 1
-    model_hints:
-      planning: balanced
-      implementation: balanced
-  - id: ticket-30b5ab2b
-    name: Fix unused-imports issues
-    description: Resolve 2 unused-imports issues in fixos/utils/timeout.py
-    task_type: prefactor
-    priority: medium
-    estimate: 1d
-    files:
-    - fixos/utils/timeout.py
-    rule_id: unused-imports
-    count: 2
-    model_hints:
-      planning: balanced
-      implementation: balanced
   - id: ticket-aecc7ed6
     name: Fix string-concat issues
     description: Resolve 2 string-concat issues in fixos/utils/terminal.py
@@ -2279,6 +2293,32 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
+  - id: ticket-2fc4fc8a
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in fixos/utils/timeout.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - fixos/utils/timeout.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-30b5ab2b
+    name: Fix unused-imports issues
+    description: Resolve 2 unused-imports issues in fixos/utils/timeout.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - fixos/utils/timeout.py
+    rule_id: unused-imports
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
   - id: ticket-c8b97bef
     name: Fix smart-return-type issues
     description: Resolve 2 smart-return-type issues in fixos/watch.py
@@ -2344,58 +2384,6 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
-  - id: ticket-5bffe6eb
-    name: Fix outdated-dependency issues
-    description: Resolve 1 outdated-dependency issues in pyproject.toml
-    task_type: prefactor
-    priority: medium
-    estimate: 1d
-    files:
-    - pyproject.toml
-    rule_id: outdated-dependency
-    count: 1
-    model_hints:
-      planning: balanced
-      implementation: balanced
-  - id: ticket-81dc86cc
-    name: Fix duplicate-imports issues
-    description: Resolve 2 duplicate-imports issues in fixos/agent/__init__.py
-    task_type: prefactor
-    priority: medium
-    estimate: 1d
-    files:
-    - fixos/agent/__init__.py
-    rule_id: duplicate-imports
-    count: 2
-    model_hints:
-      planning: balanced
-      implementation: balanced
-  - id: ticket-65c5aee3
-    name: Fix relative-imports issues
-    description: Resolve 8 relative-imports issues in docs/examples/quickstart.py
-    task_type: prefactor
-    priority: high
-    estimate: 2d
-    files:
-    - docs/examples/quickstart.py
-    rule_id: relative-imports
-    count: 8
-    model_hints:
-      planning: balanced
-      implementation: balanced
-  - id: ticket-96fc09ae
-    name: Fix duplicate-imports issues
-    description: Resolve 6 duplicate-imports issues in docs/examples/quickstart.py
-    task_type: prefactor
-    priority: high
-    estimate: 2d
-    files:
-    - docs/examples/quickstart.py
-    rule_id: duplicate-imports
-    count: 6
-    model_hints:
-      planning: balanced
-      implementation: balanced
   - id: ticket-d7a39868
     name: Fix smart-return-type issues
     description: Resolve 1 smart-return-type issues in scripts/pyqual-calibrate.py
@@ -2437,6 +2425,18 @@ sprints:
       implementation: balanced
   - id: ticket-8b7827d3
     name: Fix ai-boilerplate issues
+    description: Resolve 2 ai-boilerplate issues in scripts/pyqual-calibrate.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - scripts/pyqual-calibrate.py
+    rule_id: ai-boilerplate
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced
+me: Fix ai-boilerplate issues
     description: Resolve 2 ai-boilerplate issues in scripts/pyqual-calibrate.py
     task_type: prefactor
     priority: medium

@@ -143,6 +143,11 @@ build: clean
 	python -m build
 	@echo "✅ Paczka gotowa w dist/"
 
+publish: build
+	pip install twine --quiet
+	twine upload dist/*
+	@echo "✅ Opublikowano na PyPI"
+
 clean:
 	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ .coverage htmlcov/ __pycache__
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true

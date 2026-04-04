@@ -7,7 +7,7 @@
 AI-powered OS Diagnostics
 ```
 
-# fixOS v2.2 🔧🤖
+# fixOS v2.2.0 🔧🤖
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)

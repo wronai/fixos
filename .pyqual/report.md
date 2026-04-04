@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 16:05:06
-**Pipeline run:** 2026-04-04T14:05:06.687506+00:00
+**Generated:** 2026-04-04 16:05:41
+**Pipeline run:** 2026-04-04T14:05:39.028055+00:00
 
 ---
 
@@ -9,19 +9,19 @@
 
 ```mermaid
 flowchart LR
-    S0["prefact<br/>114.6s"]
+    S0["push<br/>2.2s"]
     style S0 fill:#90EE90
-    S1["verify<br/>1.1s"]
-    style S1 fill:#FFB6C1
+    S1["publish<br/>0.8s"]
+    style S1 fill:#90EE90
     S0 --> S1
-    S2["setup<br/>3.7s"]
+    S2["prefact<br/>86.2s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["lint<br/>0.0s"]
+    S3["markdown_report<br/>2.7s"]
     style S3 fill:#90EE90
     S2 --> S3
-    S4["markdown_report<br/>3.0s"]
-    style S4 fill:#90EE90
+    S4["verify<br/>0.8s"]
+    style S4 fill:#FFB6C1
     S3 --> S4
     G["✗ Gates Failed"]
     style G fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ prefact                    114.6s 🟢        │
-│  ✗ verify                       1.1s 🔴        │
-│  ✓ setup                        3.7s 🟢        │
-│  ✓ lint                         0.0s 🟢        │
-│  ✓ markdown_report              3.0s 🟢        │
+│  ✓ push                         2.2s 🟢        │
+│  ✓ publish                      0.8s 🟢        │
+│  ✓ prefact                     86.2s 🟢        │
+│  ✓ markdown_report              2.7s 🟢        │
+│  ✗ verify                       0.8s 🔴        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 122.5s                                          │
+│  ⏱️  Total time: 92.6s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -53,30 +53,30 @@ flowchart LR
 
 ### 🔧 Stage Execution Details
 
+#### ✅ push
+- **Status:** passed
+- **Duration:** 2.2s
+- **Return code:** 0
+
+#### ✅ publish
+- **Status:** passed
+- **Duration:** 0.8s
+- **Return code:** 0
+
 #### ✅ prefact
 - **Status:** passed
-- **Duration:** 114.6s
-- **Return code:** 0
-
-#### ❌ verify
-- **Status:** failed
-- **Duration:** 1.1s
-- **Return code:** 2
-
-#### ✅ setup
-- **Status:** passed
-- **Duration:** 3.7s
-- **Return code:** 0
-
-#### ✅ lint
-- **Status:** passed
-- **Duration:** 0.0s
+- **Duration:** 86.2s
 - **Return code:** 0
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 3.0s
+- **Duration:** 2.7s
 - **Return code:** 0
+
+#### ❌ verify
+- **Status:** failed
+- **Duration:** 0.8s
+- **Return code:** 2
 
 
 ---

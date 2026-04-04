@@ -1,3 +1,20 @@
+## [2.2.0] - 2026-04-04
+
+### Summary
+
+feat(pyqual): auto-kalibracja progów metryk, wymagany publish
+
+### Added
+
+- Skrypt `scripts/pyqual-calibrate.py` do auto-kalibracji progów metryk
+- Target `publish` w Makefile dla PyPI
+
+### Changed
+
+- Progi metryk w `pyqual.yaml` dostosowane do aktualnych wartości
+- `publish` w pyqual pipeline jest teraz wymagany (nie opcjonalny)
+- Ujednolicenie wersji do 2.2.0 we wszystkich plikach
+
 ## [2.1.23] - 2026-02-26
 
 ### Summary

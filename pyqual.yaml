@@ -101,7 +101,6 @@ pipeline:
     - name: publish
       run: make publish
       when: metrics_pass
-      optional: true
       timeout: 300
 
     - name: markdown_report

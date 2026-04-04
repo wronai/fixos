@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:47:42
-**Pipeline run:** 2026-04-04T13:47:40.107277+00:00
+**Generated:** 2026-04-04 15:48:16
+**Pipeline run:** 2026-04-04T13:48:13.769338+00:00
 
 ---
 
@@ -9,18 +9,18 @@
 
 ```mermaid
 flowchart LR
-    S0["markdown_report<br/>2.6s"]
+    S0["markdown_report<br/>2.7s"]
     style S0 fill:#90EE90
-    S1["setup<br/>2.7s"]
+    S1["setup<br/>2.4s"]
     style S1 fill:#90EE90
     S0 --> S1
     S2["lint<br/>0.0s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["push<br/>2.0s"]
+    S3["push<br/>1.9s"]
     style S3 fill:#90EE90
     S2 --> S3
-    S4["publish<br/>0.7s"]
+    S4["publish<br/>0.4s"]
     style S4 fill:#90EE90
     S3 --> S4
     G["✗ Gates Failed"]
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ markdown_report              2.6s 🟢        │
-│  ✓ setup                        2.7s 🟢        │
+│  ✓ markdown_report              2.7s 🟢        │
+│  ✓ setup                        2.4s 🟢        │
 │  ✓ lint                         0.0s 🟢        │
-│  ✓ push                         2.0s 🟢        │
-│  ✓ publish                      0.7s 🟢        │
+│  ✓ push                         1.9s 🟢        │
+│  ✓ publish                      0.4s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 8.0s                                          │
+│  ⏱️  Total time: 7.4s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,12 +55,12 @@ flowchart LR
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 2.6s
+- **Duration:** 2.7s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 2.7s
+- **Duration:** 2.4s
 - **Return code:** 0
 
 #### ✅ lint
@@ -70,12 +70,12 @@ flowchart LR
 
 #### ✅ push
 - **Status:** passed
-- **Duration:** 2.0s
+- **Duration:** 1.9s
 - **Return code:** 0
 
 #### ✅ publish
 - **Status:** passed
-- **Duration:** 0.7s
+- **Duration:** 0.4s
 - **Return code:** 0
 
 

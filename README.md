@@ -7,7 +7,7 @@
 AI-powered OS Diagnostics
 ```
 
-# fixOS v2.2.0 🔧🤖
+# fixOS v2.2.6 🔧🤖
 
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?logo=python)](https://www.python.org/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -55,6 +55,8 @@ fixos fix
 fixos                   – ekran powitalny z listą komend i statusem
 fixos fix               – diagnoza + sesja naprawcza z AI (HITL)
 fixos scan              – diagnostyka systemu bez AI
+fixos cleanup           – skanuj i czyść dane usług (Docker, npm, pip, ...)
+fixos cleanup --full    – pełny audit systemu + dev projects
 fixos orchestrate       – zaawansowana orkiestracja (graf problemów DAG)
 fixos llm               – lista 12 providerów LLM + linki do kluczy API
 fixos token set KEY     – zapisz klucz API do .env (auto-detekcja providera)
@@ -75,6 +77,22 @@ fixos scan --audio --output /tmp/audio-report.json
 
 # Analiza i interaktywne czyszczenie zajętości dysku
 fixos fix --disc
+
+# Pełny audit systemu (DNF, Docker, Flatpak, dev projects)
+fixos cleanup --full --dry-run
+
+# Usuń tylko foldery venv z projektów
+fixos cleanup --full
+> type:venv
+
+# Usuń duże elementy (>1 GB)
+fixos cleanup --full
+> large
+
+# Interaktywny wybór elementów do usunięcia
+fixos cleanup --full
+> select
+> 1,3,5-10
 
 # Napraw audio i thumbnails (HITL – pyta o potwierdzenie)
 fixos fix --modules audio,thumbnails

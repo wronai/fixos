@@ -30,7 +30,9 @@
 | `fixos.cli.watch_cmd` | 49 | 1 | 0 | 2.0 | Watch daemon command for fixOS CLI | [source](https://github.com/wronai/fixfedora/blob/main/fixos/cli/watch_cmd.py) |
 | `fixos.config` | 422 | 4 | 1 | 9.7 | Zarządzanie konfiguracją fixos. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/config.py) |
 | `fixos.diagnostics.disk_analyzer` | 419 | 1 | 1 | 7.1 | Disk Analyzer Module for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/disk_analyzer.py) |
-| `fixos.diagnostics.flatpak_analyzer` | 332 | 1 | 3 | 6.0 | Advanced Flatpak analyzer for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/flatpak_analyzer.py) |
+| `fixos.diagnostics.flatpak_analyzer` | 939 | 1 | 3 | 6.0 | Advanced Flatpak analyzer - real disk usage, bloat detection | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/flatpak_analyzer.py) |
+| `fixos.diagnostics.storage_analyzer` | 845 | 1 | 1 | 5.0 | Full system storage analyzer - DNF, Docker, Btrfs, coredumps | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/storage_analyzer.py) |
+| `fixos.diagnostics.dev_project_analyzer` | 400 | 1 | 1 | 4.0 | Dev project dependencies - node_modules, venv, target, etc. | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/dev_project_analyzer.py) |
 | `fixos.diagnostics.service_cleanup` | 355 | 0 | 1 | 3.0 | Service Cleanup for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_cleanup.py) |
 | `fixos.diagnostics.service_details` | 242 | 0 | 1 | 6.9 | Service Details Provider for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_details.py) |
 | `fixos.diagnostics.service_scanner` | 249 | 1 | 3 | 3.1 | Service Data Scanner for fixOS | [source](https://github.com/wronai/fixfedora/blob/main/fixos/diagnostics/service_scanner.py) |

@@ -26,7 +26,7 @@ from fixos.agent.autonomous import run_autonomous_session
               help="Maksymalna liczba napraw w sesji")
 @add_shared_options
 def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes,
-        disc, dry_run, interactive, json_output, llm_fallback):
+        disc, dry_run, interactive, json_output, llm_fallback, show_raw):
     """
     Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 

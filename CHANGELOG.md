@@ -150,10 +150,49 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
-## [2.2.6] - 2026-04-04
+## [2.2.7] - 2026-04-04
+
+### Docs
+- Update CHANGELOG.md
+- Update README.md
+- Update docs/modules.md
 
 ### Other
-- Update fixos/cli/cleanup_cmd.py
+- Update fixos/cli/fix_cmd.py
+
+## [2.2.6] - 2026-04-04
+
+### Added
+- **StorageAnalyzer** - pełny audit systemu z wykrywaniem:
+  - DNF cache, stare kernele, journal logs
+  - Docker/Podman (dangling images, build cache)
+  - Btrfs snapshots, Timeshift backups
+  - Coredumps, orphaned packages, debug symbols
+  - Browser profiles, Flatpak user data, OSTree repo
+- **DevProjectAnalyzer** - wykrywanie folderów zależności w projektach prywatnych:
+  - `node_modules`, `venv`, `.venv`, `target` (Rust/Maven)
+  - `build`, `dist`, `__pycache__`, `.tox`, `.pytest_cache`
+  - `vendor` (PHP), `.gradle`, `bin/obj` (.NET)
+  - Automatyczne wykrywanie możliwości odtworzenia
+- **Zaawansowane opcje filtrowania** w `fixos cleanup --full`:
+  - `type:NAME` - usuń wybrany typ (np. `type:venv`)
+  - `type:A,B,C` - usuń wiele typów (np. `type:venv,node_modules`)
+  - `category:NAME` - usuń kategorię (np. `category:dev_projects`)
+  - `large` - tylko duże (>1 GB)
+  - `huge` - tylko bardzo duże (>5 GB)
+  - `old` - stare (>30 dni)
+  - `stale` - bardzo stare (>90 dni)
+  - `top:N` - N największych
+  - `select` - interaktywny wybór po numerach
+
+### Fixed
+- **FlatpakAnalyzer** - poprawione obliczanie rozmiaru z użyciem `du` zamiast sum logicznych
+- Eliminacja fałszywych alarmów o "80 GB śmieci w Flatpak"
+- Realne szacunki odzyskiwania miejsca (ratio > 2.5x dla bloat)
+
+### Changed
+- `cleanup --full` pokazuje ranking typów zależności z rozmiarami
+- Lepsze kategoryzowanie elementów do czyszczenia (risk: none/low/medium)
 
 ## [2.2.5] - 2026-04-04
 

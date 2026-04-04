@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:46:01
-**Pipeline run:** 2026-04-04T13:45:58.725471+00:00
+**Generated:** 2026-04-04 15:46:37
+**Pipeline run:** 2026-04-04T13:46:35.279545+00:00
 
 ---
 
@@ -9,15 +9,15 @@
 
 ```mermaid
 flowchart LR
-    S0["markdown_report<br/>3.2s"]
+    S0["markdown_report<br/>2.9s"]
     style S0 fill:#90EE90
-    S1["setup<br/>2.6s"]
+    S1["setup<br/>3.8s"]
     style S1 fill:#90EE90
     S0 --> S1
     S2["lint<br/>0.0s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["push<br/>1.9s"]
+    S3["push<br/>2.0s"]
     style S3 fill:#90EE90
     S2 --> S3
     S4["publish<br/>0.0s"]
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ markdown_report              3.2s 🟢        │
-│  ✓ setup                        2.6s 🟢        │
+│  ✓ markdown_report              2.9s 🟢        │
+│  ✓ setup                        3.8s 🟢        │
 │  ✓ lint                         0.0s 🟢        │
-│  ✓ push                         1.9s 🟢        │
+│  ✓ push                         2.0s 🟢        │
 │  ✓ publish                      0.0s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 7.7s                                          │
+│  ⏱️  Total time: 8.8s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,12 +55,12 @@ flowchart LR
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 3.2s
+- **Duration:** 2.9s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 2.6s
+- **Duration:** 3.8s
 - **Return code:** 0
 
 #### ✅ lint
@@ -70,7 +70,7 @@ flowchart LR
 
 #### ✅ push
 - **Status:** passed
-- **Duration:** 1.9s
+- **Duration:** 2.0s
 - **Return code:** 0
 
 #### ✅ publish

@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:45:38
-**Pipeline run:** 2026-04-04T13:45:35.508118+00:00
+**Generated:** 2026-04-04 15:46:01
+**Pipeline run:** 2026-04-04T13:45:58.725471+00:00
 
 ---
 
@@ -9,26 +9,23 @@
 
 ```mermaid
 flowchart LR
-    S0["verify<br/>0.0s"]
-    style S0 fill:#D3D3D3
-    S1["setup<br/>3.1s"]
+    S0["markdown_report<br/>3.2s"]
+    style S0 fill:#90EE90
+    S1["setup<br/>2.6s"]
     style S1 fill:#90EE90
     S0 --> S1
     S2["lint<br/>0.0s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["markdown_report<br/>2.7s"]
+    S3["push<br/>1.9s"]
     style S3 fill:#90EE90
     S2 --> S3
-    S4["push<br/>1.9s"]
+    S4["publish<br/>0.0s"]
     style S4 fill:#90EE90
     S3 --> S4
-    S5["publish<br/>0.0s"]
-    style S5 fill:#90EE90
-    S4 --> S5
     G["✗ Gates Failed"]
     style G fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
-    S5 --> G
+    S4 --> G
 ```
 
 ## 📈 ASCII Visualization
@@ -37,10 +34,9 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ○ verify                       0.0s ⚪        │
-│  ✓ setup                        3.1s 🟢        │
+│  ✓ markdown_report              3.2s 🟢        │
+│  ✓ setup                        2.6s 🟢        │
 │  ✓ lint                         0.0s 🟢        │
-│  ✓ markdown_report              2.7s 🟢        │
 │  ✓ push                         1.9s 🟢        │
 │  ✓ publish                      0.0s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
@@ -57,24 +53,19 @@ flowchart LR
 
 ### 🔧 Stage Execution Details
 
-#### ⏭️ verify
-- **Status:** skipped
-- **Duration:** 0.0s
+#### ✅ markdown_report
+- **Status:** passed
+- **Duration:** 3.2s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 3.1s
+- **Duration:** 2.6s
 - **Return code:** 0
 
 #### ✅ lint
 - **Status:** passed
 - **Duration:** 0.0s
-- **Return code:** 0
-
-#### ✅ markdown_report
-- **Status:** passed
-- **Duration:** 2.7s
 - **Return code:** 0
 
 #### ✅ push

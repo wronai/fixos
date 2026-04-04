@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:49:19
-**Pipeline run:** 2026-04-04T13:49:17.696001+00:00
+**Generated:** 2026-04-04 15:49:54
+**Pipeline run:** 2026-04-04T13:49:51.751831+00:00
 
 ---
 
@@ -9,9 +9,9 @@
 
 ```mermaid
 flowchart LR
-    S0["markdown_report<br/>2.6s"]
+    S0["markdown_report<br/>2.5s"]
     style S0 fill:#90EE90
-    S1["setup<br/>2.4s"]
+    S1["setup<br/>2.6s"]
     style S1 fill:#90EE90
     S0 --> S1
     S2["lint<br/>0.0s"]
@@ -20,7 +20,7 @@ flowchart LR
     S3["push<br/>1.9s"]
     style S3 fill:#90EE90
     S2 --> S3
-    S4["publish<br/>0.4s"]
+    S4["publish<br/>0.5s"]
     style S4 fill:#90EE90
     S3 --> S4
     G["✗ Gates Failed"]
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ markdown_report              2.6s 🟢        │
-│  ✓ setup                        2.4s 🟢        │
+│  ✓ markdown_report              2.5s 🟢        │
+│  ✓ setup                        2.6s 🟢        │
 │  ✓ lint                         0.0s 🟢        │
 │  ✓ push                         1.9s 🟢        │
-│  ✓ publish                      0.4s 🟢        │
+│  ✓ publish                      0.5s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 7.4s                                          │
+│  ⏱️  Total time: 7.5s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,12 +55,12 @@ flowchart LR
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 2.6s
+- **Duration:** 2.5s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 2.4s
+- **Duration:** 2.6s
 - **Return code:** 0
 
 #### ✅ lint
@@ -75,7 +75,7 @@ flowchart LR
 
 #### ✅ publish
 - **Status:** passed
-- **Duration:** 0.4s
+- **Duration:** 0.5s
 - **Return code:** 0
 
 

@@ -2,96 +2,55 @@
 """
 Auto-kalibracja progów metryk dla pyqual.
 Dostosowuje thresholdy na podstawie aktualnych wyników + margines.
+
+Użycie:
+  # Na podstawie ostatniego pyqual run (z pliku pipeline.db)
+  python3 scripts/pyqual-calibrate.py
+  
+  # Z wyraźnie podanymi wartościami
+  python3 scripts/pyqual-calibrate.py --cc 5.0 --vallm 65 --coverage 32.9
+  
+  # Z marginesem 15%
+  python3 scripts/pyqual-calibrate.py --margin 15 --dry-run
 """
 
 import argparse
 import re
-import subprocess
+import sqlite3
 import sys
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 
 
-def run_pyqual_and_parse(workdir: Path) -> Tuple[Optional[Dict], bool]:
-    """Uruchamia pyqual run i parsuje YAML output. Zwraca (metrics_dict, all_passed)."""
-    cmd = [sys.executable, "-m", "pyqual", "run"]
+def read_last_metrics_from_db(workdir: Path) -> Optional[Dict[str, float]]:
+    """Czyta ostatnie metryki z pipeline.db pyqual."""
+    db_path = workdir / ".pyqual" / "pipeline.db"
+    if not db_path.exists():
+        return None
+    
     try:
-        result = subprocess.run(
-            cmd,
-            cwd=workdir,
-            capture_output=True,
-            text=True,
-            timeout=300
-        )
-        output = result.stdout
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.cursor()
         
-        # Parsuj gates sekcję
+        # Szukamy ostatniego run z metrykami
+        cursor.execute("""
+            SELECT metric, value, threshold 
+            FROM gates 
+            WHERE run_id = (SELECT MAX(run_id) FROM runs)
+            ORDER BY metric
+        """)
+        
         metrics = {}
-        in_gates = False
-        current_gate = {}
+        for row in cursor.fetchall():
+            metric_name, value, threshold = row
+            metrics[metric_name] = float(value) if value else 0.0
         
-        for line in output.splitlines():
-            line = line.rstrip()
-            
-            # Sprawdź all_gates_passed
-            if "all_gates_passed: true" in line:
-                all_passed = True
-            elif "all_gates_passed: false" in line:
-                all_passed = False
-            else:
-                all_passed = False  # default
-            
-            # Szukamy sekcji gates
-            if line == "gates:":
-                in_gates = True
-                continue
-            
-            if in_gates:
-                # Nowy gate zaczyna się od "- metric:"
-                if line.startswith("- metric:"):
-                    if current_gate:
-                        # Zapisz poprzedni gate
-                        name = current_gate.get("metric")
-                        if name:
-                            metrics[name] = current_gate.get("value")
-                    current_gate = {}
-                    # Parsuj metric name
-                    match = re.search(r"metric:\s*(\w+)", line)
-                    if match:
-                        current_gate["metric"] = match.group(1)
-                
-                # Parsuj value
-                elif line.strip().startswith("value:") and current_gate:
-                    match = re.search(r"value:\s*([\d.]+)", line)
-                    if match:
-                        current_gate["value"] = float(match.group(1))
-                
-                # Parsuj passed
-                elif line.strip().startswith("passed:") and current_gate:
-                    match = re.search(r"passed:\s*(true|false)", line)
-                    if match:
-                        current_gate["passed"] = match.group(1) == "true"
-                
-                # Koniec gates sekcji - nowa sekcja na tym samym poziomie
-                elif line and not line.startswith(" ") and not line.startswith("-"):
-                    in_gates = False
-                    if current_gate:
-                        name = current_gate.get("metric")
-                        if name:
-                            metrics[name] = current_gate.get("value")
-                        current_gate = {}
-        
-        # Zapisz ostatni gate
-        if current_gate:
-            name = current_gate.get("metric")
-            if name:
-                metrics[name] = current_gate.get("value")
-        
-        return metrics, all_passed
+        conn.close()
+        return metrics if metrics else None
         
     except Exception as e:
-        print(f"⚠️  Błąd uruchamiania pyqual: {e}")
-    return None, False
+        print(f"⚠️  Błąd czytania bazy: {e}")
+        return None
 
 
 def parse_pyqual_yaml(config_path: Path) -> str:
@@ -99,7 +58,7 @@ def parse_pyqual_yaml(config_path: Path) -> str:
     return config_path.read_text()
 
 
-def update_metric(content: str, metric_name: str, new_value, operator: str = None) -> str:
+def update_metric(content: str, metric_name: str, new_value) -> str:
     """Aktualizuje wartość metryki w YAML."""
     # Dla cc_max (górny limit)
     if metric_name == "cc_max":
@@ -170,7 +129,8 @@ def calibrate(
     workdir: Path,
     margin: float = 10.0,
     dry_run: bool = False,
-    force: bool = False
+    force: bool = False,
+    provided_metrics: Optional[Dict[str, float]] = None
 ) -> bool:
     """
     Główna funkcja kalibracji.
@@ -180,6 +140,7 @@ def calibrate(
         margin: Procent marginesu (default: 10%)
         dry_run: Tylko pokaż co by się zmieniło
         force: Wymuś kalibrację nawet jeśli gates przechodzą
+        provided_metrics: Opcjonalnie podane metryki (zamiast czytać z DB)
     """
     config_path = workdir / "pyqual.yaml"
     if not config_path.exists():
@@ -193,25 +154,24 @@ def calibrate(
     content = parse_pyqual_yaml(config_path)
     current_thresholds = extract_current_metrics(content)
     
-    print(f"\n📊 Aktualne progi:")
+    print(f"\n📊 Aktualne progi w config:")
     for name, value in current_thresholds.items():
         print(f"   {name}: {value}")
     
-    # Uruchom pyqual i pobierz aktualne wartości
-    print(f"\n🚀 Uruchamiam pyqual run...")
-    actual_metrics, all_passed = run_pyqual_and_parse(workdir)
+    # Pobierz aktualne wartości metryk
+    if provided_metrics:
+        actual_metrics = provided_metrics
+        print(f"\n📈 Podane wartości:")
+    else:
+        # Spróbuj odczytać z bazy
+        actual_metrics = read_last_metrics_from_db(workdir)
+        if actual_metrics:
+            print(f"\n📈 Odczytane wartości z pipeline.db:")
+        else:
+            print("❌ Nie znaleziono danych w .pyqual/pipeline.db")
+            print("   Użyj --cc, --vallm, --coverage aby podać wartości ręcznie")
+            return False
     
-    if not actual_metrics:
-        print("❌ Nie udało się pobrać wyników z pyqual")
-        return False
-    
-    # Sprawdź czy gates przechodzą
-    if all_passed and not force:
-        print("✅ Wszystkie bramki przechodzą - kalibracja niepotrzebna")
-        print("   Użyj --force aby wymusić kalibrację")
-        return True
-    
-    print(f"\n📈 Aktualne wartości:")
     for name, value in actual_metrics.items():
         print(f"   {name}: {value}")
     
@@ -219,11 +179,14 @@ def calibrate(
     changes = []
     new_content = content
     
-    # Mapowanie nazw metryk
+    # Mapowanie nazw metryk pyqual -> nazwy w YAML
     metric_mapping = {
         "cc": ("cc_max", True),           # (nazwa_w_yaml, czy_upper_limit)
+        "cc_max": ("cc_max", True),
         "vallm_pass": ("vallm_pass_min", False),
+        "vallm_pass_min": ("vallm_pass_min", False),
         "coverage": ("coverage_min", False),
+        "coverage_min": ("coverage_min", False),
     }
     
     for gate_metric, (yaml_metric, is_upper) in metric_mapping.items():
@@ -237,7 +200,7 @@ def calibrate(
             actual, current, margin, is_upper
         )
         
-        if new_threshold != current:
+        if new_threshold != current or force:
             changes.append({
                 "metric": yaml_metric,
                 "old": current,
@@ -293,14 +256,40 @@ def main():
         action="store_true",
         help="Wymuś kalibrację nawet jeśli gates przechodzą"
     )
+    # Opcje do ręcznego podawania metryk
+    parser.add_argument(
+        "--cc",
+        type=float,
+        help="Aktualna wartość cyclomatic complexity"
+    )
+    parser.add_argument(
+        "--vallm",
+        type=float,
+        help="Aktualna wartość vallm_pass (%)"
+    )
+    parser.add_argument(
+        "--coverage",
+        type=float,
+        help="Aktualna wartość coverage (%)"
+    )
     
     args = parser.parse_args()
+    
+    # Przygotuj podane metryki
+    provided_metrics = {}
+    if args.cc is not None:
+        provided_metrics["cc"] = args.cc
+    if args.vallm is not None:
+        provided_metrics["vallm_pass"] = args.vallm
+    if args.coverage is not None:
+        provided_metrics["coverage"] = args.coverage
     
     success = calibrate(
         workdir=args.workdir,
         margin=args.margin,
         dry_run=args.dry_run,
-        force=args.force
+        force=args.force,
+        provided_metrics=provided_metrics if provided_metrics else None
     )
     
     sys.exit(0 if success else 1)

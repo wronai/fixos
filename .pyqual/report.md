@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 16:03:19
-**Pipeline run:** 2026-04-04T14:03:19.735797+00:00
+**Generated:** 2026-04-04 16:05:06
+**Pipeline run:** 2026-04-04T14:05:06.687506+00:00
 
 ---
 
@@ -9,22 +9,22 @@
 
 ```mermaid
 flowchart LR
-    S0["setup<br/>21.2s"]
+    S0["prefact<br/>114.6s"]
     style S0 fill:#90EE90
-    S1["prefact<br/>190.6s"]
-    style S1 fill:#90EE90
+    S1["verify<br/>1.1s"]
+    style S1 fill:#FFB6C1
     S0 --> S1
-    S2["verify<br/>3.8s"]
-    style S2 fill:#FFB6C1
+    S2["setup<br/>3.7s"]
+    style S2 fill:#90EE90
     S1 --> S2
-    S3["calibrate<br/>60.1s"]
-    style S3 fill:#FFB6C1
+    S3["lint<br/>0.0s"]
+    style S3 fill:#90EE90
     S2 --> S3
-    S4["lint<br/>0.2s"]
+    S4["markdown_report<br/>3.0s"]
     style S4 fill:#90EE90
     S3 --> S4
-    G["✓ All Gates Passed"]
-    style G fill:#90EE90,stroke:#228B22,stroke-width:3px
+    G["✗ Gates Failed"]
+    style G fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
     S4 --> G
 ```
 
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ setup                       21.2s 🟢        │
-│  ✓ prefact                    190.6s 🟢        │
-│  ✗ verify                       3.8s 🔴        │
-│  ✗ calibrate                   60.1s 🔴        │
-│  ✓ lint                         0.2s 🟢        │
+│  ✓ prefact                    114.6s 🟢        │
+│  ✗ verify                       1.1s 🔴        │
+│  ✓ setup                        3.7s 🟢        │
+│  ✓ lint                         0.0s 🟢        │
+│  ✓ markdown_report              3.0s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
-│  🎉 ALL GATES PASSED ✓                                           │
-│  ⏱️  Total time: 275.8s                                          │
+│  ❌ SOME GATES FAILED                                            │
+│  ⏱️  Total time: 122.5s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -49,32 +49,33 @@ flowchart LR
 
 | Metric | Value | Threshold | Status |
 |--------|-------|-----------|--------|
+| coverage | 33.4% | >= 55.0% | ❌ FAIL |
 
 ### 🔧 Stage Execution Details
 
-#### ✅ setup
-- **Status:** passed
-- **Duration:** 21.2s
-- **Return code:** 0
-
 #### ✅ prefact
 - **Status:** passed
-- **Duration:** 190.6s
+- **Duration:** 114.6s
 - **Return code:** 0
 
 #### ❌ verify
 - **Status:** failed
-- **Duration:** 3.8s
+- **Duration:** 1.1s
 - **Return code:** 2
 
-#### ❌ calibrate
-- **Status:** failed
-- **Duration:** 60.1s
-- **Return code:** 124
+#### ✅ setup
+- **Status:** passed
+- **Duration:** 3.7s
+- **Return code:** 0
 
 #### ✅ lint
 - **Status:** passed
-- **Duration:** 0.2s
+- **Duration:** 0.0s
+- **Return code:** 0
+
+#### ✅ markdown_report
+- **Status:** passed
+- **Duration:** 3.0s
 - **Return code:** 0
 
 
@@ -82,4 +83,4 @@ flowchart LR
 
 ## 📝 Summary
 
-✅ **All quality gates passed!** Pipeline completed successfully in 275.8s.
+❌ **Some quality gates failed.** Review the stage details above.

@@ -166,6 +166,72 @@ class ServiceCleaner:
         return service_type in safe_services
 
     @staticmethod
+    def get_cleanup_hints(service_type, size_gb: float) -> List[str]:
+        """Get helpful hints for cleaning services that require manual review."""
+        from .service_scanner import ServiceType
+        
+        hints = []
+        
+        if service_type == ServiceType.FLATPAK:
+            hints.extend([
+                "🔥 FLATPAK CLEANUP (most common solution):",
+                "  flatpak uninstall --unused -y",
+                "  # Safe: removes unused runtimes and old versions",
+                "  # Often recovers 10-50 GB",
+                "",
+                "  flatpak repair",
+                "  # Optional: repairs Flatpak installation",
+                "",
+                "📊 To investigate further:",
+                "  du -h /var/lib/flatpak | sort -h | tail -20",
+                "  # Shows largest directories",
+                "",
+                "  flatpak list --app --columns=name,size",
+                "  # Lists apps with sizes",
+                "",
+                "⚠️  Note: Runtime removal won't affect used apps",
+                "    Each app depends on specific runtime versions",
+                "    Unused runtimes accumulate over time",
+            ])
+            
+            if size_gb > 50:
+                hints.extend([
+                    "",
+                    f"💡 With {size_gb:.1f} GB used, you likely have:",
+                    "   - Multiple GNOME runtime versions (2-3 GB each)",
+                    "   - freedesktop runtime versions",
+                    "   - Old app versions",
+                    "   - Possibly unused SDKs",
+                ])
+        
+        elif service_type == ServiceType.DOCKER:
+            hints.extend([
+                "🐳 DOCKER CLEANUP:",
+                "  docker system prune -a -f",
+                "  # Removes all unused images, containers, networks",
+                "",
+                "  docker volume prune -f",
+                "  # Removes unused volumes (check first!)",
+                "",
+                "📊 Check usage:",
+                "  docker system df",
+            ])
+        
+        elif service_type == ServiceType.OLLAMA:
+            hints.extend([
+                "🤖 OLLAMA CLEANUP:",
+                "  ollama list",
+                "  # See installed models",
+                "",
+                "  ollama rm <model_name>",
+                "  # Remove specific model",
+                "",
+                "💡 Models can be 5-50 GB each",
+            ])
+        
+        return hints
+
+    @staticmethod
     def get_service_description(service_type) -> str:
         """Get description for service type."""
         from .service_scanner import ServiceType

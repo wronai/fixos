@@ -148,10 +148,67 @@ def _execute_safe_cleanup(services: list, scanner) -> float:
 
 def _display_unsafe_services(services: list) -> None:
     """Display services that require manual review."""
+    from fixos.diagnostics.service_cleanup import ServiceCleaner
+    from fixos.diagnostics.service_scanner import ServiceType
+    
     click.echo()
     click.echo(click.style("Usługi wymagające przeglądu:", fg="yellow"))
+    
+    # Group services by type for cleaner display
+    service_groups = {}
     for svc in services:
-        click.echo(f"  • {svc['name']}: {svc['cleanup_command']}")
+        service_type = svc.get('service_type', 'unknown')
+        if service_type not in service_groups:
+            service_groups[service_type] = []
+        service_groups[service_type].append(svc)
+    
+    # Map service type strings to enum
+    type_map = {
+        'flatpak': ServiceType.FLATPAK,
+        'docker': ServiceType.DOCKER,
+        'ollama': ServiceType.OLLAMA,
+    }
+    
+    for service_type, svcs in service_groups.items():
+        # Display basic info
+        total_size = sum(s.get('size_gb', 0) for s in svcs)
+        click.echo(f"\n  • {service_type.title()}: {total_size:.2f} GB")
+        
+        # Show cleanup commands
+        unique_commands = list(set(s['cleanup_command'] for s in svcs))
+        for cmd in unique_commands[:2]:  # Show max 2 unique commands
+            click.echo(f"    {cmd}")
+        if len(unique_commands) > 2:
+            click.echo(f"    ... (+{len(unique_commands)-2} more commands)")
+        
+        # Display hints if available
+        service_enum = type_map.get(service_type.lower())
+        if service_enum:
+            hints = ServiceCleaner.get_cleanup_hints(service_enum, total_size)
+            if hints:
+                click.echo()
+                for hint in hints:
+                    if hint.startswith("  "):
+                        # Indented commands
+                        click.echo(click.style(hint, fg="cyan"))
+                    elif hint.startswith("🔥") or hint.startswith("🐳") or hint.startswith("🤖"):
+                        # Service headers
+                        click.echo(click.style(f"\n    {hint}", fg="yellow", bold=True))
+                    elif hint.startswith("💡"):
+                        # Tips
+                        click.echo(click.style(f"    {hint}", fg="green"))
+                    elif hint.startswith("⚠️"):
+                        # Warnings
+                        click.echo(click.style(f"    {hint}", fg="red"))
+                    elif hint.startswith("📊"):
+                        # Investigation commands
+                        click.echo(click.style(f"    {hint}", fg="blue"))
+                    else:
+                        # Regular text
+                        click.echo(click.style(f"    {hint}", fg="white"))
+    
+    click.echo()
+    click.echo(click.style("💡 Wskazówki: Powyższe komendy są bezpieczne i często odzyskują dużo miejsca", fg="green"))
 
 
 def _cleanup_single_service(service_name: str, scanner, json_output: bool, dry_run: bool) -> None:
@@ -182,169 +239,127 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
     """
     Detailed interactive Flatpak cleanup showing unused runtimes, 
     leftover data, and orphaned apps for user selection.
+    
+    Wyświetla rekomendacje z wyjaśnieniami i pyta użytkownika o zgodę.
     """
     from fixos.diagnostics.flatpak_analyzer import FlatpakAnalyzer
     
     analyzer = FlatpakAnalyzer()
-    analysis = analyzer.analyze()
     
-    # JSON output mode
+    # JSON output mode - tylko analiza
     if json_output:
+        analysis = analyzer.analyze()
         import json
         click.echo(json.dumps(analysis, indent=2, default=str))
         return
     
-    # Interactive mode
-    click.echo(click.style("\n=== Analiza Flatpak ===", fg="cyan", bold=True))
-    click.echo(click.style("═" * 60, fg="cyan"))
+    # Tryb interaktywny z rekomendacjami
+    click.echo(click.style("\n" + "="*60, fg="cyan"))
+    click.echo(click.style("🔧 FLATPAK CLEANUP RECOMMENDATIONS", fg="cyan", bold=True))
+    click.echo(click.style("="*60 + "\n", fg="cyan"))
     
     if dry_run:
         click.echo(click.style("[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
     
-    # Collect all removable items
-    all_items = []
+    # Pobierz rekomendacje
+    recommendations = analyzer.get_cleanup_recommendations()
     
-    # Unused runtimes
-    if analysis.get("unused_runtimes"):
-        click.echo(click.style("\nNieużywane runtimes:", fg="yellow", bold=True))
-        for i, rt in enumerate(analysis["unused_runtimes"], 1):
-            size = rt.get("size_human", "?")
-            name = rt.get("name", "unknown")
-            ref = rt.get("ref", "")
-            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
-            click.echo(f"      Ref: {ref}")
-            all_items.append({
-                "type": "runtime",
-                "name": name,
-                "ref": ref,
-                "size_human": size,
-                "cleanup_command": f"flatpak uninstall {ref} -y"
-            })
-    
-    # Leftover data from uninstalled apps
-    if analysis.get("leftover_data"):
-        click.echo(click.style("\nPozostałości po odinstalowanych aplikacjach:", fg="yellow", bold=True))
-        offset = len(all_items)
-        for i, data in enumerate(analysis["leftover_data"], offset + 1):
-            size = data.get("size_human", "?")
-            name = data.get("name", "unknown")
-            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
-            click.echo(f"      Ścieżka: ~/.var/app/{name}")
-            all_items.append({
-                "type": "data",
-                "name": name,
-                "ref": data.get("ref", ""),
-                "size_human": size,
-                "cleanup_command": f"rm -rf ~/.var/app/{name}"
-            })
-    
-    # Orphaned apps
-    if analysis.get("orphaned_apps"):
-        click.echo(click.style("\nOsierocone aplikacje (niedostępny remote):", fg="red", bold=True))
-        offset = len(all_items)
-        for i, app in enumerate(analysis["orphaned_apps"], offset + 1):
-            size = app.get("size_human", "?")
-            name = app.get("name", "unknown")
-            origin = app.get("origin", "unknown")
-            click.echo(f"  [{i}] {click.style(name, fg='white')} - {size}")
-            click.echo(f"      Origin: {origin} (niedostępny)")
-            all_items.append({
-                "type": "orphan",
-                "name": name,
-                "ref": app.get("ref", ""),
-                "size_human": size,
-                "cleanup_command": f"flatpak uninstall {app.get('ref', '')} -y"
-            })
-    
-    if not all_items:
-        click.echo(click.style("\nBrak elementów do wyczyszczenia!", fg="green"))
+    if not recommendations:
+        click.echo(click.style("✅ Brak rekomendacji czyszczenia - Flatpak jest w dobrym stanie.", fg="green"))
         return
     
-    # Show summary
-    total_items = len(all_items)
-    total_bytes = (
-        analysis.get("total_unused_bytes", 0) + 
-        analysis.get("total_leftover_bytes", 0) + 
-        analysis.get("total_orphaned_bytes", 0)
-    )
-    total_gb = total_bytes / (1024**3)
-    
-    click.echo(click.style(f"\n═" * 60, fg="cyan"))
-    click.echo(f"Znaleziono {total_items} elementów do usunięcia ({total_gb:.2f} GB)")
-    click.echo()
-    
-    # Interactive selection
-    click.echo("Wybierz elementy do usunięcia:")
-    click.echo("  - Wpisz numery rozdzielone przecinkami (np. 1,3,5)")
-    click.echo("  - Wpisz 'all' aby usunąć wszystko")
-    click.echo("  - Wciśnij Enter aby pominąć")
-    
-    selection = click.prompt("Wybór", default="", show_default=False)
-    
-    if not selection:
-        click.echo(click.style("Anulowano.", fg="yellow"))
-        return
-    
-    # Parse selection
-    selected_indices = []
-    if selection.strip().lower() == "all":
-        selected_indices = list(range(len(all_items)))
-    else:
-        try:
-            selected_indices = [
-                int(x.strip()) - 1 
-                for x in selection.split(",") 
-                if x.strip().isdigit()
-            ]
-            selected_indices = [i for i in selected_indices if 0 <= i < len(all_items)]
-        except ValueError:
-            click.echo(click.style("Nieprawidłowy wybór.", fg="red"))
-            return
-    
-    if not selected_indices:
-        click.echo(click.style("Nie wybrano żadnych elementów.", fg="yellow"))
-        return
-    
-    # Execute cleanup
-    click.echo()
-    freed_total = 0
-    
-    for idx in selected_indices:
-        item = all_items[idx]
-        item_type = item["type"]
-        name = item["name"]
-        cmd = item["cleanup_command"]
+    # Wyświetl każdą rekomendację
+    for i, rec in enumerate(recommendations, 1):
+        click.echo(f"\n[{i}/{len(recommendations)}] {click.style(rec['description'], fg='yellow', bold=True)}")
+        click.echo(f"   Komenda: {click.style(rec['action'], fg='cyan')}")
+        click.echo(f"   Szacowane odzyskanie: {click.style(rec['estimated_savings'], fg='green')}")
         
-        click.echo(f"Czyszczenie: {name} ({item_type})")
+        # Kolor dla ryzyka
+        risk_color = {"none": "green", "low": "green", "medium": "yellow", "high": "red"}.get(rec['risk'], "white")
+        click.echo(f"   Ryzyko: {click.style(rec['risk'].upper(), fg=risk_color)}")
         
-        if dry_run:
-            click.echo(click.style(f"  [DRY-RUN] {cmd}", fg="cyan"))
-            continue
+        # Wyjaśnienie
+        click.echo(f"\n   {rec['explanation']}")
         
-        try:
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=60
-            )
+        # Elementy do usunięcia (jeśli są)
+        if rec.get('items'):
+            click.echo(f"\n   Elementy ({len(rec['items'])}):")
+            for item in rec['items'][:5]:
+                click.echo(f"     - {item.get('name', '?')} ({item.get('size_human', '?')})")
+            if len(rec['items']) > 5:
+                click.echo(f"     ... i {len(rec['items']) - 5} więcej")
+    
+    click.echo("\n" + click.style("="*60, fg="cyan"))
+    
+    # Pytaj użytkownika o każdą akcję
+    results = {
+        "executed": [],
+        "skipped": [],
+        "failed": [],
+        "space_reclaimed": 0,
+    }
+    
+    for i, rec in enumerate(recommendations, 1):
+        click.echo(f"\n[{i}/{len(recommendations)}] {rec['description']}")
+        
+        should_execute = False
+        
+        # Automatyczne wykonanie dla braku ryzyka
+        if rec['risk'] == 'none':
+            should_execute = True
+            click.echo(click.style("   ▶️ Wykonuję automatycznie (brak ryzyka)...", fg="green"))
+        else:
+            # Pytaj użytkownika
+            risk_text = click.style(f"[RYZYKO: {rec['risk'].upper()}]", fg=risk_color)
+            click.echo(f"   {risk_text} Czy wykonać? [y/N] ", nl=False)
             
-            if result.returncode == 0:
-                click.echo(click.style("  OK", fg="green"))
-                # Parse size
-                size_str = item.get("size_human", "0")
-                freed_total += _parse_size_to_gb(size_str)
+            try:
+                response = input().strip().lower()
+                should_execute = response in ['y', 'yes', 't', 'tak']
+            except (EOFError, KeyboardInterrupt):
+                click.echo("\n   ⏭️ Pomijam...")
+                should_execute = False
+        
+        if should_execute:
+            if dry_run:
+                click.echo(click.style(f"   [DRY-RUN] Wykonano by: {rec['action']}", fg="cyan"))
+                results['executed'].append({"action": rec['action'], "dry_run": True})
             else:
-                click.echo(click.style(f"  Błąd: {result.stderr[:100]}", fg="red"))
-        except Exception as e:
-            click.echo(click.style(f"  Błąd: {e}", fg="red"))
+                click.echo(f"   🚀 Wykonuję: {rec['action']}")
+                result = analyzer._execute_cleanup_action(rec)
+                
+                if result['success']:
+                    results['executed'].append({
+                        "action": rec['action'],
+                        "output": result.get('output', ''),
+                    })
+                    results['space_reclaimed'] += result.get('bytes_reclaimed', 0)
+                    click.echo(click.style("   ✅ Sukces", fg="green"))
+                else:
+                    results['failed'].append({
+                        "action": rec['action'],
+                        "error": result.get('error', 'Unknown error'),
+                    })
+                    click.echo(click.style(f"   ❌ Błąd: {result.get('error', 'Unknown error')}", fg="red"))
+        else:
+            results['skipped'].append(rec['action'])
+            click.echo("   ⏭️ Pominięto")
     
-    click.echo()
+    # Podsumowanie
+    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
+    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(f"   Wykonano: {len(results['executed'])}")
+    click.echo(f"   Pominięto: {len(results['skipped'])}")
+    click.echo(f"   Błędy: {len(results['failed'])}")
+    
     if dry_run:
-        click.echo(click.style(f"[DRY-RUN] Zwolniono by: {freed_total:.2f} GB", fg="cyan"))
+        click.echo(click.style(f"   [DRY-RUN] Zwolniono by: {results['space_reclaimed'] / (1024**3):.2f} GB", fg="cyan"))
     else:
-        click.echo(click.style(f"Zwolniono: {freed_total:.2f} GB", fg="green"))
+        freed_gb = results['space_reclaimed'] / (1024**3)
+        click.echo(click.style(f"   Odzyskano: {freed_gb:.2f} GB", fg="green"))
+    
+    click.echo(click.style("="*60 + "\n", fg="cyan"))
 
 
 def _parse_size_to_gb(size_str: str) -> float:

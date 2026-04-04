@@ -139,13 +139,13 @@ run-fix:
 
 # ── Paczka ───────────────────────────────────────────────
 build: clean
-	pip install build --quiet
-	python -m build
+	.venv/bin/pip install build --quiet
+	.venv/bin/python -m build
 	@echo "✅ Paczka gotowa w dist/"
 
 publish: build
-	pip install twine --quiet
-	twine upload dist/*
+	.venv/bin/pip install twine --quiet
+	.venv/bin/twine upload dist/*
 	@echo "✅ Opublikowano na PyPI"
 
 clean:

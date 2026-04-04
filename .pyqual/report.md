@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:58:35
-**Pipeline run:** 2026-04-04T13:58:34.936213+00:00
+**Generated:** 2026-04-04 15:58:44
+**Pipeline run:** 2026-04-04T13:58:44.073652+00:00
 
 ---
 
@@ -9,15 +9,15 @@
 
 ```mermaid
 flowchart LR
-    S0["markdown_report<br/>4.0s"]
+    S0["markdown_report<br/>3.1s"]
     style S0 fill:#90EE90
-    S1["push<br/>2.2s"]
+    S1["push<br/>2.0s"]
     style S1 fill:#90EE90
     S0 --> S1
-    S2["publish<br/>0.6s"]
+    S2["publish<br/>0.5s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["setup<br/>3.8s"]
+    S3["setup<br/>3.4s"]
     style S3 fill:#90EE90
     S2 --> S3
     S4["calibrate<br/>60.1s"]
@@ -37,15 +37,15 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ markdown_report              4.0s 🟢        │
-│  ✓ push                         2.2s 🟢        │
-│  ✓ publish                      0.6s 🟢        │
-│  ✓ setup                        3.8s 🟢        │
+│  ✓ markdown_report              3.1s 🟢        │
+│  ✓ push                         2.0s 🟢        │
+│  ✓ publish                      0.5s 🟢        │
+│  ✓ setup                        3.4s 🟢        │
 │  ✗ calibrate                   60.1s 🔴        │
 │  ✓ lint                         0.1s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 70.8s                                          │
+│  ⏱️  Total time: 69.2s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -59,22 +59,22 @@ flowchart LR
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 4.0s
+- **Duration:** 3.1s
 - **Return code:** 0
 
 #### ✅ push
 - **Status:** passed
-- **Duration:** 2.2s
+- **Duration:** 2.0s
 - **Return code:** 0
 
 #### ✅ publish
 - **Status:** passed
-- **Duration:** 0.6s
+- **Duration:** 0.5s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 3.8s
+- **Duration:** 3.4s
 - **Return code:** 0
 
 #### ❌ calibrate

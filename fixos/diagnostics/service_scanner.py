@@ -125,7 +125,7 @@ class ServiceDataScanner:
         ServiceType.VMWARE: ["~/vmware", "~/Virtual Machines"],
         ServiceType.NIX: ["~/.nix-profile", "~/.nix-defexpr", "/nix"],
         ServiceType.BREW: ["~/homebrew", "/usr/local/Homebrew", "/opt/homebrew"],
-        ServiceType.CHROME: ["~/.cache/google-chrome", "~/.config/google-chrome"],
+        ServiceType.CHROME: ["~/.cache/google-chrome", "~/.config/google-chrome/*/Cache", "~/.config/google-chrome/*/Code Cache", "~/.config/google-chrome/*/GPUCache", "~/.config/google-chrome/*/DawnCache", "~/.config/google-chrome/*/GrShaderCache", "~/.config/google-chrome/*/ShaderCache", "~/.config/google-chrome/*/Service Worker"],
         ServiceType.FIREFOX: ["~/.cache/mozilla", "~/.mozilla/firefox/*/cache2"],
         ServiceType.EDGE: ["~/.cache/microsoft-edge"],
         ServiceType.VSCODE: ["~/.vscode/extensions", "~/.config/Code/Cache"],
@@ -194,7 +194,7 @@ class ServiceDataScanner:
                 can_cleanup=True,
                 cleanup_command=ServiceCleaner.get_cleanup_command(service_type, path),
                 preview_command=ServiceCleaner.get_preview_command(service_type, path),
-                safe_to_cleanup=ServiceCleaner.is_safe_cleanup(service_type),
+                safe_to_cleanup=ServiceCleaner.is_safe_cleanup(service_type, path),
                 impact="high" if size_gb > 1.0 else "medium",
                 items_count=details.get("items_count"),
                 details=details

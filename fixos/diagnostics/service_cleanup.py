@@ -3,6 +3,7 @@ Service Cleanup for fixOS
 Handles planning and execution of service data cleanup operations.
 """
 
+import os
 import shlex
 import subprocess
 from typing import Dict, Any, List
@@ -119,9 +120,30 @@ class ServiceCleaner:
         }
 
     @staticmethod
-    def is_safe_cleanup(service_type) -> bool:
+    def is_safe_cleanup(service_type, path: str | None = None) -> bool:
         """Determine if cleanup is generally safe (cache-only, not user data)."""
         from .service_scanner import ServiceType
+
+        if service_type == ServiceType.CHROME:
+            normalized_path = os.path.expanduser(path or "").rstrip("/")
+            chrome_cache_root = os.path.expanduser("~/.cache/google-chrome").rstrip("/")
+            chrome_cache_names = {
+                "Cache",
+                "Code Cache",
+                "GPUCache",
+                "DawnCache",
+                "GrShaderCache",
+                "ShaderCache",
+                "Service Worker",
+            }
+
+            if normalized_path == chrome_cache_root or normalized_path.startswith(f"{chrome_cache_root}/"):
+                return True
+
+            if os.path.basename(normalized_path) in chrome_cache_names:
+                return True
+
+            return False
 
         safe_services = {
             # Package caches (can be re-downloaded)
@@ -133,7 +155,7 @@ class ServiceCleaner:
             ServiceType.APT, ServiceType.DNF, ServiceType.PACMAN,
             ServiceType.YUM, ServiceType.ZYPPER,
             # Browser caches
-            ServiceType.CHROME, ServiceType.FIREFOX, ServiceType.EDGE,
+            ServiceType.FIREFOX, ServiceType.EDGE,
             # App caches
             ServiceType.THUMBNAILS, ServiceType.LOGS,
             # Cloud CLI caches

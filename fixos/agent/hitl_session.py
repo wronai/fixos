@@ -148,7 +148,6 @@ class HITLSession:
     def _print_header(self):
         """Print session header with system info."""
         from rich.panel import Panel
-        from rich.text import Text
 
         header = Text()
         header.append(f"👤 HUMAN-IN-THE-LOOP  |  Model: {self.config.model}\n", style="bold cyan")

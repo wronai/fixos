@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:43:56
-**Pipeline run:** 2026-04-04T13:43:54.118564+00:00
+**Generated:** 2026-04-04 15:44:58
+**Pipeline run:** 2026-04-04T13:44:55.840161+00:00
 
 ---
 
@@ -9,25 +9,25 @@
 
 ```mermaid
 flowchart LR
-    S0["setup<br/>2.7s"]
+    S0["prefact<br/>60.8s"]
     style S0 fill:#90EE90
-    S1["push<br/>3.7s"]
-    style S1 fill:#90EE90
+    S1["verify<br/>0.0s"]
+    style S1 fill:#D3D3D3
     S0 --> S1
-    S2["publish<br/>0.0s"]
+    S2["markdown_report<br/>2.6s"]
     style S2 fill:#90EE90
     S1 --> S2
-    S3["markdown_report<br/>2.9s"]
+    S3["setup<br/>2.6s"]
     style S3 fill:#90EE90
     S2 --> S3
     S4["lint<br/>0.0s"]
     style S4 fill:#90EE90
     S3 --> S4
-    S5["prefact<br/>60.8s"]
+    S5["push<br/>2.0s"]
     style S5 fill:#90EE90
     S4 --> S5
-    S6["verify<br/>0.0s"]
-    style S6 fill:#D3D3D3
+    S6["publish<br/>0.0s"]
+    style S6 fill:#90EE90
     S5 --> S6
     G["✗ Gates Failed"]
     style G fill:#FFB6C1,stroke:#DC143C,stroke-width:3px
@@ -40,16 +40,16 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ setup                        2.7s 🟢        │
-│  ✓ push                         3.7s 🟢        │
-│  ✓ publish                      0.0s 🟢        │
-│  ✓ markdown_report              2.9s 🟢        │
-│  ✓ lint                         0.0s 🟢        │
 │  ✓ prefact                     60.8s 🟢        │
 │  ○ verify                       0.0s ⚪        │
+│  ✓ markdown_report              2.6s 🟢        │
+│  ✓ setup                        2.6s 🟢        │
+│  ✓ lint                         0.0s 🟢        │
+│  ✓ push                         2.0s 🟢        │
+│  ✓ publish                      0.0s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 70.1s                                          │
+│  ⏱️  Total time: 68.1s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -61,31 +61,6 @@ flowchart LR
 
 ### 🔧 Stage Execution Details
 
-#### ✅ setup
-- **Status:** passed
-- **Duration:** 2.7s
-- **Return code:** 0
-
-#### ✅ push
-- **Status:** passed
-- **Duration:** 3.7s
-- **Return code:** 0
-
-#### ✅ publish
-- **Status:** passed
-- **Duration:** 0.0s
-- **Return code:** 0
-
-#### ✅ markdown_report
-- **Status:** passed
-- **Duration:** 2.9s
-- **Return code:** 0
-
-#### ✅ lint
-- **Status:** passed
-- **Duration:** 0.0s
-- **Return code:** 0
-
 #### ✅ prefact
 - **Status:** passed
 - **Duration:** 60.8s
@@ -93,6 +68,31 @@ flowchart LR
 
 #### ⏭️ verify
 - **Status:** skipped
+- **Duration:** 0.0s
+- **Return code:** 0
+
+#### ✅ markdown_report
+- **Status:** passed
+- **Duration:** 2.6s
+- **Return code:** 0
+
+#### ✅ setup
+- **Status:** passed
+- **Duration:** 2.6s
+- **Return code:** 0
+
+#### ✅ lint
+- **Status:** passed
+- **Duration:** 0.0s
+- **Return code:** 0
+
+#### ✅ push
+- **Status:** passed
+- **Duration:** 2.0s
+- **Return code:** 0
+
+#### ✅ publish
+- **Status:** passed
 - **Duration:** 0.0s
 - **Return code:** 0
 

@@ -3,9 +3,9 @@ pipeline:
 
   # Quality gates — pipeline iterates until ALL pass
   metrics:
-    cc_max: 15           # cyclomatic complexity per function
+    cc_max: 6           # cyclomatic complexity per function
     vallm_pass_min: 65   # vallm validation pass rate (%)
-    coverage_min: 4      # test coverage (%) — matches actual 4.7%
+    coverage_min: 30      # test coverage (%)
 
   # Custom tool definitions
   custom_tools:

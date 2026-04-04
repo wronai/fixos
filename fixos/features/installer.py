@@ -4,8 +4,7 @@ Feature installer - safely installs missing packages.
 
 import subprocess
 import shutil
-from typing import List, Optional
-from pathlib import Path
+from typing import List
 
 from .catalog import PackageInfo
 from . import SystemInfo
@@ -178,25 +177,20 @@ class FeatureInstaller:
 
     def get_rollback_commands(self, installed_packages: List[str]) -> List[str]:
         """Generate rollback commands for installed packages."""
-        commands = []
+        if not installed_packages:
+            return []
+
         pm = self.system.pkg_manager
+        pkg_list = " ".join(installed_packages)
 
-        for pkg_id in installed_packages:
-            pkg = None
-            # Find package in catalog (would need catalog reference)
-            # For now, use native package removal
+        rollback_map = {
+            "dnf": f"sudo dnf remove {pkg_list}",
+            "apt": f"sudo apt remove {pkg_list}",
+            "pacman": f"sudo pacman -R {pkg_list}",
+            "zypper": f"sudo zypper remove {pkg_list}",
+            "xbps": f"sudo xbps-remove {pkg_list}",
+        }
 
-        # Generate command based on package manager
-        if installed_packages:
-            if pm == "dnf":
-                commands.append(f"sudo dnf remove {' '.join(installed_packages)}")
-            elif pm == "apt":
-                commands.append(f"sudo apt remove {' '.join(installed_packages)}")
-            elif pm == "pacman":
-                commands.append(f"sudo pacman -R {' '.join(installed_packages)}")
-            elif pm == "zypper":
-                commands.append(f"sudo zypper remove {' '.join(installed_packages)}")
-            elif pm == "xbps":
-                commands.append(f"sudo xbps-remove {' '.join(installed_packages)}")
-
-        return commands
+        if pm in rollback_map:
+            return [rollback_map[pm]]
+        return []

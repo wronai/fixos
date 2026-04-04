@@ -6,6 +6,10 @@ Handles planning and execution of service data cleanup operations.
 import subprocess
 from typing import Dict, Any, List
 
+# Cleanup operation timeouts
+CLEANUP_TIMEOUT_SECONDS = 300
+SIZE_THRESHOLD_GB_DEFAULT = 1.0
+
 
 class ServiceCleaner:
     """Plans and executes cleanup of service data."""
@@ -74,7 +78,7 @@ class ServiceCleaner:
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=CLEANUP_TIMEOUT_SECONDS
             )
 
             # Check new size

@@ -1,0 +1,49 @@
+# redup/duplication | 5 groups | 61f 11832L | 2026-04-04
+
+SUMMARY:
+  files_scanned: 61
+  total_lines:   11832
+  dup_groups:    5
+  dup_fragments: 12
+  saved_lines:   48
+  scan_ms:       3790
+
+DUPLICATES[5] (ranked by impact):
+  [a7cdc755bb20c4af]   STRU  profile  L=7 N=4 saved=21 sim=1.00
+      fixos/cli/profile_cmd.py:0-6  (profile)
+      fixos/cli/rollback_cmd.py:0-6  (rollback)
+      fixos/cli/config_cmd.py:0-6  (config)
+      fixos/cli/token_cmd.py:0-6  (token)
+  [bcfeab3abbdab01a]   STRU  get_metadata  L=9 N=2 saved=9 sim=1.00
+      fixos/plugins/base.py:0-8  (get_metadata)
+      fixos/profiles/__init__.py:0-8  (to_dict)
+  [e7a6d9e1ac98758e]   STRU  _check_sof  L=7 N=2 saved=7 sim=1.00
+      fixos/plugins/builtin/audio.py:0-6  (_check_sof)
+      fixos/plugins/builtin/hardware.py:0-6  (_check_touchpad)
+  [8ef94ef4c42a8cee]   STRU  _get_remaining_time  L=6 N=2 saved=6 sim=1.00
+      fixos/agent/autonomous_session.py:0-5  (_get_remaining_time)
+      fixos/agent/hitl_session.py:0-5  (remaining)
+  [96e8371b5b58402d]   STRU  get_package  L=5 N=2 saved=5 sim=1.00
+      fixos/features/catalog.py:0-4  (get_package)
+      fixos/plugins/registry.py:0-4  (get_plugin)
+
+REFACTOR[5] (ranked by priority):
+  [1] ○ extract_function   → fixos/cli/utils/profile.py
+      WHY: 4 occurrences of 7-line block across 4 files — saves 21 lines
+      FILES: fixos/cli/config_cmd.py, fixos/cli/profile_cmd.py, fixos/cli/rollback_cmd.py, fixos/cli/token_cmd.py
+  [2] ○ extract_function   → fixos/utils/get_metadata.py
+      WHY: 2 occurrences of 9-line block across 2 files — saves 9 lines
+      FILES: fixos/plugins/base.py, fixos/profiles/__init__.py
+  [3] ○ extract_class      → fixos/plugins/builtin/utils/_check_sof.py
+      WHY: 2 occurrences of 7-line block across 2 files — saves 7 lines
+      FILES: fixos/plugins/builtin/audio.py, fixos/plugins/builtin/hardware.py
+  [4] ○ extract_function   → fixos/agent/utils/_get_remaining_time.py
+      WHY: 2 occurrences of 6-line block across 2 files — saves 6 lines
+      FILES: fixos/agent/autonomous_session.py, fixos/agent/hitl_session.py
+  [5] ○ extract_function   → fixos/utils/get_package.py
+      WHY: 2 occurrences of 5-line block across 2 files — saves 5 lines
+      FILES: fixos/features/catalog.py, fixos/plugins/registry.py
+
+METRICS-TARGET:
+  dup_groups:  5 → 0
+  saved_lines: 48 lines recoverable

@@ -1,0 +1,27 @@
+--- a/docs/examples/advanced_usage.py
++++ b/docs/examples/advanced_usage.py
+@@ -5,7 +5,6 @@
+ from fixos.agent import HITLSession
+ from fixos.core import Message
+ from fixos.core.config import AgentConfig
+-from pathlib import Path
+ from typing import List, Optional
+ 
+ 
+
+--- a/docs/examples/quickstart.py
++++ b/docs/examples/quickstart.py
+@@ -1,10 +1,7 @@
+- from .hitl import HITL
+- from .autonomous import AutonomousAgent
+- from .autonomous_session import AutonomousSession
+- from .autonomous_session import AutonomousSession
+- from pathlib import Path
+- from pathlib import Path
++ from fixos.agent import HITLSession
++ from fixos.agent import AutonomousAgent
++ from fixos.agent import AutonomousSession
+  from fixos.core import Message
+  from fixos.core.config import AgentConfig
+- from pathlib import Path
++ from pathlib import Path

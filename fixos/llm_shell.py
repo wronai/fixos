@@ -117,7 +117,7 @@ def run_llm_shell(
         base_url: Opcjonalny URL dla alternatywnych API (np. xAI, Ollama)
     """
     # Anonimizuj dane przed wysłaniem
-    anon_data = anonymize(str(diagnostics_data))
+    anon_data, _ = anonymize(str(diagnostics_data))
 
     # Konfiguracja klienta OpenAI
     client_kwargs = {"api_key": token}

@@ -4,10 +4,14 @@ Interactive session where user approves each action.
 """
 
 import re
-import sys
 import time
 from dataclasses import dataclass, field
-from typing import Optional, List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any
+
+# Constants for UI formatting and timeouts
+MAX_SUMMARY_LENGTH = 80
+MAX_STDOUT_LINES = 40
+DEFAULT_COMMAND_TIMEOUT = 120
 
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize, display_anonymized_preview
@@ -104,7 +108,8 @@ class HITLSession:
 
     def remaining(self) -> int:
         """Get remaining session time in seconds."""
-        return self.config.session_timeout - int(time.time() - self.start_ts)
+        from . import get_remaining_time
+        return get_remaining_time(self)
 
     @staticmethod
     def fmt_time(s: int) -> str:
@@ -183,7 +188,7 @@ class HITLSession:
         )
         if tech_terms:
             return " ".join(dict.fromkeys(tech_terms[:4]))
-        first_sentence = llm_reply.split(".")[0][:80]
+        first_sentence = llm_reply.split(".")[0][:MAX_SUMMARY_LENGTH]
         return first_sentence or "linux system diagnostics"
 
     def _print_action_menu(self):
@@ -261,7 +266,7 @@ class HITLSession:
             console.print(Text(f"❌  (kod {result.returncode})  {result.cmd}", style="bold red"))
 
         if result.stdout.strip():
-            print_stdout_box(result.stdout, max_lines=40)
+            print_stdout_box(result.stdout, max_lines=MAX_STDOUT_LINES)
         elif not result.ok and not result.stderr.strip():
             console.print("[dim](brak stdout)[/dim]")
 
@@ -284,7 +289,7 @@ class HITLSession:
             return CmdResult(cmd=cmd, comment=comment, ok=False,
                              stdout="", stderr="Pominięto.", returncode=-1, skipped=True)
         console.print("  [dim]⏳ Wykonuję...[/dim]", end="")
-        ok, stdout, stderr, rc = run_command(cmd, timeout=120)
+        ok, stdout, stderr, rc = run_command(cmd, timeout=DEFAULT_COMMAND_TIMEOUT)
         console.print("\r" + " " * 30 + "\r", end="")
         result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                            stdout=stdout, stderr=stderr, returncode=rc)

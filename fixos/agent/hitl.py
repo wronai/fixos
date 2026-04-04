@@ -21,7 +21,7 @@ __all__ = [
 ]
 
 
-def run_hitl_session(diagnostics: dict, config, show_data: bool = True):
+def run_hitl_session(diagnostics: dict, config, show_data: bool = True) -> None:
     """
     Run interactive HITL session with full transparency.
     

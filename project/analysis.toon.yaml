@@ -1,0 +1,142 @@
+# code2llm | 73f 12016L | python:72,shell:1 | 2026-04-04
+# CC̄=5.0 | critical:22/381 | dups:0 | cycles:0
+
+HEALTH[20]:
+  🟡 CC    run_llm_shell CC=15 (limit:15)
+  🟡 CC    _identify_cache_type CC=17 (limit:15)
+  🟡 CC    _docker CC=17 (limit:15)
+  🟡 CC    interactive_provider_setup CC=25 (limit:15)
+  🟡 CC    _find_leftover_data CC=15 (limit:15)
+  🟡 CC    _process_turn CC=20 (limit:15)
+  🟡 CC    _detect_de CC=15 (limit:15)
+  🟡 CC    _install_package CC=27 (limit:15)
+  🟡 CC    _run_disk_analysis CC=18 (limit:15)
+  🟡 CC    report CC=16 (limit:15)
+  🟡 CC    _match_heuristic_command CC=18 (limit:15)
+  🟡 CC    cleanup_services CC=15 (limit:15)
+  🟡 CC    _cleanup_flatpak_detailed CC=23 (limit:15)
+  🟡 CC    features_install CC=15 (limit:15)
+  🟡 CC    fix CC=18 (limit:15)
+  🟡 CC    diagnose CC=16 (limit:15)
+  🟡 CC    chat CC=15 (limit:15)
+  🟡 CC    anonymize CC=15 (limit:15)
+  🟡 CC    _dict_to_markdown CC=18 (limit:15)
+  🟡 CC    render_md CC=16 (limit:15)
+
+REFACTOR[1]:
+  1. split 20 high-CC methods  (CC>15)
+
+PIPELINES[282]:
+  [1] Src [__init__]: __init__
+      PURITY: 100% pure
+  [2] Src [run]: run
+      PURITY: 100% pure
+  [3] Src [_check_for_new_issues]: _check_for_new_issues
+      PURITY: 100% pure
+  [4] Src [_notify]: _notify
+      PURITY: 100% pure
+  [5] Src [install_package_cmd]: install_package_cmd → get_package_manager → _cmd_exists
+      PURITY: 100% pure
+
+LAYERS:
+  fixos/                          CC̄=5.0    ←in:73  →out:0
+  │ !! system_checks              512L  0C    9m  CC=14     ←0
+  │ !! hitl_session               510L  2C   20m  CC=20     ←0
+  │ !! config                     433L  1C    7m  CC=25     ←7
+  │ autonomous_session         430L  3C   22m  CC=8      ←0
+  │ !! disk_analyzer              419L  1C   15m  CC=17     ←0
+  │ !! cleanup_planner            417L  4C   12m  CC=18     ←0
+  │ !! orchestrator               382L  2C   11m  CC=17     ←0
+  │ !! cleanup_cmd                371L  0C    8m  CC=23     ←0
+  │ service_cleanup            355L  1C    8m  CC=14     ←1
+  │ !! ask_cmd                    354L  0C    8m  CC=18     ←0
+  │ llm_analyzer               333L  2C    8m  CC=13     ←0
+  │ !! flatpak_analyzer           332L  3C   12m  CC=15     ←0
+  │ !! terminal                   316L  1C    8m  CC=16     ←2
+  │ !! anonymizer                 299L  1C    9m  CC=18     ←2
+  │ !! fix_cmd                    282L  0C    4m  CC=18     ←0
+  │ executor                   272L  4C   11m  CC=11     ←0
+  │ !! __init__                   267L  2C   12m  CC=15     ←0
+  │ web_search                 254L  1C    9m  CC=9      ←2
+  │ provider_cmd               250L  0C    3m  CC=9      ←0
+  │ service_scanner            249L  3C    8m  CC=7      ←0
+  │ !! service_details            242L  1C    7m  CC=17     ←0
+  │ !! llm_shell                  240L  0C    4m  CC=15     ←0
+  │ !! llm                        206L  2C    6m  CC=15     ←0
+  │ !! installer                  197L  1C   11m  CC=27     ←0
+  │ !! scan_cmd                   187L  0C    3m  CC=18     ←1
+  │ platform_utils             184L  0C   10m  CC=8      ←7
+  │ !! features_cmd               176L  0C    6m  CC=15     ←0
+  │ !! security                   171L  1C    6m  CC=16     ←0
+  │ graph                      163L  2C   11m  CC=13     ←0
+  │ rollback                   162L  2C    6m  CC=7      ←2
+  │ main                       158L  0C    3m  CC=6      ←0
+  │ system_checks              156L  0C    8m  CC=6      ←2
+  │ resources                  137L  1C    6m  CC=14     ←0
+  │ orchestrate_cmd            132L  0C    1m  CC=13     ←0
+  │ hardware                   129L  1C    6m  CC=12     ←0
+  │ auditor                    127L  2C    5m  CC=10     ←0
+  │ registry                   127L  1C    8m  CC=7      ←0
+  │ renderer                   124L  1C    4m  CC=8      ←1
+  │ token_cmd                  124L  0C    4m  CC=7      ←0
+  │ watch                      120L  1C    5m  CC=12     ←0
+  │ catalog                    119L  3C    7m  CC=7      ←1
+  │ thumbnails                 118L  1C    5m  CC=10     ←0
+  │ !! report_cmd                 115L  0C    1m  CC=16     ←0
+  │ disk                       113L  1C    4m  CC=12     ←0
+  │ audio                      107L  1C    5m  CC=10     ←0
+  │ base                        99L  4C    4m  CC=2      ←0
+  │ rollback_cmd                90L  0C    4m  CC=7      ←0
+  │ profiles                    88L  1C    4m  CC=8      ←1
+  │ anonymizer                  86L  0C    2m  CC=5      ←5
+  │ config_cmd                  83L  0C    4m  CC=4      ←0
+  │ quickfix_cmd                76L  0C    1m  CC=12     ←0
+  │ schemas                     71L  5C    0m  CC=0.0    ←0
+  │ __init__                    65L  1C    3m  CC=4      ←2
+  │ shared                      62L  1C    3m  CC=6      ←0
+  │ profile_cmd                 59L  0C    3m  CC=4      ←0
+  │ autonomous                  49L  0C    1m  CC=1      ←0
+  │ history_cmd                 49L  0C    1m  CC=5      ←0
+  │ watch_cmd                   49L  0C    1m  CC=2      ←0
+  │ __init__                    39L  0C    1m  CC=2      ←2
+  │ hitl                        36L  0C    1m  CC=1      ←1
+  │ timeout                     17L  1C    1m  CC=1      ←0
+  │ __init__                    11L  0C    0m  CC=0.0    ←0
+  │ __init__                     9L  0C    0m  CC=0.0    ←0
+  │ __init__                     8L  0C    0m  CC=0.0    ←0
+  │ __init__                     4L  0C    0m  CC=0.0    ←0
+  │ __init__                     3L  0C    0m  CC=0.0    ←0
+  │ __init__                     2L  0C    0m  CC=0.0    ←0
+  │ __init__                     2L  0C    0m  CC=0.0    ←0
+  │ __init__                     2L  0C    0m  CC=0.0    ←0
+  │ __init__                     1L  0C    0m  CC=0.0    ←0
+  │ __init__                     0L  0C    0m  CC=0.0    ←0
+  │
+  ./                              CC̄=0.0    ←in:0  →out:0
+  │ setup                       45L  0C    0m  CC=0.0    ←0
+  │ project.sh                  40L  0C    0m  CC=0.0    ←0
+  │
+  ── zero ──
+     fixos/interactive/__init__.py             0L
+
+COUPLING:
+                                   fixos           fixos.cli         fixos.agent       fixos.plugins         fixos.utils      fixos.features  fixos.orchestrator
+               fixos                  ──                 ←20                 ←17                 ←32                                                          ←4  hub
+           fixos.cli                  20                  ──                   1                                                          12                   4  !! fan-out
+         fixos.agent                  17                  ←1                  ──                                      14                                          !! fan-out
+       fixos.plugins                  32                                                          ──                                                              !! fan-out
+         fixos.utils                                                         ←14                                      ──                                      ←4  hub
+      fixos.features                                     ←12                                                                              ──                      hub
+  fixos.orchestrator                   4                  ←4                                                           4                                      ──  !! fan-out
+  CYCLES: none
+  HUB: fixos.features/ (fan-in=12)
+  HUB: fixos/ (fan-in=73)
+  HUB: fixos.utils/ (fan-in=18)
+  SMELL: fixos.cli/ fan-out=37 → split needed
+  SMELL: fixos.agent/ fan-out=31 → split needed
+  SMELL: fixos.orchestrator/ fan-out=8 → split needed
+  SMELL: fixos.plugins/ fan-out=32 → split needed
+
+EXTERNAL:
+  validation: run `vallm batch .` → validation.toon
+  duplication: run `redup scan .` → duplication.toon

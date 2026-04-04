@@ -1,0 +1,63 @@
+# fixOS | 380 func | 60f | 15390L | python | 2026-04-04
+
+HEALTH:
+  CC̄=5.0  critical=56 (limit:10)  dup=1  cycles=0
+
+ALERTS[20]:
+  !!! high_fan_out     HITLSession._process_turn = 28 (limit:10)
+  !!! cc_exceeded      FeatureInstaller._install_package = 27 (limit:15)
+  !!! cc_exceeded      interactive_provider_setup = 25 (limit:15)
+  !!! high_fan_out     orchestrate = 24 (limit:10)
+  !!! high_fan_out     _cleanup_flatpak_detailed = 24 (limit:10)
+  !!! high_fan_out     run_llm_shell = 23 (limit:10)
+  !!! high_fan_out     report = 22 (limit:10)
+  !!! high_fan_out     interactive_provider_setup = 21 (limit:10)
+  !!! high_fan_out     fix = 21 (limit:10)
+  !!  cc_exceeded      _cleanup_flatpak_detailed = 23 (limit:15)
+
+MODULES[73] (top by size):
+  M[fixos/diagnostics/system_checks.py] 512L C:0 F:9 CC↑14 D:0 (python)
+  M[fixos/agent/hitl_session.py] 510L C:2 F:20 CC↑20 D:0 (python)
+  M[fixos/config.py] 433L C:1 F:7 CC↑25 D:2 (python)
+  M[fixos/agent/autonomous_session.py] 430L C:3 F:22 CC↑8 D:0 (python)
+  M[fixos/diagnostics/disk_analyzer.py] 419L C:1 F:15 CC↑17 D:0 (python)
+  M[fixos/interactive/cleanup_planner.py] 417L C:4 F:12 CC↑18 D:0 (python)
+  M[fixos/orchestrator/orchestrator.py] 382L C:2 F:11 CC↑17 D:0 (python)
+  M[fixos/cli/cleanup_cmd.py] 371L C:0 F:8 CC↑23 D:0 (python)
+  M[fixos/diagnostics/service_cleanup.py] 355L C:1 F:8 CC↑14 D:0 (python)
+  M[fixos/cli/ask_cmd.py] 354L C:0 F:8 CC↑18 D:0 (python)
+  M[fixos/providers/llm_analyzer.py] 333L C:2 F:8 CC↑13 D:0 (python)
+  M[fixos/diagnostics/flatpak_analyzer.py] 332L C:3 F:12 CC↑15 D:0 (python)
+  M[fixos/utils/terminal.py] 316L C:1 F:8 CC↑16 D:2 (python)
+  M[fixos/utils/anonymizer.py] 299L C:1 F:9 CC↑18 D:2 (python)
+  M[fixos/cli/fix_cmd.py] 282L C:0 F:4 CC↑18 D:0 (python)
+  LANGS: python:72/shell:1
+
+HOTSPOTS[10]:
+  ★ HITLSession._process_turn fan=28  // Analysis pipeline, 28 stages
+  ★ orchestrate fan=24  // Zaawansowana orkiestracja napraw z grafem problemów.
+
+
+Różnica od 'fix':
+  - Bu
+  ★ _cleanup_flatpak_detailed fan=24  // Detailed interactive Flatpak cleanup showing unused runtimes, 
+leftover data, an
+  ★ run_llm_shell fan=23  // Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
+
+Args:
+ 
+  ★ report fan=22  // Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
+
+
+Przykłady:
+  fixos
+
+REFACTOR[15]:
+  [1] H/L Split interactive_provider_setup (CC=25 → target CC<10)
+  [2] H/L Split FeatureInstaller._install_package (CC=27 → target CC<10)
+  [3] H/H Split god module fixos/agent/hitl_session.py (510L, 2 classes)
+  [4] H/H Split god module fixos/diagnostics/system_checks.py (512L, 0 classes)
+  [5] M/L Split run_llm_shell (CC=15 → target CC<10)
+
+EVOLUTION:
+  2026-04-04 CC̄=5.0 crit=56 15390L // Automated analysis

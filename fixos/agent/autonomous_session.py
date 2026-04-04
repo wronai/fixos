@@ -16,6 +16,9 @@ from ..utils.web_search import search_all, format_results_for_llm
 from ..config import FixOsConfig
 from ..utils.timeout import SessionTimeout
 
+# UI formatting constants
+UI_BORDER_WIDTH = 65
+
 
 # Commands NEVER executed automatically
 FORBIDDEN_COMMANDS = [
@@ -131,10 +134,10 @@ class AutonomousSession:
 
     def _confirm_start(self) -> bool:
         """Ask user for confirmation before starting autonomous mode."""
-        print("\n" + "═" * 65)
+        print("\n" + "═" * UI_BORDER_WIDTH)
         print("  ⚠️  TRYB AUTONOMICZNY – agent sam wykonuje komendy!")
         print("  Naciśnij Ctrl+C w dowolnym momencie aby przerwać.")
-        print("═" * 65)
+        print("═" * UI_BORDER_WIDTH)
         print(f"\n  Max napraw: {self.max_fixes}")
         print(f"  Timeout sesji: {self.config.session_timeout}s")
         print(f"  Model: {self.config.model}")
@@ -164,7 +167,8 @@ class AutonomousSession:
 
     def _get_remaining_time(self) -> int:
         """Get remaining session time in seconds."""
-        return self.config.session_timeout - int(time.time() - self.start_time)
+        from . import get_remaining_time
+        return get_remaining_time(self)
 
     def _check_timeout(self):
         """Check if session has timed out."""
@@ -406,11 +410,11 @@ class AutonomousSession:
 
     def _print_report(self):
         """Print session report."""
-        print(f"\n{'═' * 65}")
+        print(f"\n{'═' * UI_BORDER_WIDTH}")
         print("  📊 RAPORT SESJI AUTONOMICZNEJ")
-        print("═" * 65)
+        print("═" * UI_BORDER_WIDTH)
         print(self.report.summary())
-        print("═" * 65 + "\n")
+        print("═" * UI_BORDER_WIDTH + "\n")
 
 
 def run_autonomous_session(

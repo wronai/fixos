@@ -1,16 +1,14 @@
-"""
-Quickstart — fixos
+from .hitl import HITL
+from .autonomous import AutonomousAgent
+from .autonomous_session import AutonomousSession
 
-Minimal working examples for the most common use cases.
-Run: python examples/quickstart.py
-"""
+from typing import Any
+from .autonomous_session import AutonomousSession
+
+def run_autonomous_session(*args: Any, **kwargs: Any) -> Any:
+    pass
 
 from pathlib import Path
 
+from pathlib import Path
 import fixos
-
-
-# ==================================================
-# Example 2: Generate documentation
-# ==================================================
-

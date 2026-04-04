@@ -1,0 +1,89 @@
+# vallm batch | 163f | 106✓ 18⚠ 1✗ | 2026-04-04
+
+SUMMARY:
+  scanned: 163  passed: 106 (65.0%)  warnings: 18  errors: 1  unsupported: 56
+
+WARNINGS[18]{path,score}:
+  fixos/agent/hitl_session.py,0.93
+    issues[3]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_process_turn has cyclomatic complexity 20 (max: 15),325
+      complexity.lizard_cc,warning,_process_turn: CC=20 exceeds limit 15,325
+      complexity.lizard_length,warning,_process_turn: 116 lines exceeds limit 100,325
+  fixos/cli/cleanup_cmd.py,0.93
+    issues[3]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_cleanup_flatpak_detailed has cyclomatic complexity 23 (max: 15),181
+      complexity.lizard_cc,warning,_cleanup_flatpak_detailed: CC=23 exceeds limit 15,181
+      complexity.lizard_length,warning,_cleanup_flatpak_detailed: 129 lines exceeds limit 100,181
+  fixos/llm_shell.py,0.93
+    issues[2]{rule,severity,message,line}:
+      complexity.lizard_cc,warning,run_llm_shell: CC=16 exceeds limit 15,100
+      complexity.lizard_length,warning,run_llm_shell: 103 lines exceeds limit 100,100
+  fixos/cli/ask_cmd.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_match_heuristic_command has cyclomatic complexity 18 (max: 15),31
+      complexity.lizard_cc,warning,_match_heuristic_command: CC=18 exceeds limit 15,31
+  fixos/cli/fix_cmd.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,fix has cyclomatic complexity 18 (max: 15),28
+      complexity.lizard_cc,warning,fix: CC=18 exceeds limit 15,28
+  fixos/cli/report_cmd.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,report has cyclomatic complexity 16 (max: 15),14
+      complexity.lizard_cc,warning,report: CC=16 exceeds limit 15,14
+  fixos/config.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,interactive_provider_setup has cyclomatic complexity 25 (max: 15),317
+      complexity.lizard_cc,warning,interactive_provider_setup: CC=25 exceeds limit 15,317
+  fixos/diagnostics/disk_analyzer.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_identify_cache_type has cyclomatic complexity 17 (max: 15),345
+      complexity.lizard_cc,warning,_identify_cache_type: CC=17 exceeds limit 15,345
+  fixos/diagnostics/service_details.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_docker has cyclomatic complexity 17 (max: 15),47
+      complexity.lizard_cc,warning,_docker: CC=17 exceeds limit 15,47
+  fixos/features/installer.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_install_package has cyclomatic complexity 27 (max: 15),48
+      complexity.lizard_cc,warning,_install_package: CC=27 exceeds limit 15,48
+  fixos/interactive/cleanup_planner.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_generate_recommendations has cyclomatic complexity 18 (max: 15),321
+      complexity.lizard_cc,warning,_generate_recommendations: CC=18 exceeds limit 15,321
+  fixos/orchestrator/orchestrator.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,run_sync has cyclomatic complexity 17 (max: 15),165
+      complexity.lizard_cc,warning,run_sync: CC=17 exceeds limit 15,165
+  fixos/utils/anonymizer.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_dict_to_markdown has cyclomatic complexity 18 (max: 15),236
+      complexity.lizard_cc,warning,_dict_to_markdown: CC=18 exceeds limit 15,236
+  fixos/utils/terminal.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,render_md has cyclomatic complexity 16 (max: 15),62
+      complexity.lizard_cc,warning,render_md: CC=16 exceeds limit 15,62
+  fixos/cli/scan_cmd.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_run_disk_analysis has cyclomatic complexity 18 (max: 15),88
+  fixos/plugins/builtin/security.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,diagnose has cyclomatic complexity 16 (max: 15),14
+  tests/e2e/test_anonymization_layers.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 14.2 (threshold: 20),
+  tests/unit/test_executor.py,0.98
+    issues[1]{rule,severity,message,line}:
+      complexity.maintainability,warning,Low maintainability index: 16.7 (threshold: 20),
+
+ERRORS[1]{path,score}:
+  setup.py,0.79
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'setuptools' not found,1
+
+UNSUPPORTED[6]{bucket,count}:
+  *.md,25
+  Dockerfile*,10
+  *.txt,3
+  *.yml,3
+  *.example,2
+  other,13

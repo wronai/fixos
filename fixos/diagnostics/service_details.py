@@ -32,7 +32,7 @@ class ServiceDetailsProvider:
         # Package cache handler for multiple types
         package_cache_types = {
             ServiceType.NPM, ServiceType.YARN, ServiceType.PNPM,
-            ServiceType.PIP, ServiceType.CONDA, ServiceType.POETRY,
+            ServiceType.PIP, ServiceType.POETRY,
             ServiceType.GRADLE, ServiceType.MAVEN, ServiceType.CARGO,
             ServiceType.GO
         }

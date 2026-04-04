@@ -273,13 +273,13 @@ class FixOsConfig:
 
     def summary(self) -> str:
         """Krótkie podsumowanie konfiguracji (bez klucza API)."""
-        key_masked = (
-            f"{self.api_key[:8]}...{self.api_key[-4:]}"
-            if self.api_key and len(self.api_key) > 12
-            else "***"
-            if self.api_key
-            else "❌ BRAK"
-        )
+        if self.api_key:
+            if len(self.api_key) > 12:
+                key_masked = f"{self.api_key[:8]}...{self.api_key[-4:]}"
+            else:
+                key_masked = "***"
+        else:
+            key_masked = "❌ BRAK"
         mode_icon = "🤖" if self.agent_mode == "autonomous" else "👤"
         return (
             f"  Provider  : {self.provider} ({self.model})\n"
@@ -386,16 +386,27 @@ def interactive_provider_setup() -> Optional["FixOsConfig"]:
         lines = env_path.read_text(encoding="utf-8").splitlines()
 
     key_line = f"{key_env}={key}"
-    replaced = False
+    provider_line = f"LLM_PROVIDER={chosen}"
+
+    # Update or add API key
+    key_replaced = False
     for i, line in enumerate(lines):
         if line.startswith(f"{key_env}="):
             lines[i] = key_line
-            replaced = True
+            key_replaced = True
             break
-    if not replaced:
-        if not any(ln.startswith("LLM_PROVIDER=") for ln in lines):
-            lines.insert(0, f"LLM_PROVIDER={chosen}")
+    if not key_replaced:
         lines.append(key_line)
+
+    # Update or add LLM_PROVIDER
+    provider_replaced = False
+    for i, line in enumerate(lines):
+        if line.startswith("LLM_PROVIDER="):
+            lines[i] = provider_line
+            provider_replaced = True
+            break
+    if not provider_replaced:
+        lines.insert(0, provider_line)
 
     env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     env_path.chmod(0o600)

@@ -33,7 +33,7 @@ def run_autonomous_session(
     config,
     show_data: bool = True,
     max_fixes: int = 10,
-):
+) -> AgentReport:
     """
     Uruchamia autonomiczny tryb agenta.
 

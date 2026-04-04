@@ -4,12 +4,26 @@ Disk Analyzer Module for fixOS
 Analyzes disk usage and groups cleanup causes
 """
 
-import os
 import shutil
 import json
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
-from datetime import datetime, timedelta
+from typing import Dict, List, Any
+from datetime import datetime
+
+# Disk usage thresholds
+DISK_USAGE_CRITICAL = 95
+DISK_USAGE_WARNING = 85
+DISK_USAGE_MODERATE = 70
+
+# Analysis limits
+MAX_LARGE_FILES_DEFAULT = 20
+MAX_CACHE_DIRS_DEFAULT = 15
+MAX_LOG_DIRS_DEFAULT = 10
+MAX_TEMP_DIRS_DEFAULT = 10
+MIN_FILE_SIZE_MB = 100
+LARGE_FILE_SIZE_MB = 500
+CACHE_SIZE_HIGH_MB = 500
+CACHE_SIZE_MEDIUM_MB = 100
 
 
 class DiskAnalyzer:
@@ -67,16 +81,16 @@ class DiskAnalyzer:
     
     def _get_disk_status(self, usage_percent: float) -> str:
         """Get disk status based on usage percentage"""
-        if usage_percent >= 95:
+        if usage_percent >= DISK_USAGE_CRITICAL:
             return "critical"
-        elif usage_percent >= 85:
+        elif usage_percent >= DISK_USAGE_WARNING:
             return "warning" 
-        elif usage_percent >= 70:
+        elif usage_percent >= DISK_USAGE_MODERATE:
             return "moderate"
         else:
             return "healthy"
     
-    def get_large_files(self, path: Path, min_size_mb: int = 100, max_files: int = 20) -> List[Dict]:
+    def get_large_files(self, path: Path, min_size_mb: int = MIN_FILE_SIZE_MB, max_files: int = MAX_LARGE_FILES_DEFAULT) -> List[Dict]:
         """Find large files"""
         large_files = []
         
@@ -107,7 +121,7 @@ class DiskAnalyzer:
         large_files.sort(key=lambda x: x["size_mb"], reverse=True)
         return large_files[:max_files]
     
-    def get_cache_dirs(self, path: Path, max_dirs: int = 15) -> List[Dict]:
+    def get_cache_dirs(self, path: Path, max_dirs: int = MAX_CACHE_DIRS_DEFAULT) -> List[Dict]:
         """Find cache directories"""
         cache_dirs = []
         
@@ -123,7 +137,7 @@ class DiskAnalyzer:
                                     "path": str(dir_path),
                                     "size_mb": round(size_mb, 2),
                                     "size_gb": round(size_mb / 1024, 3),
-                                    "files_count": len(list(dir_path.rglob("*"))) if size_mb < 1000 else "many",
+                                    "files_count": (lambda p: len(list(p.rglob("*"))))(dir_path) if size_mb < 1000 else "many",
                                     "cache_type": self._identify_cache_type(dir_path)
                                 })
                         except (OSError, PermissionError):
@@ -138,7 +152,7 @@ class DiskAnalyzer:
         cache_dirs.sort(key=lambda x: x["size_mb"], reverse=True)
         return cache_dirs
     
-    def get_log_dirs(self, path: Path, max_dirs: int = 10) -> List[Dict]:
+    def get_log_dirs(self, path: Path, max_dirs: int = MAX_LOG_DIRS_DEFAULT) -> List[Dict]:
         """Find log directories"""
         log_dirs = []
         
@@ -169,7 +183,7 @@ class DiskAnalyzer:
         log_dirs.sort(key=lambda x: x["size_mb"], reverse=True)
         return log_dirs
     
-    def get_temp_dirs(self, path: Path, max_dirs: int = 10) -> List[Dict]:
+    def get_temp_dirs(self, path: Path, max_dirs: int = MAX_TEMP_DIRS_DEFAULT) -> List[Dict]:
         """Find temporary directories"""
         temp_dirs = []
         
@@ -205,17 +219,17 @@ class DiskAnalyzer:
         
         try:
             # Get analysis data
-            large_files = self.get_large_files(path, min_size_mb=500, max_files=10)
-            cache_dirs = self.get_cache_dirs(path, max_dirs=10)
+            large_files = self.get_large_files(path, min_size_mb=LARGE_FILE_SIZE_MB, max_files=10)
+            cache_dirs = self.get_cache_dirs(path, max_dirs=MAX_LOG_DIRS_DEFAULT)
             log_dirs = self.get_log_dirs(path, max_dirs=8)
             temp_dirs = self.get_temp_dirs(path, max_dirs=8)
             
             # Cache cleanup suggestions
             for cache in cache_dirs[:5]:
-                if cache["size_mb"] > 100:
+                if cache["size_mb"] > CACHE_SIZE_MEDIUM_MB:
                     suggestions.append({
                         "type": "cache_cleanup",
-                        "priority": "high" if cache["size_mb"] > 500 else "medium",
+                        "priority": "high" if cache["size_mb"] > CACHE_SIZE_HIGH_MB else "medium",
                         "path": cache["path"],
                         "size_gb": cache["size_gb"],
                         "description": f"Clear {cache['cache_type']} cache",

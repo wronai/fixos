@@ -583,10 +583,32 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     click.echo(f"💰 {click.style('ŁĄCZNIE DO ODZYSKANIA:', fg='green', bold=True)} {analysis['total_reclaimable_human']}")
     click.echo(click.style("-"*60, fg="cyan"))
     
+    # Show category breakdown for dev_projects
+    dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
+    if dev_items:
+        # Group by dependency type
+        dep_types = {}
+        for item in dev_items:
+            # Extract dep_type from name (e.g., "node_modules (project)" -> "node_modules")
+            dep_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+            if dep_type not in dep_types:
+                dep_types[dep_type] = {"items": [], "total": 0}
+            dep_types[dep_type]["items"].append(item)
+            dep_types[dep_type]["total"] += item.size_bytes
+        
+        # Show available types
+        click.echo(f"\n{click.style('📦 TYPY ZALEŻNOŚCI:', fg='magenta', bold=True)}")
+        for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
+            count = len(data["items"])
+            total = data["total"]
+            click.echo(f"  {click.style(dep_type, fg='yellow')}: {count} folderów, {_format_bytes(total)}")
+    
     click.echo(f"\n{click.style('Dostępne opcje:', fg='white', bold=True)}")
-    click.echo(f"  {click.style('safe', fg='green')}    - wykonaj bezpieczne czyszczenie")
-    click.echo(f"  {click.style('all', fg='yellow')}     - wykonaj wszystko (z potwierdzeniem)")
-    click.echo(f"  {click.style('none', fg='white')}    - pomiń")
+    click.echo(f"  {click.style('safe', fg='green')}           - wykonaj bezpieczne czyszczenie")
+    click.echo(f"  {click.style('all', fg='yellow')}            - wykonaj wszystko (z potwierdzeniem)")
+    click.echo(f"  {click.style('type:NAME', fg='magenta')}     - usuń tylko wybrany typ (np. type:node_modules)")
+    click.echo(f"  {click.style('types', fg='cyan')}            - pokaż szczegóły typów")
+    click.echo(f"  {click.style('none', fg='white')}            - pomiń")
     
     selection = click.prompt(
         click.style("\nTwój wybór", fg="cyan"),
@@ -594,16 +616,48 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         show_default=False
     )
     
-    if selection.strip().lower() in ['none', 'n', '']:
+    selection = selection.strip().lower()
+    
+    if selection in ['none', 'n', '']:
         click.echo(click.style("\n⏭️ Nie wybrano żadnych akcji.", fg="yellow"))
+        return
+    
+    # Show types details
+    if selection == 'types':
+        click.echo(f"\n{click.style('📦 SZCZEGÓŁY TYPÓW:', fg='magenta', bold=True)}")
+        for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
+            count = len(data["items"])
+            total = data["total"]
+            click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {count} folderów, {_format_bytes(total)}")
+            for item in data["items"][:5]:
+                click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
+            if count > 5:
+                click.echo(f"  ... i {count - 5} więcej")
         return
     
     # Execute cleanup
     items_to_clean = []
-    if selection.strip().lower() == 'safe':
+    
+    if selection == 'safe':
         items_to_clean = safe_items
-    elif selection.strip().lower() == 'all':
+    elif selection == 'all':
         items_to_clean = analyzer.items
+    elif selection.startswith('type:'):
+        # Filter by type
+        selected_type = selection[5:].strip()
+        
+        # Find matching items
+        for item in analyzer.items:
+            item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+            if item_type == selected_type or selected_type in item_type:
+                items_to_clean.append(item)
+        
+        if not items_to_clean:
+            click.echo(click.style(f"\n❌ Nie znaleziono typu '{selected_type}'", fg="red"))
+            return
+        
+        total_type = sum(item.size_bytes for item in items_to_clean)
+        click.echo(click.style(f"\n📦 Wybrano typ '{selected_type}': {len(items_to_clean)} folderów, {_format_bytes(total_type)}", fg="magenta"))
     
     if not items_to_clean:
         return

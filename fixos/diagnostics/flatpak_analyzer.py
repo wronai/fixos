@@ -68,6 +68,8 @@ class FlatpakAnalyzer:
         self.unused_runtimes: List[FlatpakItemInfo] = []
         self.leftover_data: List[FlatpakItemInfo] = []
         self.orphaned_apps: List[FlatpakItemInfo] = []
+        self.duplicate_apps: List[Dict[str, Any]] = []
+        self.repo_bloat: Dict[str, Any] = {}
         
     def analyze(self) -> Dict[str, Any]:
         """Run full Flatpak analysis"""
@@ -75,6 +77,8 @@ class FlatpakAnalyzer:
         self._find_unused_runtimes()
         self._find_leftover_data()
         self._find_orphaned_apps()
+        self._find_duplicate_apps()
+        self._analyze_repo_size()
         
         return {
             "installed_apps": [a.to_dict() for a in self.installed_apps],
@@ -82,9 +86,13 @@ class FlatpakAnalyzer:
             "unused_runtimes": [r.to_dict() for r in self.unused_runtimes],
             "leftover_data": [d.to_dict() for d in self.leftover_data],
             "orphaned_apps": [a.to_dict() for a in self.orphaned_apps],
+            "duplicate_apps": self.duplicate_apps,
+            "repo_bloat": self.repo_bloat,
             "total_size_unused": sum(r.size_bytes for r in self.unused_runtimes),
             "total_size_leftover": sum(d.size_bytes for d in self.leftover_data),
             "total_size_orphaned": sum(a.size_bytes for a in self.orphaned_apps),
+            "total_size_duplicates": sum(d.get('total_size', 0) for d in self.duplicate_apps),
+            "repo_bloat_size": self.repo_bloat.get('wasted_size', 0),
         }
     
     def _run_flatpak_command(self, args: List[str]) -> Optional[str]:
@@ -287,6 +295,187 @@ class FlatpakAnalyzer:
                 app.description = f"Orphaned app: {app.name} (origin '{app.origin}' not available)"
                 self.orphaned_apps.append(app)
     
+    def _find_duplicate_apps(self):
+        """Find duplicate apps (same app installed multiple times, e.g., stable + dev)"""
+        # Group apps by base name (without branch/channel)
+        app_groups: Dict[str, List[FlatpakItemInfo]] = {}
+        
+        for app in self.installed_apps:
+            # Extract base name (e.g., "com.microsoft.Edge" from "com.microsoft.Edge/stable")
+            base_name = app.ref.split('/')[0] if '/' in app.ref else app.ref
+            
+            if base_name not in app_groups:
+                app_groups[base_name] = []
+            app_groups[base_name].append(app)
+        
+        # Find groups with multiple versions
+        for base_name, apps in app_groups.items():
+            if len(apps) > 1:
+                # Found duplicates
+                total_size = sum(a.size_bytes for a in apps)
+                versions = [a.branch or 'unknown' for a in apps]
+                
+                self.duplicate_apps.append({
+                    "name": base_name,
+                    "count": len(apps),
+                    "versions": versions,
+                    "total_size": total_size,
+                    "apps": [a.to_dict() for a in apps],
+                    "cleanup_hint": f"Możesz usunąć starsze wersje: flatpak uninstall {base_name}",
+                })
+    
+    def _analyze_repo_size(self):
+        """Analyze Flatpak repo size vs apps+runtimes to detect REAL bloat.
+        
+        Używa rzeczywistego użycia dysku (du) zamiast sum logicznych,
+        aby uniknąć fałszywych alarmów o "śmieciach".
+        """
+        import os
+        
+        # Get ACTUAL disk usage via du command (more accurate than summing)
+        def get_dir_size_du(path: str) -> int:
+            """Get actual disk usage via du command"""
+            try:
+                result = subprocess.run(
+                    ["du", "-sb", path],
+                    capture_output=True,
+                    text=True,
+                    timeout=60,
+                )
+                if result.returncode == 0:
+                    # Output: "12345678\t/path"
+                    size_str = result.stdout.split()[0]
+                    return int(size_str)
+            except Exception:
+                pass
+            return 0
+        
+        def get_dir_size_walk(path: str) -> int:
+            """Fallback: calculate size by walking directory"""
+            total = 0
+            try:
+                for root, dirs, files in os.walk(path):
+                    for f in files:
+                        try:
+                            fp = os.path.join(root, f)
+                            total += os.path.getsize(fp)
+                        except (OSError, FileNotFoundError):
+                            continue
+            except Exception:
+                pass
+            return total
+        
+        # Calculate total size of installed apps and runtimes (from flatpak list)
+        apps_size = sum(a.size_bytes for a in self.installed_apps)
+        runtimes_size = sum(r.size_bytes for r in self.installed_runtimes)
+        total_reported_size = apps_size + runtimes_size
+        
+        # Check FLATPAK ROOT directory size (actual disk usage)
+        flatpak_paths = [
+            "/var/lib/flatpak",  # System-wide (includes repo, app, runtime)
+            os.path.expanduser("~/.local/share/flatpak"),  # User
+        ]
+        
+        actual_disk_usage = 0
+        repo_disk_usage = 0
+        
+        for flatpak_path in flatpak_paths:
+            if os.path.exists(flatpak_path):
+                # Use du for actual disk usage
+                path_size = get_dir_size_du(flatpak_path)
+                if path_size == 0:
+                    path_size = get_dir_size_walk(flatpak_path)
+                actual_disk_usage += path_size
+                
+                # Also check repo specifically
+                repo_path = os.path.join(flatpak_path, "repo")
+                if os.path.exists(repo_path):
+                    repo_size = get_dir_size_du(repo_path)
+                    if repo_size == 0:
+                        repo_size = get_dir_size_walk(repo_path)
+                    repo_disk_usage += repo_size
+        
+        # Calculate REAL bloat (actual usage vs reported by flatpak list)
+        # Note: Some difference is NORMAL due to:
+        # - OSTree metadata and indexes
+        # - Deduplication (shared objects between apps)
+        # - Staging/portal directories
+        # 
+        # REAL bloat = actual usage significantly > reported + overhead
+        # Normal overhead: ~1.5-2x for OSTree structure
+        
+        normal_overhead = 1.5  # OSTree can have 50% overhead for metadata
+        expected_max_size = total_reported_size * normal_overhead
+        
+        # Only flag as bloat if actual > expected by significant margin
+        # AND after running prune (check if prune was run recently)
+        bloat_detected = False
+        wasted_size = 0
+        ratio = 0.0  # Initialize before conditional
+        
+        if actual_disk_usage > 0 and total_reported_size > 0:
+            ratio = actual_disk_usage / total_reported_size
+            
+            # Only flag if ratio > 2.5x (significant bloat beyond normal overhead)
+            # AND the absolute difference is > 1GB (avoid false positives)
+            if ratio > 2.5 and (actual_disk_usage - expected_max_size) > 1024**3:
+                bloat_detected = True
+                wasted_size = actual_disk_usage - expected_max_size
+            elif ratio > 2.0:
+                # Moderate bloat - warn but don't recommend vacuum as critical
+                bloat_detected = False  # Don't flag as critical
+                wasted_size = max(0, actual_disk_usage - expected_max_size)
+        
+        self.repo_bloat = {
+            "actual_disk_usage": actual_disk_usage,
+            "actual_disk_usage_human": self._format_size(actual_disk_usage),
+            "reported_size": total_reported_size,
+            "reported_size_human": self._format_size(total_reported_size),
+            "repo_disk_usage": repo_disk_usage,
+            "repo_disk_usage_human": self._format_size(repo_disk_usage),
+            "ratio": ratio if actual_disk_usage > 0 else 0,
+            "normal_overhead": normal_overhead,
+            "expected_max_size": expected_max_size,
+            "expected_max_size_human": self._format_size(expected_max_size),
+            "bloat_detected": bloat_detected,
+            "wasted_size": wasted_size,
+            "wasted_size_human": self._format_size(wasted_size),
+            "recommendation": "flatpak repair --vacuum" if bloat_detected else None,
+            "note": self._get_flatpak_size_note(ratio, actual_disk_usage, total_reported_size),
+        }
+    
+    def _get_flatpak_size_note(self, ratio: float, actual: int, reported: int) -> str:
+        """Get explanation note about Flatpak size"""
+        if ratio < 1.5:
+            return "Flatpak jest dobrze zarządzany - minimalny overhead."
+        elif ratio < 2.0:
+            return "Normalny overhead OSTree - brak potrzeby czyszczenia."
+        elif ratio < 2.5:
+            return (
+                "Umiarkowany overhead - prawdopodobnie normalne dla dużej instalacji.\n"
+                "Możesz uruchomić 'flatpak repair --vacuum' ale oszczędność będzie mała."
+            )
+        else:
+            return (
+                "Znaczny overhead - warto rozważyć 'flatpak repair --vacuum'.\n"
+                "Jednak jeśli już to robiłeś, to po prostu masz dużo aplikacji."
+            )
+    
+    def get_largest_apps(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get list of largest installed apps (for removal recommendations)"""
+        sorted_apps = sorted(self.installed_apps, key=lambda x: -x.size_bytes)
+        
+        return [
+            {
+                "name": app.name,
+                "ref": app.ref,
+                "size": app.size_bytes,
+                "size_human": app.size_human,
+                "cleanup_command": f"flatpak uninstall {app.ref} -y",
+            }
+            for app in sorted_apps[:limit]
+        ]
+    
     def get_cleanup_summary(self) -> str:
         """Get human-readable summary of cleanup opportunities"""
         analysis = self.analyze()
@@ -329,42 +518,131 @@ class FlatpakAnalyzer:
         """Get list of cleanup recommendations with explanations"""
         recommendations = []
         
-        # 1. Najważniejsza: flatpak uninstall --unused
+        # 0. Status repo (informacja, nie alarm)
+        if self.repo_bloat.get('actual_disk_usage', 0) > 0:
+            ratio = self.repo_bloat.get('ratio', 0)
+            note = self.repo_bloat.get('note', '')
+            
+            # Tylko jeśli jest REALNY bloat (ratio > 2.5x i > 1GB różnicy)
+            if self.repo_bloat.get('bloat_detected'):
+                wasted = self.repo_bloat.get('wasted_size', 0)
+                if wasted > 1024**3:  # > 1 GB
+                    recommendations.append({
+                        "priority": "medium",  # Nie critical - może być fałszywy alarm
+                        "action": "flatpak repair --vacuum",
+                        "description": "💣 Wyczyść repo Flatpak (potencjalne śmieci)",
+                        "explanation": (
+                            f"Rzeczywiste użycie dysku: {self.repo_bloat.get('actual_disk_usage_human', '?')}\n"
+                            f"Rozmiar raportowany przez flatpak: {self.repo_bloat.get('reported_size_human', '?')}\n"
+                            f"Ratio: {ratio:.1f}x (normalne: 1-1.5x)\n\n"
+                            f"{note}\n\n"
+                            "⚠️ UWAGA: Jeśli już uruchamiałeś 'flatpak repair --vacuum',\n"
+                            "to po prostu masz dużo aplikacji - to normalne."
+                        ),
+                        "estimated_savings": self.repo_bloat.get('wasted_size_human', '?'),
+                        "risk": "low",
+                        "requires_confirmation": True,
+                    })
+            elif ratio > 1.5:
+                # Normalny overhead - tylko informacja
+                recommendations.append({
+                    "priority": "info",
+                    "action": "# Brak potrzeby czyszczenia",
+                    "description": f"📊 Flatpak: {self.repo_bloat.get('actual_disk_usage_human', '?')} (normalne dla {len(self.installed_apps)} aplikacji)",
+                    "explanation": (
+                        f"Rzeczywiste użycie: {self.repo_bloat.get('actual_disk_usage_human', '?')}\n"
+                        f"Rozmiar aplikacji: {self.repo_bloat.get('reported_size_human', '?')}\n"
+                        f"Ratio: {ratio:.1f}x - {note}\n\n"
+                        "✅ Twój Flatpak jest w dobrym stanie.\n"
+                        "Overhead jest normalny dla OSTree."
+                    ),
+                    "estimated_savings": "0 B",
+                    "risk": "none",
+                    "requires_confirmation": False,
+                })
+        
+        # 0.5 Duplikaty aplikacji (realne oszczędności)
+        if self.duplicate_apps:
+            total_dup_size = sum(d.get('total_size', 0) for d in self.duplicate_apps)
+            if total_dup_size > 50 * 1024 * 1024:  # > 50 MB
+                dup_names = [d['name'] for d in self.duplicate_apps[:3]]
+                recommendations.append({
+                    "priority": "high",
+                    "action": "flatpak uninstall <duplicate_app>",
+                    "description": f"🔄 Usuń duplikaty aplikacji ({len(self.duplicate_apps)} znalezionych)",
+                    "explanation": (
+                        f"Masz zainstalowane wielokrotne wersje tych samych aplikacji:\n"
+                        f"  {', '.join(dup_names)}\n\n"
+                        "Możesz bezpiecznie usunąć starsze wersje:\n"
+                        "  flatpak uninstall com.microsoft.EdgeDev\n"
+                        "  flatpak uninstall synergy\n\n"
+                        f"💰 Realne odzyskanie: {self._format_size(total_dup_size)}"
+                    ),
+                    "estimated_savings": self._format_size(total_dup_size),
+                    "risk": "low",
+                    "requires_confirmation": True,
+                    "items": self.duplicate_apps,
+                })
+        
+        # 1. Nieużywane runtime'y
         total_unused = sum(r.size_bytes for r in self.unused_runtimes)
-        if total_unused > 100 * 1024 * 1024:  # > 100 MB
+        if total_unused > 50 * 1024 * 1024:  # > 50 MB
             recommendations.append({
                 "priority": "high",
                 "action": "flatpak uninstall --unused -y",
                 "description": "Usuń nieużywane runtime'y i stare wersje",
                 "explanation": (
                     "Ta komenda jest BEZPIECZNA - nie usuwa używanych aplikacji.\n"
-                    "Często odzyskuje 10-50 GB miejsca.\n"
                     "Usuwa:\n"
                     "  - runtime'y nie wymagane przez żadną aplikację\n"
                     "  - stare wersje aplikacji\n"
-                    "  - nieużywane SDK"
+                    "  - nieużywane SDK\n\n"
+                    f"💰 Realne odzyskanie: {self._format_size(total_unused)}"
                 ),
                 "estimated_savings": self._format_size(total_unused),
                 "risk": "low",
                 "requires_confirmation": True,
             })
         
-        # 2. Naprawa po czyszczeniu
-        if self.unused_runtimes:
+        # 2. Największe aplikacje (realne oszczędności!)
+        largest_apps = self.get_largest_apps(5)
+        if largest_apps:
+            total_large = sum(a['size'] for a in largest_apps)
+            if total_large > 500 * 1024 * 1024:  # > 500 MB
+                app_names = [f"{a['name']} ({a['size_human']})" for a in largest_apps[:3]]
+                recommendations.append({
+                    "priority": "medium",
+                    "action": "flatpak uninstall <app>",
+                    "description": f"📱 Usuń duże aplikacje (opcjonalnie)",
+                    "explanation": (
+                        "Największe aplikacje w Twoim systemie:\n"
+                        + "\n".join(f"  • {a['name']} - {a['size_human']}" for a in largest_apps[:5])
+                        + f"\n\n💡 Jeśli nie używasz którejś, możesz ją usunąć:\n"
+                        + f"  flatpak uninstall {largest_apps[0]['ref']}\n\n"
+                        + f"💰 Potencjalne odzyskanie: do {self._format_size(total_large)}"
+                    ),
+                    "estimated_savings": f"do {self._format_size(total_large)}",
+                    "risk": "medium",
+                    "requires_confirmation": True,
+                    "items": largest_apps,
+                })
+        
+        # 3. Naprawa (opcjonalna)
+        if self.unused_runtimes or self.repo_bloat.get('bloat_detected'):
             recommendations.append({
-                "priority": "medium",
+                "priority": "low",
                 "action": "flatpak repair",
-                "description": "Napraw instalację Flatpak po czyszczeniu",
+                "description": "Napraw instalację Flatpak (opcjonalnie)",
                 "explanation": (
                     "Weryfikuje integralność instalacji.\n"
-                    "Uruchom po 'flatpak uninstall --unused'."
+                    "Nie odzyskuje miejsca, ale naprawia błędy."
                 ),
                 "estimated_savings": "0 B",
                 "risk": "none",
                 "requires_confirmation": False,
             })
         
-        # 3. Leftover data
+        # 4. Leftover data
         total_leftover = sum(d.size_bytes for d in self.leftover_data)
         if total_leftover > 50 * 1024 * 1024:  # > 50 MB
             recommendations.append({
@@ -513,6 +791,8 @@ class FlatpakAnalyzer:
             # Specjalne przypadki
             if action == "flatpak uninstall --unused -y":
                 return self._execute_flatpak_uninstall_unused()
+            elif action == "flatpak repair --vacuum":
+                return self._execute_flatpak_vacuum()
             elif action == "flatpak repair":
                 return self._execute_flatpak_repair()
             elif action.startswith("flatpak uninstall --all"):
@@ -573,6 +853,25 @@ class FlatpakAnalyzer:
             "output": result.stdout,
             "error": result.stderr if result.returncode != 0 else None,
             "bytes_reclaimed": 0,
+        }
+    
+    def _execute_flatpak_vacuum(self) -> Dict[str, Any]:
+        """Wykonaj flatpak repair --vacuum (czyści repo ze starych obiektów)"""
+        # Zapisz rozmiar przed czyszczeniem
+        bytes_before = self.repo_bloat.get('wasted_size', 0)
+        
+        result = subprocess.run(
+            ["flatpak", "repair", "--vacuum"],
+            capture_output=True,
+            text=True,
+            timeout=600,  # Vacuum może trwać dłużej
+        )
+        
+        return {
+            "success": result.returncode == 0,
+            "output": result.stdout,
+            "error": result.stderr if result.returncode != 0 else None,
+            "bytes_reclaimed": bytes_before,  # Szacunek z przed vacuum
         }
     
     def _execute_flatpak_uninstall_all(self) -> Dict[str, Any]:

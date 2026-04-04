@@ -195,7 +195,6 @@ class HITLSession:
         """Print the interactive numbered action menu."""
         from rich.rule import Rule
         from rich.syntax import Syntax
-        from rich.panel import Panel
 
         console.print()
         console.print(Rule(

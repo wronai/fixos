@@ -5,17 +5,16 @@ Dostosowuje thresholdy na podstawie aktualnych wyników + margines.
 """
 
 import argparse
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple
 
 
-def run_pyqual_json(workdir: Path) -> Optional[Dict]:
-    """Uruchamia pyqual run z outputem JSON i zwraca wynik."""
-    cmd = [sys.executable, "-m", "pyqual", "run", "--format", "json"]
+def run_pyqual_and_parse(workdir: Path) -> Tuple[Optional[Dict], bool]:
+    """Uruchamia pyqual run i parsuje YAML output. Zwraca (metrics_dict, all_passed)."""
+    cmd = [sys.executable, "-m", "pyqual", "run"]
     try:
         result = subprocess.run(
             cmd,
@@ -24,14 +23,75 @@ def run_pyqual_json(workdir: Path) -> Optional[Dict]:
             text=True,
             timeout=300
         )
-        # Szukamy JSON w output
-        for line in result.stdout.splitlines():
-            line = line.strip()
-            if line.startswith("{"):
-                return json.loads(line)
+        output = result.stdout
+        
+        # Parsuj gates sekcję
+        metrics = {}
+        in_gates = False
+        current_gate = {}
+        
+        for line in output.splitlines():
+            line = line.rstrip()
+            
+            # Sprawdź all_gates_passed
+            if "all_gates_passed: true" in line:
+                all_passed = True
+            elif "all_gates_passed: false" in line:
+                all_passed = False
+            else:
+                all_passed = False  # default
+            
+            # Szukamy sekcji gates
+            if line == "gates:":
+                in_gates = True
+                continue
+            
+            if in_gates:
+                # Nowy gate zaczyna się od "- metric:"
+                if line.startswith("- metric:"):
+                    if current_gate:
+                        # Zapisz poprzedni gate
+                        name = current_gate.get("metric")
+                        if name:
+                            metrics[name] = current_gate.get("value")
+                    current_gate = {}
+                    # Parsuj metric name
+                    match = re.search(r"metric:\s*(\w+)", line)
+                    if match:
+                        current_gate["metric"] = match.group(1)
+                
+                # Parsuj value
+                elif line.strip().startswith("value:") and current_gate:
+                    match = re.search(r"value:\s*([\d.]+)", line)
+                    if match:
+                        current_gate["value"] = float(match.group(1))
+                
+                # Parsuj passed
+                elif line.strip().startswith("passed:") and current_gate:
+                    match = re.search(r"passed:\s*(true|false)", line)
+                    if match:
+                        current_gate["passed"] = match.group(1) == "true"
+                
+                # Koniec gates sekcji - nowa sekcja na tym samym poziomie
+                elif line and not line.startswith(" ") and not line.startswith("-"):
+                    in_gates = False
+                    if current_gate:
+                        name = current_gate.get("metric")
+                        if name:
+                            metrics[name] = current_gate.get("value")
+                        current_gate = {}
+        
+        # Zapisz ostatni gate
+        if current_gate:
+            name = current_gate.get("metric")
+            if name:
+                metrics[name] = current_gate.get("value")
+        
+        return metrics, all_passed
+        
     except Exception as e:
         print(f"⚠️  Błąd uruchamiania pyqual: {e}")
-    return None
+    return None, False
 
 
 def parse_pyqual_yaml(config_path: Path) -> str:
@@ -139,27 +199,17 @@ def calibrate(
     
     # Uruchom pyqual i pobierz aktualne wartości
     print(f"\n🚀 Uruchamiam pyqual run...")
-    result = run_pyqual_json(workdir)
+    actual_metrics, all_passed = run_pyqual_and_parse(workdir)
     
-    if not result:
+    if not actual_metrics:
         print("❌ Nie udało się pobrać wyników z pyqual")
         return False
     
     # Sprawdź czy gates przechodzą
-    all_passed = result.get("all_gates_passed", False)
     if all_passed and not force:
         print("✅ Wszystkie bramki przechodzą - kalibracja niepotrzebna")
         print("   Użyj --force aby wymusić kalibrację")
         return True
-    
-    # Pobierz wartości metryk
-    gates = result.get("gates", [])
-    actual_metrics = {}
-    for gate in gates:
-        metric_name = gate.get("metric")
-        actual_value = gate.get("value")
-        if metric_name and actual_value is not None:
-            actual_metrics[metric_name] = actual_value
     
     print(f"\n📈 Aktualne wartości:")
     for name, value in actual_metrics.items():

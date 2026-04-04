@@ -604,11 +604,19 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             click.echo(f"  {click.style(dep_type, fg='yellow')}: {count} folderów, {_format_bytes(total)}")
     
     click.echo(f"\n{click.style('Dostępne opcje:', fg='white', bold=True)}")
-    click.echo(f"  {click.style('safe', fg='green')}           - wykonaj bezpieczne czyszczenie")
-    click.echo(f"  {click.style('all', fg='yellow')}            - wykonaj wszystko (z potwierdzeniem)")
-    click.echo(f"  {click.style('type:NAME', fg='magenta')}     - usuń tylko wybrany typ (np. type:node_modules)")
-    click.echo(f"  {click.style('types', fg='cyan')}            - pokaż szczegóły typów")
-    click.echo(f"  {click.style('none', fg='white')}            - pomiń")
+    click.echo(f"  {click.style('safe', fg='green')}             - wykonaj bezpieczne czyszczenie")
+    click.echo(f"  {click.style('all', fg='yellow')}              - wykonaj wszystko (z potwierdzeniem)")
+    click.echo(f"  {click.style('type:NAME', fg='magenta')}       - usuń wybrany typ (np. type:venv)")
+    click.echo(f"  {click.style('type:A,B,C', fg='magenta')}      - usuń wiele typów (np. type:venv,node_modules)")
+    click.echo(f"  {click.style('category:NAME', fg='blue')}      - usuń kategorię (np. category:dev_projects)")
+    click.echo(f"  {click.style('large', fg='red')}               - usuń tylko duże (>1 GB)")
+    click.echo(f"  {click.style('huge', fg='red')}                - usuń tylko bardzo duże (>5 GB)")
+    click.echo(f"  {click.style('old', fg='cyan')}                - usuń stare (>30 dni od modyfikacji)")
+    click.echo(f"  {click.style('stale', fg='cyan')}              - usuń bardzo stare (>90 dni)")
+    click.echo(f"  {click.style('top:N', fg='yellow')}             - usuń N największych (np. top:20)")
+    click.echo(f"  {click.style('types', fg='cyan')}              - pokaż szczegóły typów")
+    click.echo(f"  {click.style('select', fg='green')}            - wybierz interaktywnie (po numerach)")
+    click.echo(f"  {click.style('none', fg='white')}              - pomiń")
     
     selection = click.prompt(
         click.style("\nTwój wybór", fg="cyan"),
@@ -635,29 +643,134 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                 click.echo(f"  ... i {count - 5} więcej")
         return
     
-    # Execute cleanup
-    items_to_clean = []
-    
-    if selection == 'safe':
-        items_to_clean = safe_items
-    elif selection == 'all':
-        items_to_clean = analyzer.items
-    elif selection.startswith('type:'):
-        # Filter by type
-        selected_type = selection[5:].strip()
+    # Interactive selection
+    if selection == 'select':
+        click.echo(f"\n{click.style('📋 WYBIERZ ELEMENTY DO USUNIĘCIA:', fg='green', bold=True)}")
+        click.echo(click.style("Podaj numery oddzielone przecinkami (np. 1,3,5-10,15)", fg="white"))
         
-        # Find matching items
-        for item in analyzer.items:
-            item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
-            if item_type == selected_type or selected_type in item_type:
-                items_to_clean.append(item)
+        # Show numbered list
+        for i, item in enumerate(analyzer.items[:50], 1):
+            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+            click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
         
-        if not items_to_clean:
-            click.echo(click.style(f"\n❌ Nie znaleziono typu '{selected_type}'", fg="red"))
+        if len(analyzer.items) > 50:
+            click.echo(f"  ... i {len(analyzer.items) - 50} więcej (użyj top:N lub type:NAME)")
+        
+        nums = click.prompt(click.style("\nWybierz numery", fg="cyan"), default="")
+        
+        if not nums.strip():
+            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
             return
         
-        total_type = sum(item.size_bytes for item in items_to_clean)
-        click.echo(click.style(f"\n📦 Wybrano typ '{selected_type}': {len(items_to_clean)} folderów, {_format_bytes(total_type)}", fg="magenta"))
+        # Parse selection
+        selected_indices = set()
+        for part in nums.split(','):
+            part = part.strip()
+            if '-' in part:
+                # Range
+                try:
+                    start, end = part.split('-')
+                    selected_indices.update(range(int(start), int(end) + 1))
+                except ValueError:
+                    pass
+            else:
+                try:
+                    selected_indices.add(int(part))
+                except ValueError:
+                    pass
+        
+        # Get selected items
+        items_to_clean = []
+        for i in selected_indices:
+            if 1 <= i <= len(analyzer.items):
+                items_to_clean.append(analyzer.items[i - 1])
+        
+        if not items_to_clean:
+            click.echo(click.style("❌ Nie wybrano żadnych elementów.", fg="red"))
+            return
+        
+        total_selected = sum(item.size_bytes for item in items_to_clean)
+        click.echo(click.style(f"\n✅ Wybrano {len(items_to_clean)} elementów: {_format_bytes(total_selected)}", fg="green"))
+    
+    # Execute cleanup
+    else:
+        items_to_clean = []
+        
+        if selection == 'safe':
+            items_to_clean = safe_items
+        elif selection == 'all':
+            items_to_clean = analyzer.items
+        elif selection == 'large':
+            # Items > 1 GB
+            items_to_clean = [item for item in analyzer.items if item.size_bytes > 1024**3]
+            total_large = sum(item.size_bytes for item in items_to_clean)
+            click.echo(click.style(f"\n🔴 Duże elementy (>1 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_large)}", fg="red"))
+        elif selection == 'huge':
+            # Items > 5 GB
+            items_to_clean = [item for item in analyzer.items if item.size_bytes > 5 * 1024**3]
+            total_huge = sum(item.size_bytes for item in items_to_clean)
+            click.echo(click.style(f"\n🔴 Bardzo duże elementy (>5 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_huge)}", fg="red"))
+        elif selection == 'old':
+            # Items not modified in 30+ days
+            from datetime import datetime, timedelta
+            cutoff = datetime.now() - timedelta(days=30)
+            items_to_clean = [
+                item for item in analyzer.items
+                if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
+            ]
+            total_old = sum(item.size_bytes for item in items_to_clean)
+            click.echo(click.style(f"\n🕐 Stare elementy (>30 dni): {len(items_to_clean)} sztuk, {_format_bytes(total_old)}", fg="cyan"))
+        elif selection == 'stale':
+            # Items not modified in 90+ days
+            from datetime import datetime, timedelta
+            cutoff = datetime.now() - timedelta(days=90)
+            items_to_clean = [
+                item for item in analyzer.items
+                if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
+            ]
+            total_stale = sum(item.size_bytes for item in items_to_clean)
+            click.echo(click.style(f"\n🕐 Bardzo stare elementy (>90 dni): {len(items_to_clean)} sztuk, {_format_bytes(total_stale)}", fg="cyan"))
+        elif selection.startswith('top:'):
+            # Top N largest items
+            try:
+                n = int(selection[4:])
+                items_to_clean = analyzer.items[:n]
+                total_top = sum(item.size_bytes for item in items_to_clean)
+                click.echo(click.style(f"\n🏆 Top {n} największych: {_format_bytes(total_top)}", fg="yellow"))
+            except ValueError:
+                click.echo(click.style("❌ Nieprawidłowy format. Użyj top:N (np. top:20)", fg="red"))
+                return
+        elif selection.startswith('category:'):
+            # Filter by category
+            selected_category = selection[9:].strip()
+            items_to_clean = [item for item in analyzer.items if item.category == selected_category]
+            
+            if not items_to_clean:
+                available = set(item.category for item in analyzer.items)
+                click.echo(click.style(f"\n❌ Nie znaleziono kategorii '{selected_category}'", fg="red"))
+                click.echo(click.style(f"Dostępne kategorie: {', '.join(sorted(available))}", fg="white"))
+                return
+            
+            total_cat = sum(item.size_bytes for item in items_to_clean)
+            click.echo(click.style(f"\n📁 Kategoria '{selected_category}': {len(items_to_clean)} elementów, {_format_bytes(total_cat)}", fg="blue"))
+        elif selection.startswith('type:'):
+            # Filter by type (single or multiple)
+            selected_types = [t.strip() for t in selection[5:].split(',')]
+            
+            for item in analyzer.items:
+                item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+                for selected_type in selected_types:
+                    if item_type == selected_type or selected_type in item_type:
+                        items_to_clean.append(item)
+                        break
+            
+            if not items_to_clean:
+                click.echo(click.style(f"\n❌ Nie znaleziono typów: {', '.join(selected_types)}", fg="red"))
+                return
+            
+            total_type = sum(item.size_bytes for item in items_to_clean)
+            types_str = ', '.join(selected_types)
+            click.echo(click.style(f"\n📦 Typy [{types_str}]: {len(items_to_clean)} folderów, {_format_bytes(total_type)}", fg="magenta"))
     
     if not items_to_clean:
         return

@@ -1,7 +1,7 @@
 # Pyqual Pipeline Report
 
-**Generated:** 2026-04-04 15:49:54
-**Pipeline run:** 2026-04-04T13:49:51.751831+00:00
+**Generated:** 2026-04-04 15:50:29
+**Pipeline run:** 2026-04-04T13:50:27.184538+00:00
 
 ---
 
@@ -9,9 +9,9 @@
 
 ```mermaid
 flowchart LR
-    S0["markdown_report<br/>2.5s"]
+    S0["markdown_report<br/>2.7s"]
     style S0 fill:#90EE90
-    S1["setup<br/>2.6s"]
+    S1["setup<br/>3.1s"]
     style S1 fill:#90EE90
     S0 --> S1
     S2["lint<br/>0.0s"]
@@ -34,14 +34,14 @@ flowchart LR
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PYQUAL PIPELINE FLOW                         │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ markdown_report              2.5s 🟢        │
-│  ✓ setup                        2.6s 🟢        │
+│  ✓ markdown_report              2.7s 🟢        │
+│  ✓ setup                        3.1s 🟢        │
 │  ✓ lint                         0.0s 🟢        │
 │  ✓ push                         1.9s 🟢        │
 │  ✓ publish                      0.5s 🟢        │
 ├─────────────────────────────────────────────────────────────────┤
 │  ❌ SOME GATES FAILED                                            │
-│  ⏱️  Total time: 7.5s                                          │
+│  ⏱️  Total time: 8.2s                                          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -55,12 +55,12 @@ flowchart LR
 
 #### ✅ markdown_report
 - **Status:** passed
-- **Duration:** 2.5s
+- **Duration:** 2.7s
 - **Return code:** 0
 
 #### ✅ setup
 - **Status:** passed
-- **Duration:** 2.6s
+- **Duration:** 3.1s
 - **Return code:** 0
 
 #### ✅ lint

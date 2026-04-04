@@ -133,6 +133,14 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.1.32] - 2026-04-04
+
+### Docs
+- Update .pyqual/report.md
+
+### Other
+- Update .pyqual/pipeline.db
+
 ## [2.1.31] - 2026-03-15
 
 ### Docs

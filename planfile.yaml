@@ -2396,3 +2396,55 @@ sprints:
     model_hints:
       planning: balanced
       implementation: balanced
+  - id: ticket-d7a39868
+    name: Fix smart-return-type issues
+    description: Resolve 1 smart-return-type issues in scripts/pyqual-calibrate.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - scripts/pyqual-calibrate.py
+    rule_id: smart-return-type
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-bedce5a1
+    name: Fix magic-numbers issues
+    description: Resolve 1 magic-numbers issues in scripts/pyqual-calibrate.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - scripts/pyqual-calibrate.py
+    rule_id: magic-numbers
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-cbe57671
+    name: Fix llm-generated-code issues
+    description: Resolve 1 llm-generated-code issues in scripts/pyqual-calibrate.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - scripts/pyqual-calibrate.py
+    rule_id: llm-generated-code
+    count: 1
+    model_hints:
+      planning: balanced
+      implementation: balanced
+  - id: ticket-8b7827d3
+    name: Fix ai-boilerplate issues
+    description: Resolve 2 ai-boilerplate issues in scripts/pyqual-calibrate.py
+    task_type: prefactor
+    priority: medium
+    estimate: 1d
+    files:
+    - scripts/pyqual-calibrate.py
+    rule_id: ai-boilerplate
+    count: 2
+    model_hints:
+      planning: balanced
+      implementation: balanced

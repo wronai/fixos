@@ -1,7 +1,7 @@
-# vallm batch | 80f | 73✓ 0⚠ 7✗ | 2026-04-04
+# vallm batch | 82f | 75✓ 0⚠ 7✗ | 2026-04-04
 
 SUMMARY:
-  scanned: 80  passed: 73 (91.2%)  warnings: 0  errors: 7  unsupported: 0
+  scanned: 82  passed: 75 (91.5%)  warnings: 0  errors: 7  unsupported: 0
 
 ERRORS[7]{path,score}:
   fixos/plugins/builtin/resources.py,0.79

@@ -658,6 +658,125 @@ class StorageAnalyzer:
                 description=f"Inne logi systemowe zajmują {StorageItem._format_size(other_logs)}.",
             ))
     
+    def _analyze_home_directory(self):
+        """Analyze home directory for large files and folders"""
+        home_path = os.path.expanduser("~")
+        if not os.path.exists(home_path):
+            return
+        
+        # Find large files (>200MB)
+        large_files = self._find_large_files(home_path, min_size_mb=200)
+        
+        # Find large directories (>500MB) not already analyzed
+        large_dirs = self._find_large_home_dirs(home_path, min_size_mb=500)
+        
+        # Store for interactive selection
+        self.home_large_files = large_files
+        self.home_large_dirs = large_dirs
+        
+        # Add summary item
+        if large_files or large_dirs:
+            total_size = sum(f['size'] for f in large_files) + sum(d['size'] for d in large_dirs)
+            self.items.append(StorageItem(
+                name=f"Duże pliki w home ({len(large_files) + len(large_dirs)})",
+                path=home_path,
+                size_bytes=total_size,
+                category="home_analysis",
+                risk="medium",
+                cleanup_command="home:interactive",  # Special marker
+                description=f"Znaleziono {len(large_files)} dużych plików i {len(large_dirs)} folderów. "
+                           f"Użyj 'home' w menu aby zarządzać.",
+            ))
+    
+    def _find_large_files(self, path: str, min_size_mb: int = 200) -> List[Dict[str, Any]]:
+        """Find files larger than min_size_mb in path"""
+        large_files = []
+        min_size = min_size_mb * 1024 * 1024
+        
+        # Skip certain directories
+        skip_dirs = {'.git', '.venv', 'venv', 'node_modules', '__pycache__', 
+                     '.cache', '.local', '.config', '.cargo', '.rustup',
+                     'target', 'build', 'dist', '.tox'}
+        
+        try:
+            for root, dirs, files in os.walk(path):
+                # Skip certain directories
+                dirs[:] = [d for d in dirs if d not in skip_dirs]
+                
+                for file in files:
+                    try:
+                        file_path = os.path.join(root, file)
+                        size = os.path.getsize(file_path)
+                        
+                        if size > min_size:
+                            large_files.append({
+                                'path': file_path,
+                                'size': size,
+                                'size_human': StorageItem._format_size(size),
+                                'type': 'file',
+                            })
+                    except (OSError, PermissionError):
+                        continue
+                
+                # Limit to prevent long scans
+                if len(large_files) > 100:
+                    break
+        except Exception:
+            pass
+        
+        # Sort by size
+        large_files.sort(key=lambda x: -x['size'])
+        return large_files[:50]  # Return top 50
+    
+    def _find_large_home_dirs(self, path: str, min_size_mb: int = 500) -> List[Dict[str, Any]]:
+        """Find directories larger than min_size_mb in home"""
+        large_dirs = []
+        min_size = min_size_mb * 1024 * 1024
+        
+        # Skip certain directories
+        skip_names = {'.git', '.cache', '.local', '.config', '.cargo', '.rustup'}
+        skip_paths = {os.path.expanduser('~/github'), os.path.expanduser('~/projects')}
+        
+        try:
+            for root, dirs, files in os.walk(path):
+                # Skip certain directories
+                dirs[:] = [d for d in dirs if d not in skip_names]
+                
+                # Skip deep scans in known large paths
+                if any(root.startswith(p) for p in skip_paths):
+                    dirs[:] = []
+                    continue
+                
+                for d in dirs:
+                    try:
+                        dir_path = os.path.join(root, d)
+                        
+                        # Skip if already in items
+                        if any(item.path == dir_path for item in self.items):
+                            continue
+                        
+                        size = self._get_dir_size(dir_path)
+                        
+                        if size > min_size:
+                            large_dirs.append({
+                                'path': dir_path,
+                                'size': size,
+                                'size_human': StorageItem._format_size(size),
+                                'type': 'directory',
+                            })
+                    except (OSError, PermissionError):
+                        continue
+                
+                # Limit to prevent long scans
+                if len(large_dirs) > 50:
+                    break
+        except Exception:
+            pass
+        
+        # Sort by size
+        large_dirs.sort(key=lambda x: -x['size'])
+        return large_dirs[:30]
+    
     def get_large_directories(self, min_size_mb: int = 100) -> List[Dict[str, Any]]:
         """
         Find all directories larger than min_size_mb.

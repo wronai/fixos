@@ -617,6 +617,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     click.echo(f"  {click.style('types', fg='cyan')}              - pokaż szczegóły typów")
     click.echo(f"  {click.style('select', fg='green')}            - wybierz interaktywnie (po numerach)")
     click.echo(f"  {click.style('snap', fg='magenta')}            - zarządzaj pakietami Snap")
+    click.echo(f"  {click.style('home', fg='yellow')}             - analizuj duże pliki w home")
     click.echo(f"  {click.style('none', fg='white')}              - pomiń")
     
     selection = click.prompt(
@@ -764,6 +765,145 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                     click.echo(click.style("  ✅ Odinstalowano", fg="green"))
                 else:
                     click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
+            except Exception as e:
+                click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+        
+        return
+    
+    # Home directory analysis
+    if selection == 'home':
+        # Get large files and dirs from analyzer
+        large_files = getattr(analyzer, 'home_large_files', [])
+        large_dirs = getattr(analyzer, 'home_large_dirs', [])
+        
+        if not large_files and not large_dirs:
+            click.echo(click.style("\n❌ Brak dużych plików w home do analizy.", fg="red"))
+            return
+        
+        click.echo(f"\n{click.style('🏠 ANALIZA HOME DIRECTORY:', fg='yellow', bold=True)}")
+        click.echo(click.style(f"Znaleziono {len(large_files)} dużych plików (>200MB) i {len(large_dirs)} folderów (>500MB)", fg="white"))
+        
+        # Show large files
+        if large_files:
+            click.echo(f"\n{click.style('📄 DUŻE PLIKI (>200MB):', fg='red', bold=True)}")
+            for i, f in enumerate(large_files[:30], 1):
+                click.echo(f"  [{i:3d}] 📄 {click.style(f['path'], fg='cyan')}: {f['size_human']}")
+            
+            if len(large_files) > 30:
+                click.echo(f"  ... i {len(large_files) - 30} więcej")
+        
+        # Show large directories
+        if large_dirs:
+            click.echo(f"\n{click.style('📁 DUŻE FOLDERY (>500MB):', fg='magenta', bold=True)}")
+            offset = len(large_files)
+            for i, d in enumerate(large_dirs[:20], 1):
+                click.echo(f"  [{offset + i:3d}] 📁 {click.style(d['path'], fg='yellow')}: {d['size_human']}")
+            
+            if len(large_dirs) > 20:
+                click.echo(f"  ... i {len(large_dirs) - 20} więcej")
+        
+        # Get selection
+        total_items = len(large_files) + len(large_dirs)
+        click.echo(f"\n{click.style('💡 Wybierz numery plików/folderów do usunięcia:', fg='cyan')}")
+        click.echo(click.style("  • Pliki: 1-{}, Foldery: {}-{}".format(len(large_files), len(large_files)+1, total_items), fg="white"))
+        
+        nums = click.prompt(click.style("\nWybierz numery (np. 1,3,5-10) lub 'info:N' dla szczegółów", fg="cyan"), default="")
+        
+        if not nums.strip():
+            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
+            return
+        
+        nums = nums.strip().lower()
+        
+        # Handle info:N
+        if nums.startswith('info:'):
+            try:
+                idx = int(nums[5:])
+                if 1 <= idx <= len(large_files):
+                    f = large_files[idx - 1]
+                    click.echo(f"\n{click.style('📦 SZCZEGÓŁY PLIKU:', fg='yellow', bold=True)}")
+                    click.echo(f"  Ścieżka:   {f['path']}")
+                    click.echo(f"  Rozmiar:   {f['size_human']}")
+                    # Check if exists
+                    import os
+                    if os.path.exists(f['path']):
+                        click.echo(click.style("  ✅ Istnieje", fg="green"))
+                        # Show file type
+                        import mimetypes
+                        mime_type, _ = mimetypes.guess_type(f['path'])
+                        if mime_type:
+                            click.echo(f"  Typ:       {mime_type}")
+                    else:
+                        click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
+                elif len(large_files) < idx <= total_items:
+                    d = large_dirs[idx - len(large_files) - 1]
+                    click.echo(f"\n{click.style('📦 SZCZEGÓŁY FOLDERU:', fg='yellow', bold=True)}")
+                    click.echo(f"  Ścieżka:   {d['path']}")
+                    click.echo(f"  Rozmiar:   {d['size_human']}")
+                else:
+                    click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+            except ValueError:
+                click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
+            return
+        
+        # Parse selection
+        selected_indices = set()
+        for part in nums.split(','):
+            part = part.strip()
+            if '-' in part:
+                try:
+                    start, end = part.split('-')
+                    selected_indices.update(range(int(start), int(end) + 1))
+                except ValueError:
+                    pass
+            else:
+                try:
+                    selected_indices.add(int(part))
+                except ValueError:
+                    pass
+        
+        # Get selected items
+        items_to_remove = []
+        for i in selected_indices:
+            if 1 <= i <= len(large_files):
+                items_to_remove.append(large_files[i - 1])
+            elif len(large_files) < i <= total_items:
+                items_to_remove.append(large_dirs[i - len(large_files) - 1])
+        
+        if not items_to_remove:
+            click.echo(click.style("❌ Nie wybrano żadnych elementów.", fg="red"))
+            return
+        
+        # Show selected items
+        click.echo(f"\n{click.style('📦 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
+        for i, item in enumerate(items_to_remove, 1):
+            icon = "📄" if item.get('type') == 'file' else "📁"
+            click.echo(f"  {i:3d}. {icon} {click.style(item['path'], fg='cyan')}: {item['size_human']}")
+        
+        total_size = sum(item['size'] for item in items_to_remove)
+        click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_size)}")
+        
+        # Final confirmation
+        if not dry_run:
+            if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
+                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+                return
+        else:
+            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
+            return
+        
+        # Execute removal
+        click.echo(f"\n{click.style('🚀 USUWANIE ELEMENTÓW:', fg='cyan', bold=True)}")
+        
+        for item in items_to_remove:
+            click.echo(f"\n• {item['path']}")
+            try:
+                import shutil
+                if item.get('type') == 'file':
+                    os.remove(item['path'])
+                else:
+                    shutil.rmtree(item['path'])
+                click.echo(click.style("  ✅ Usunięto", fg="green"))
             except Exception as e:
                 click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
         

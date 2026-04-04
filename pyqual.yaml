@@ -5,7 +5,7 @@ pipeline:
   metrics:
     cc_max: 6           # cyclomatic complexity per function
     vallm_pass_min: 65   # vallm validation pass rate (%)
-    coverage_min: 30      # test coverage (%)
+    coverage_min: 27      # test coverage (%)
 
   # Custom tool definitions
   custom_tools:

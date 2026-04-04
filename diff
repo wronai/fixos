@@ -1,48 +1,46 @@
 diff --git a/docs/examples/advanced_usage.py b/docs/examples/advanced_usage.py
-index 1234567..abcdefg 100644
+index original_hash..fixed_hash 100644
 --- a/docs/examples/advanced_usage.py
 +++ b/docs/examples/advanced_usage.py
-@@ -5,7 +5,6 @@
- import os
- from pathlib import Path
+@@ -5,7 +5,6 @@ from fixos.agent import HITLSession
+ from fixos.config import Config
+ from fixos.core.message import Message
+ from fixos.core.state import State
+-from pathlib import Path
  
--# TODO: Unused import: 'Path'
- # TODO: Consider using Path for path manipulations if needed
  
- # Example of advanced usage with custom configuration
-
+ def example_advanced_usage():
 diff --git a/docs/examples/quickstart.py b/docs/examples/quickstart.py
-index 1234567..abcdefg 100644
+index original_hash..fixed_hash 100644
 --- a/docs/examples/quickstart.py
 +++ b/docs/examples/quickstart.py
-@@ -1,14 +1,10 @@
--# TODO: Relative import (level=1): '.hitl'
--# TODO: Unused import: 'HITL'
--# TODO: Relative import (level=1): '.autonomous'
--# TODO: Unused import: 'AutonomousAgent'
--# TODO: Relative import (level=1): '.autonomous_session'
--# TODO: Duplicate import: autonomous_session.AutonomousSession
--# TODO: Unused import: 'AutonomousSession'
--# TODO: Duplicate import: pathlib.Path
--# TODO: Consider using absolute imports for clarity and consistency
-+from ..hitl import HITLSession
-+from ..autonomous import AutonomousAgent
-+from ..autonomous_session import AutonomousSession
-+from pathlib import Path
+@@ -1,10 +1,8 @@
+-from .hitl import HITL
+-from .autonomous import AutonomousAgent
+-from .autonomous_session import AutonomousSession, autonomous_session
++from .autonomous_session import AutonomousSession
++from . import autonomous_session
  
--# Example quickstart code
-+# Example quickstart code
- # TODO: Verify that these imports are correct and needed
-
+-# from fixos.agent import HITLSession
+-# from fixos.config import Config
+-# from fixos.core.message import Message
+-# from fixos.core.state import State
+-# from pathlib import Path
++# from fixos.agent import HITLSession
++# from fixos.config import Config
++# from fixos.core.message import Message
++# from fixos.core.state import State
+ 
+ 
+ def example_quickstart():
 diff --git a/fixos/agent/__init__.py b/fixos/agent/__init__.py
-index 1234567..abcdefg 100644
+index original_hash..fixed_hash 100644
 --- a/fixos/agent/__init__.py
 +++ b/fixos/agent/__init__.py
-@@ -4,8 +4,6 @@
- # TODO: Review and clean up imports
- 
+@@ -4,7 +4,6 @@
  from .hitl import HITLSession
--from .hitl import HITLSession  # TODO: Duplicate import: 'HITLSession' (first at line 17)
+ from .autonomous import AutonomousAgent
+ from .autonomous_session import AutonomousSession
+-from .hitl import HITLSession
  
--# TODO: Remove duplicate import above
- __all__ = ["HITLSession"]
+ __all__ = ["HITLSession", "AutonomousAgent", "AutonomousSession"]

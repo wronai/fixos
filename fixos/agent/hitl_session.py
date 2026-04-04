@@ -21,6 +21,7 @@ from ..utils.terminal import (
     print_cmd_block as _print_cmd_block_rich,
     print_stdout_box, print_stderr_box,
 )
+from rich.text import Text
 from ..config import FixOsConfig
 from ..platform_utils import (
     is_dangerous, elevate_cmd, run_command,
@@ -226,9 +227,6 @@ class HITLSession:
 
     def _ask_user_problem(self) -> str:
         """Interactively asks the user to describe their problem."""
-        from rich.panel import Panel
-        from rich.text import Text
-
         body = Text()
         body.append("Napisz co chcesz naprawić, zmienić lub co nie działa.\n", style="white")
         body.append("Możesz pisać po polsku lub angielsku.\n\n", style="dim")
@@ -255,7 +253,6 @@ class HITLSession:
 
     def _print_cmd_result(self, result: CmdResult):
         """Shows command result with colorized markdown."""
-        from rich.text import Text
         if result.skipped:
             console.print(Text(f"⏭️  Pominięto: `{result.cmd}`", style="dim"))
             return
@@ -411,9 +408,9 @@ class HITLSession:
             self.messages.append({
                 "role": "user",
                 "content": (
-                    f"Executed all commands:\n" +
-                    "\n".join(summary_lines) +
-                    "\n\nEvaluate results and suggest next steps."
+                    f"Executed all commands:\n"
+                    f"{'\n'.join(summary_lines)}\n"
+                    f"\nEvaluate results and suggest next steps."
                 ),
             })
             return True
@@ -472,7 +469,7 @@ class HITLSession:
         self.messages.append({"role": "user", "content": user_in})
         return True
 
-    def run(self):
+    def run(self) -> None:
         """Run the HITL session."""
         if not self._initialize_messages():
             return
@@ -504,7 +501,7 @@ def run_hitl_session(
     diagnostics: Dict[str, Any],
     config: FixOsConfig,
     show_data: bool = True,
-):
+) -> None:
     """Run interactive HITL session (backward compatible wrapper)."""
     session = HITLSession(
         diagnostics=diagnostics,

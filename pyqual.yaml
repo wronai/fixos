@@ -10,27 +10,27 @@ pipeline:
   # Custom tool definitions
   custom_tools:
     - name: code2llm_vallm
-      binary: .venv/bin/code2llm
+      binary: code2llm
       command: >-
-        .venv/bin/code2llm {workdir} -f toon -o ./project --no-chunk
+        code2llm {workdir} -f toon -o ./project --no-chunk
         --exclude .git venv dist __pycache__ .pytest_cache .mypy_cache .ruff_cache
         .code2llm_cache build *.egg-info
       output: ""
       allow_failure: false
 
     - name: vallm_src
-      binary: .venv/bin/vallm
+      binary: vallm
       command: >-
-        .venv/bin/vallm batch {workdir}/src --recursive --format toon --output ./project
+        vallm batch {workdir}/fixos --recursive --format toon --output ./project
         --exclude .git,venv,dist,__pycache__,.pytest_cache,.mypy_cache,.ruff_cache,
         .code2llm_cache,build,*.egg-info
       output: ""
       allow_failure: false
 
     - name: vallm_verify
-      binary: .venv/bin/vallm
+      binary: vallm
       command: >-
-        .venv/bin/vallm batch {workdir}/src --recursive --no-complexity --format toon --output ./project/verify
+        vallm batch {workdir}/fixos --recursive --no-complexity --format toon --output ./project/verify
         --exclude .git,venv,dist,__pycache__,.pytest_cache,.mypy_cache,.ruff_cache,
         .code2llm_cache,build,*.egg-info
       output: ""

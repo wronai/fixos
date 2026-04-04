@@ -87,6 +87,9 @@ class StorageAnalyzer:
         self._analyze_flatpak_user_data()
         self._analyze_ostree_repo()
         
+        # Dev projects (node_modules, venv, target, etc.)
+        self._analyze_dev_projects()
+        
         # System
         self._analyze_snap()
         self._analyze_btrfs_snapshots()
@@ -233,14 +236,15 @@ class StorageAnalyzer:
             ))
     
     def _analyze_docker(self):
-        """Analyze Docker storage"""
+        """Analyze Docker storage - images, containers, volumes, build cache"""
         # Check if docker is installed
         if not os.path.exists("/var/lib/docker"):
             return
         
-        output = self._run_command(["docker", "system", "df"])
+        # Get detailed docker system df
+        output = self._run_command(["docker", "system", "df", "-v"])
         if not output:
-            # Just check directory size
+            # Fallback: just check directory size
             size = self._get_dir_size("/var/lib/docker")
             if size > 500 * 1024 * 1024:  # > 500 MB
                 self.items.append(StorageItem(
@@ -255,23 +259,87 @@ class StorageAnalyzer:
                 ))
             return
         
-        # Parse docker system df
-        # TYPE            TOTAL     ACTIVE   SIZE      RECLAIMABLE
-        # Images          5         2        1.2GB     800MB (66%)
-        for line in output.split('\n')[1:]:
-            parts = line.split()
-            if len(parts) >= 4 and parts[0] == "Images":
-                size = self._parse_size(parts[3])
-                if size > 100 * 1024 * 1024:
-                    self.items.append(StorageItem(
-                        name="Docker Images",
-                        path="/var/lib/docker",
-                        size_bytes=size,
-                        category="containers",
-                        risk="medium",
-                        cleanup_command="docker system prune -a",
-                        description=f"Obrazy Docker zajmują {StorageItem._format_size(size)}.",
-                    ))
+        # Parse docker system df -v output
+        total_images = 0
+        dangling_images = 0
+        dangling_size = 0
+        unused_containers = 0
+        build_cache = 0
+        
+        current_section = None
+        for line in output.split('\n'):
+            line = line.strip()
+            
+            # Detect sections
+            if line.startswith("Images space usage:"):
+                current_section = "images"
+                continue
+            elif line.startswith("Containers space usage:"):
+                current_section = "containers"
+                continue
+            elif line.startswith("Local Volumes space usage:"):
+                current_section = "volumes"
+                continue
+            elif line.startswith("Build Cache"):
+                current_section = "build_cache"
+                continue
+            
+            # Parse images
+            if current_section == "images" and line and not line.startswith("REPOSITORY"):
+                parts = line.split()
+                if len(parts) >= 4:
+                    # <none> <none> = dangling image
+                    if parts[0] == "<none>" or parts[1] == "<none>":
+                        dangling_images += 1
+                        dangling_size += self._parse_size(parts[3])
+                    total_images += 1
+            
+            # Parse build cache
+            if current_section == "build_cache" and line and not line.startswith("CACHE ID"):
+                parts = line.split()
+                if len(parts) >= 2:
+                    build_cache += self._parse_size(parts[-2])
+        
+        # Report dangling images
+        if dangling_size > 50 * 1024 * 1024:  # > 50 MB
+            self.items.append(StorageItem(
+                name=f"Dangling Docker Images ({dangling_images})",
+                path="/var/lib/docker",
+                size_bytes=dangling_size,
+                category="containers",
+                risk="low",
+                cleanup_command="docker image prune -f",
+                description=f"Dangling images (bez tagu): {StorageItem._format_size(dangling_size)}. "
+                           "Bezpieczne do usunięcia - to nieużywane obrazy.",
+            ))
+        
+        # Report build cache
+        if build_cache > 100 * 1024 * 1024:  # > 100 MB
+            self.items.append(StorageItem(
+                name="Docker Build Cache",
+                path="/var/lib/docker",
+                size_bytes=build_cache,
+                category="containers",
+                risk="low",
+                cleanup_command="docker builder prune -f",
+                description=f"Build cache Dockera: {StorageItem._format_size(build_cache)}. "
+                           "Bezpieczne do usunięcia.",
+            ))
+        
+        # Report total if significant
+        total_docker = self._get_dir_size("/var/lib/docker")
+        if total_docker > 1024**3:  # > 1 GB
+            self.items.append(StorageItem(
+                name="Docker Total",
+                path="/var/lib/docker",
+                size_bytes=total_docker,
+                category="containers",
+                risk="medium",
+                cleanup_command="docker system prune -a --volumes",
+                description=f"Docker łącznie: {StorageItem._format_size(total_docker)}. "
+                           f"Obrazy: {total_images}, dangling: {dangling_images}. "
+                           "Uwaga: usunie wszystkie nieużywane zasoby.",
+            ))
     
     def _analyze_podman(self):
         """Analyze Podman storage"""
@@ -529,6 +597,33 @@ class StorageAnalyzer:
                 description=f"OSTree objects DB zajmuje {StorageItem._format_size(size)}. "
                            "Możesz bezpiecznie przeprowadzić głębokie prune.",
             ))
+    
+    def _analyze_dev_projects(self):
+        """Analyze developer project dependencies (node_modules, venv, target, etc.)"""
+        from fixos.diagnostics.dev_project_analyzer import DevProjectAnalyzer
+        
+        try:
+            dev_analyzer = DevProjectAnalyzer()
+            analysis = dev_analyzer.analyze(max_depth=5)
+            
+            # Add each dependency as a StorageItem
+            for dep in dev_analyzer.dependencies:
+                # Determine risk based on can_recreate and age
+                risk = "low" if dep.can_recreate else "medium"
+                
+                self.items.append(StorageItem(
+                    name=f"{dep.dep_type} ({dep.project_name})",
+                    path=dep.path,
+                    size_bytes=dep.size_bytes,
+                    category="dev_projects",
+                    risk=risk,
+                    cleanup_command=f"rm -rf {dep.path}",
+                    description=f"{dep.dep_type} w projekcie {dep.project_name}: "
+                               f"{StorageItem._format_size(dep.size_bytes)}. "
+                               f"Odtworzenie: {dep.recreate_command}",
+                ))
+        except Exception:
+            pass  # Silently fail if dev analyzer not available
     
     def _analyze_system_logs(self):
         """Analyze /var/log beyond journal"""

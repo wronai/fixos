@@ -616,6 +616,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     click.echo(f"  {click.style('top:N', fg='yellow')}             - usuń N największych (np. top:20)")
     click.echo(f"  {click.style('types', fg='cyan')}              - pokaż szczegóły typów")
     click.echo(f"  {click.style('select', fg='green')}            - wybierz interaktywnie (po numerach)")
+    click.echo(f"  {click.style('snap', fg='magenta')}            - zarządzaj pakietami Snap")
     click.echo(f"  {click.style('none', fg='white')}              - pomiń")
     
     selection = click.prompt(
@@ -643,23 +644,58 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                 click.echo(f"  ... i {count - 5} więcej")
         return
     
-    # Interactive selection
-    if selection == 'select':
-        click.echo(f"\n{click.style('📋 WYBIERZ ELEMENTY DO USUNIĘCIA:', fg='green', bold=True)}")
-        click.echo(click.style("Podaj numery oddzielone przecinkami (np. 1,3,5-10,15)", fg="white"))
+    # Snap package management
+    if selection == 'snap':
+        # Get snap packages from analyzer
+        snap_packages = getattr(analyzer, 'snap_packages', [])
         
-        # Show numbered list
-        for i, item in enumerate(analyzer.items[:50], 1):
-            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
-            click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+        if not snap_packages:
+            # Try to get snap packages directly
+            import subprocess
+            try:
+                result = subprocess.run(['snap', 'list', '--all'], capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    lines = result.stdout.strip().split('\n')[1:]
+                    snap_packages = []
+                    for line in lines:
+                        parts = line.split()
+                        if len(parts) >= 4:
+                            snap_packages.append({
+                                'name': parts[0],
+                                'version': parts[1],
+                                'rev': parts[2],
+                                'size': 0,
+                                'disabled': 'disabled' in line.lower(),
+                            })
+            except Exception:
+                pass
         
-        if len(analyzer.items) > 50:
-            click.echo(f"  ... i {len(analyzer.items) - 50} więcej (użyj top:N lub type:NAME)")
+        if not snap_packages:
+            click.echo(click.style("\n❌ Brak zainstalowanych pakietów Snap lub snapd niedostępny.", fg="red"))
+            return
         
-        nums = click.prompt(click.style("\nWybierz numery", fg="cyan"), default="")
+        # Filter only active (non-disabled) packages
+        active_packages = [p for p in snap_packages if not p.get('disabled', False)]
+        
+        if not active_packages:
+            click.echo(click.style("\n❌ Brak aktywnych pakietów Snap do odinstalowania.", fg="red"))
+            return
+        
+        click.echo(f"\n{click.style('📦 ZAINSTALOWANE PAKIETY SNAP:', fg='magenta', bold=True)}")
+        click.echo(click.style("Wybierz numery pakietów do odinstalowania", fg="white"))
+        
+        # Show packages with numbers
+        for i, pkg in enumerate(active_packages, 1):
+            size_str = _format_bytes(pkg.get('size', 0)) if pkg.get('size', 0) > 0 else "? MB"
+            click.echo(f"  [{i:3d}] {click.style(pkg['name'], fg='yellow')} (v{pkg['version']}, rev {pkg['rev']}): {size_str}")
+        
+        click.echo(f"\n  💰 Łącznie pakietów: {len(active_packages)}")
+        
+        # Get selection
+        nums = click.prompt(click.style("\nWybierz numery do odinstalowania (np. 1,3,5-10)", fg="cyan"), default="")
         
         if not nums.strip():
-            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
+            click.echo(click.style("⏭️ Nie wybrano żadnych pakietów.", fg="yellow"))
             return
         
         # Parse selection
@@ -667,7 +703,6 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         for part in nums.split(','):
             part = part.strip()
             if '-' in part:
-                # Range
                 try:
                     start, end = part.split('-')
                     selected_indices.update(range(int(start), int(end) + 1))
@@ -679,18 +714,222 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                 except ValueError:
                     pass
         
-        # Get selected items
-        items_to_clean = []
+        # Get selected packages
+        packages_to_remove = []
         for i in selected_indices:
-            if 1 <= i <= len(analyzer.items):
-                items_to_clean.append(analyzer.items[i - 1])
+            if 1 <= i <= len(active_packages):
+                packages_to_remove.append(active_packages[i - 1])
         
-        if not items_to_clean:
-            click.echo(click.style("❌ Nie wybrano żadnych elementów.", fg="red"))
+        if not packages_to_remove:
+            click.echo(click.style("❌ Nie wybrano żadnych pakietów.", fg="red"))
             return
         
+        # Show selected packages
+        click.echo(f"\n{click.style('📦 WYBRANE PAKIETY DO ODINSTALOWANIA:', fg='red', bold=True)}")
+        for i, pkg in enumerate(packages_to_remove, 1):
+            click.echo(f"  {i:3d}. {click.style(pkg['name'], fg='yellow')} (v{pkg['version']})")
+        
+        # Warning about core packages
+        core_packages = ['core', 'core18', 'core20', 'core22', 'snapd']
+        dangerous = [p for p in packages_to_remove if p['name'] in core_packages]
+        
+        if dangerous:
+            click.echo(click.style(f"\n⚠️ UWAGA: Wybrane pakiety zawierają komponenty systemowe:", fg="red", bold=True))
+            for pkg in dangerous:
+                click.echo(f"  • {pkg['name']}")
+            click.echo(click.style("Ich usunięcie może wpłynąć na działanie innych pakietów Snap!", fg="red"))
+        
+        # Final confirmation
+        if not dry_run:
+            if not click.confirm(click.style("\n⚠️ Potwierdzasz odinstalowanie tych pakietów?", fg="yellow"), default=False):
+                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+                return
+        else:
+            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
+            return
+        
+        # Execute removal
+        click.echo(f"\n{click.style('🚀 ODINSTALOWYWANIE PAKIETÓW SNAP:', fg='cyan', bold=True)}")
+        
+        for pkg in packages_to_remove:
+            click.echo(f"\n• {pkg['name']} (v{pkg['version']})")
+            try:
+                result = subprocess.run(
+                    ['sudo', 'snap', 'remove', pkg['name']],
+                    capture_output=True,
+                    text=True,
+                    timeout=120,
+                )
+                if result.returncode == 0:
+                    click.echo(click.style("  ✅ Odinstalowano", fg="green"))
+                else:
+                    click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
+            except Exception as e:
+                click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+        
+        return
+    
+    # Interactive selection
+    if selection == 'select':
+        click.echo(f"\n{click.style('📋 WYBIERZ ELEMENTY DO USUNIĘCIA:', fg='green', bold=True)}")
+        click.echo(click.style("Podaj numery oddzielone przecinkami (np. 1,3,5-10,15)", fg="white"))
+        click.echo(click.style("Dodatkowe opcje:", fg="white"))
+        click.echo(f"  {click.style('info:N', fg='cyan')}    - pokaż szczegóły elementu N")
+        click.echo(f"  {click.style('path:N', fg='cyan')}    - pokaż pełną ścieżkę elementu N")
+        click.echo(f"  {click.style('cmd:N', fg='cyan')}     - pokaż komendę odtworzenia")
+        click.echo(f"  {click.style('filter:TYPE', fg='magenta')} - filtruj po typie (np. filter:venv)")
+        
+        # Show numbered list
+        for i, item in enumerate(analyzer.items[:50], 1):
+            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+            click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+        
+        if len(analyzer.items) > 50:
+            click.echo(f"  ... i {len(analyzer.items) - 50} więcej (użyj filter:TYPE lub top:N)")
+        
+        # Interactive loop for selection
+        items_to_clean = []
+        current_filter = None
+        
+        while True:
+            nums = click.prompt(click.style("\nWybierz numery (lub info:N/path:N/cmd:N/filter:TYPE)", fg="cyan"), default="")
+            
+            if not nums.strip():
+                break
+            
+            nums = nums.strip().lower()
+            
+            # Handle info:N
+            if nums.startswith('info:'):
+                try:
+                    idx = int(nums[5:])
+                    if 1 <= idx <= len(analyzer.items):
+                        item = analyzer.items[idx - 1]
+                        click.echo(f"\n{click.style('📦 SZCZEGÓŁY ELEMENTU:', fg='yellow', bold=True)}")
+                        click.echo(f"  Nazwa:     {item.name}")
+                        click.echo(f"  Ścieżka:   {item.path}")
+                        click.echo(f"  Rozmiar:   {_format_bytes(item.size_bytes)}")
+                        click.echo(f"  Kategoria: {item.category}")
+                        click.echo(f"  Ryzyko:    {item.risk}")
+                        click.echo(f"  Komenda:   {click.style(item.cleanup_command, fg='cyan')}")
+                        click.echo(f"  Opis:      {item.description}")
+                    else:
+                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+                except ValueError:
+                    click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
+                continue
+            
+            # Handle path:N
+            if nums.startswith('path:'):
+                try:
+                    idx = int(nums[5:])
+                    if 1 <= idx <= len(analyzer.items):
+                        item = analyzer.items[idx - 1]
+                        click.echo(f"\n{click.style('📁 ŚCIEŻKA:', fg='yellow')}")
+                        click.echo(f"  {item.path}")
+                        # Check if exists
+                        import os
+                        if os.path.exists(item.path):
+                            click.echo(click.style("  ✅ Istnieje", fg="green"))
+                        else:
+                            click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
+                    else:
+                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+                except ValueError:
+                    click.echo(click.style("❌ Format: path:N (np. path:5)", fg="red"))
+                continue
+            
+            # Handle cmd:N
+            if nums.startswith('cmd:'):
+                try:
+                    idx = int(nums[4:])
+                    if 1 <= idx <= len(analyzer.items):
+                        item = analyzer.items[idx - 1]
+                        click.echo(f"\n{click.style('🔧 KOMENDA CZYSZCZENIA:', fg='yellow')}")
+                        click.echo(f"  {click.style(item.cleanup_command, fg='cyan')}")
+                        # Check if it's safe
+                        if item.risk in ['none', 'low']:
+                            click.echo(click.style("  ✅ Bezpieczne", fg="green"))
+                        else:
+                            click.echo(click.style("  ⚠️ Wymaga ostrożności", fg="yellow"))
+                    else:
+                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+                except ValueError:
+                    click.echo(click.style("❌ Format: cmd:N (np. cmd:5)", fg="red"))
+                continue
+            
+            # Handle filter:TYPE
+            if nums.startswith('filter:'):
+                filter_type = nums[7:].strip()
+                filtered_items = []
+                for item in analyzer.items:
+                    item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+                    if filter_type in item_type.lower() or filter_type in item.category.lower():
+                        filtered_items.append(item)
+                
+                if not filtered_items:
+                    click.echo(click.style(f"❌ Brak elementów typu '{filter_type}'", fg="red"))
+                    continue
+                
+                click.echo(f"\n{click.style(f'🔍 FILTR: {filter_type}', fg='magenta', bold=True)}")
+                for i, item in enumerate(filtered_items[:50], 1):
+                    risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+                    original_idx = analyzer.items.index(item) + 1
+                    click.echo(f"  [{original_idx:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+                
+                total_filter = sum(item.size_bytes for item in filtered_items)
+                click.echo(click.style(f"\n  💰 Łącznie: {_format_bytes(total_filter)}", fg="green"))
+                continue
+            
+            # Parse selection
+            selected_indices = set()
+            for part in nums.split(','):
+                part = part.strip()
+                if '-' in part:
+                    # Range
+                    try:
+                        start, end = part.split('-')
+                        selected_indices.update(range(int(start), int(end) + 1))
+                    except ValueError:
+                        pass
+                else:
+                    try:
+                        selected_indices.add(int(part))
+                    except ValueError:
+                        pass
+            
+            # Get selected items
+            for i in selected_indices:
+                if 1 <= i <= len(analyzer.items):
+                    items_to_clean.append(analyzer.items[i - 1])
+            
+            if items_to_clean:
+                break
+        
+        if not items_to_clean:
+            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
+            return
+        
+        # Remove duplicates
+        items_to_clean = list(dict.fromkeys(items_to_clean))
+        
+        # Show selected items and ask for confirmation
         total_selected = sum(item.size_bytes for item in items_to_clean)
-        click.echo(click.style(f"\n✅ Wybrano {len(items_to_clean)} elementów: {_format_bytes(total_selected)}", fg="green"))
+        click.echo(f"\n{click.style('📋 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
+        for i, item in enumerate(items_to_clean, 1):
+            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+            click.echo(f"  {i:3d}. {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+            click.echo(f"       → {click.style(item.path, fg='cyan', dim=True)}")
+        
+        click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_selected)}")
+        
+        # Final confirmation
+        if not dry_run:
+            if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
+                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+                return
+        else:
+            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
     
     # Execute cleanup
     else:

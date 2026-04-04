@@ -90,6 +90,9 @@ class StorageAnalyzer:
         # Dev projects (node_modules, venv, target, etc.)
         self._analyze_dev_projects()
         
+        # Home directory analysis (large files and folders)
+        self._analyze_home_directory()
+        
         # System
         self._analyze_snap()
         self._analyze_btrfs_snapshots()
@@ -136,6 +139,15 @@ class StorageAnalyzer:
         except Exception:
             pass
         return 0
+    
+    def _get_file_size(self, path: str) -> int:
+        """Get file size"""
+        if not os.path.exists(path):
+            return 0
+        try:
+            return os.path.getsize(path)
+        except Exception:
+            return 0
     
     def _run_command(self, cmd: List[str]) -> Optional[str]:
         """Run command and return output"""
@@ -701,7 +713,7 @@ class StorageAnalyzer:
         return large_dirs
     
     def _analyze_snap(self):
-        """Analyze Snap packages"""
+        """Analyze Snap packages - old versions and installed packages"""
         if not os.path.exists("/var/lib/snapd"):
             return
         
@@ -709,10 +721,39 @@ class StorageAnalyzer:
         if not output:
             return
         
-        # Count disabled/old versions
+        # Parse all snap packages
         lines = output.strip().split('\n')[1:]  # Skip header
-        old_count = sum(1 for line in lines if 'disabled' in line)
+        old_count = 0
+        snap_packages = []
         
+        for line in lines:
+            parts = line.split()
+            if len(parts) >= 4:
+                name = parts[0]
+                version = parts[1]
+                rev = parts[2]
+                status = parts[3] if len(parts) > 3 else ""
+                
+                is_disabled = 'disabled' in status.lower()
+                if is_disabled:
+                    old_count += 1
+                
+                # Get size for each snap
+                snap_path = f"/var/lib/snapd/snaps/{name}_{rev}.snap"
+                size = self._get_file_size(snap_path) if os.path.exists(snap_path) else 0
+                
+                snap_packages.append({
+                    'name': name,
+                    'version': version,
+                    'rev': rev,
+                    'size': size,
+                    'disabled': is_disabled,
+                })
+        
+        # Store snap packages for interactive selection
+        self.snap_packages = snap_packages
+        
+        # Report old versions
         if old_count > 0:
             # Estimate: ~100MB per old snap
             estimated_size = old_count * 100 * 1024 * 1024
@@ -727,6 +768,21 @@ class StorageAnalyzer:
                 description=f"Masz {old_count} starych wersji pakietów Snap. "
                            "Ogranicz do 2 wersji.",
             ))
+        
+        # Add option to manage all snap packages
+        if snap_packages:
+            total_snap_size = sum(p['size'] for p in snap_packages if not p['disabled'])
+            if total_snap_size > 500 * 1024 * 1024:  # > 500 MB
+                self.items.append(StorageItem(
+                    name=f"Zainstalowane Snap ({len([p for p in snap_packages if not p['disabled']])})",
+                    path="/var/lib/snapd/snaps",
+                    size_bytes=total_snap_size,
+                    category="packages",
+                    risk="medium",
+                    cleanup_command="snap:interactive",  # Special marker for interactive
+                    description=f"Masz {len(snap_packages)} pakietów Snap. "
+                               "Użyj 'snap' w menu aby zarządzać.",
+                ))
     
     def _analyze_btrfs_snapshots(self):
         """Analyze Btrfs snapshots"""

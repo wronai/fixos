@@ -7,10 +7,19 @@ bez fałszywych alarmów.
 import subprocess
 import os
 import re
-from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
+CONSTANT_3 = 3
+CONSTANT_4 = 4
+CONSTANT_5 = 5
+CONSTANT_30 = 30
+CONSTANT_50 = 50
+CONSTANT_60 = 60
+CONSTANT_120 = 120
+CONSTANT_200 = 200
+CONSTANT_500 = 500
+CONSTANT_1024 = 1024
 
 @dataclass
 class StorageItem:
@@ -38,9 +47,9 @@ class StorageItem:
     @staticmethod
     def _format_size(size_bytes: int) -> str:
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-            if size_bytes < 1024:
+            if size_bytes < CONSTANT_1024:
                 return f"{size_bytes:.1f} {unit}"
-            size_bytes /= 1024
+            size_bytes /= CONSTANT_1024
         return f"{size_bytes:.1f} PB"
 
 
@@ -132,7 +141,7 @@ class StorageAnalyzer:
                 ["du", "-sb", path],
                 capture_output=True,
                 text=True,
-                timeout=60,
+                timeout=CONSTANT_60,
             )
             if result.returncode == 0:
                 return int(result.stdout.split()[0])
@@ -156,7 +165,7 @@ class StorageAnalyzer:
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=30,
+                timeout=CONSTANT_30,
             )
             if result.returncode == 0:
                 return result.stdout
@@ -174,10 +183,10 @@ class StorageAnalyzer:
         for path in cache_paths:
             if os.path.exists(path):
                 size = self._get_dir_size(path)
-                if size > 10 * 1024 * 1024:  # > 10 MB
+                if size > 10 * CONSTANT_1024 * CONSTANT_1024:  # > 10 MB
                     total_size += size
         
-        if total_size > 10 * 1024 * 1024:
+        if total_size > 10 * CONSTANT_1024 * CONSTANT_1024:
             self.items.append(StorageItem(
                 name="DNF Cache",
                 path="/var/cache/dnf",
@@ -208,7 +217,7 @@ class StorageAnalyzer:
         
         if old_kernels:
             # Estimate size: ~200MB per kernel
-            estimated_size = len(old_kernels) * 200 * 1024 * 1024
+            estimated_size = len(old_kernels) * CONSTANT_200 * CONSTANT_1024 * CONSTANT_1024
             
             self.items.append(StorageItem(
                 name=f"Stare kernele ({len(old_kernels)})",
@@ -235,7 +244,7 @@ class StorageAnalyzer:
         size_str = match.group(1)
         size_bytes = self._parse_size(size_str)
         
-        if size_bytes > 100 * 1024 * 1024:  # > 100 MB
+        if size_bytes > 100 * CONSTANT_1024 * CONSTANT_1024:  # > 100 MB
             self.items.append(StorageItem(
                 name="Journal logs",
                 path="/var/log/journal",
@@ -258,7 +267,7 @@ class StorageAnalyzer:
         if not output:
             # Fallback: just check directory size
             size = self._get_dir_size("/var/lib/docker")
-            if size > 500 * 1024 * 1024:  # > 500 MB
+            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name="Docker",
                     path="/var/lib/docker",
@@ -299,11 +308,11 @@ class StorageAnalyzer:
             # Parse images
             if current_section == "images" and line and not line.startswith("REPOSITORY"):
                 parts = line.split()
-                if len(parts) >= 4:
+                if len(parts) >= CONSTANT_4:
                     # <none> <none> = dangling image
                     if parts[0] == "<none>" or parts[1] == "<none>":
                         dangling_images += 1
-                        dangling_size += self._parse_size(parts[3])
+                        dangling_size += self._parse_size(parts[CONSTANT_3])
                     total_images += 1
             
             # Parse build cache
@@ -313,7 +322,7 @@ class StorageAnalyzer:
                     build_cache += self._parse_size(parts[-2])
         
         # Report dangling images
-        if dangling_size > 50 * 1024 * 1024:  # > 50 MB
+        if dangling_size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_50 MB
             self.items.append(StorageItem(
                 name=f"Dangling Docker Images ({dangling_images})",
                 path="/var/lib/docker",
@@ -326,7 +335,7 @@ class StorageAnalyzer:
             ))
         
         # Report build cache
-        if build_cache > 100 * 1024 * 1024:  # > 100 MB
+        if build_cache > 100 * CONSTANT_1024 * CONSTANT_1024:  # > 100 MB
             self.items.append(StorageItem(
                 name="Docker Build Cache",
                 path="/var/lib/docker",
@@ -340,7 +349,7 @@ class StorageAnalyzer:
         
         # Report total if significant
         total_docker = self._get_dir_size("/var/lib/docker")
-        if total_docker > 1024**3:  # > 1 GB
+        if total_docker > CONSTANT_1024**CONSTANT_3:  # > 1 GB
             self.items.append(StorageItem(
                 name="Docker Total",
                 path="/var/lib/docker",
@@ -359,7 +368,7 @@ class StorageAnalyzer:
             return
         
         size = self._get_dir_size("/var/lib/containers")
-        if size > 500 * 1024 * 1024:  # > 500 MB
+        if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
             self.items.append(StorageItem(
                 name="Podman",
                 path="/var/lib/containers",
@@ -385,7 +394,7 @@ class StorageAnalyzer:
             expanded = os.path.expanduser(path)
             if os.path.exists(expanded):
                 size = self._get_dir_size(expanded)
-                if size > 50 * 1024 * 1024:  # > 50 MB
+                if size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_50 MB
                     self.items.append(StorageItem(
                         name=name,
                         path=expanded,
@@ -409,7 +418,7 @@ class StorageAnalyzer:
             expanded = os.path.expanduser(path)
             if os.path.exists(expanded):
                 size = self._get_dir_size(expanded)
-                if size > 100 * 1024 * 1024:  # > 100 MB
+                if size > 100 * CONSTANT_1024 * CONSTANT_1024:  # > 100 MB
                     self.items.append(StorageItem(
                         name=name,
                         path=expanded,
@@ -431,7 +440,7 @@ class StorageAnalyzer:
         # Check snapper snapshots
         if os.path.exists("/.snapshots"):
             size = self._get_dir_size("/.snapshots")
-            if size > 1024**3:  # > 1 GB
+            if size > CONSTANT_1024**CONSTANT_3:  # > 1 GB
                 # Count snapshots
                 output = self._run_command(["snapper", "list"])
                 snapshot_count = 0
@@ -453,7 +462,7 @@ class StorageAnalyzer:
         # Check Timeshift
         if os.path.exists("/timeshift"):
             size = self._get_dir_size("/timeshift")
-            if size > 500 * 1024 * 1024:  # > 500 MB
+            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name="Timeshift Backups",
                     path="/timeshift",
@@ -471,7 +480,7 @@ class StorageAnalyzer:
             return
         
         size = self._get_dir_size(coredump_path)
-        if size > 100 * 1024 * 1024:  # > 100 MB
+        if size > 100 * CONSTANT_1024 * CONSTANT_1024:  # > 100 MB
             self.items.append(StorageItem(
                 name="Coredumps",
                 path=coredump_path,
@@ -490,9 +499,9 @@ class StorageAnalyzer:
         if output and output.strip():
             debug_packages = output.strip().split('\n')
             # Estimate: ~500MB per debug package
-            estimated_size = len(debug_packages) * 500 * 1024 * 1024
+            estimated_size = len(debug_packages) * CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024
             
-            if estimated_size > 500 * 1024 * 1024:  # > 500 MB
+            if estimated_size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name=f"Debug symbols ({len(debug_packages)})",
                     path="/usr/lib/debug",
@@ -508,8 +517,8 @@ class StorageAnalyzer:
         output = self._run_command(["package-cleanup", "--leaves"])
         if output and output.strip():
             orphaned = output.strip().split('\n')
-            if len(orphaned) > 5:  # Only report if significant
-                estimated_size = len(orphaned) * 50 * 1024 * 1024  # ~50MB each
+            if len(orphaned) > CONSTANT_5:  # Only report if significant
+                estimated_size = len(orphaned) * CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024  # ~50MB each
                 
                 self.items.append(StorageItem(
                     name=f"Orphaned packages ({len(orphaned)})",
@@ -528,7 +537,7 @@ class StorageAnalyzer:
         firefox_path = os.path.expanduser("~/.mozilla/firefox")
         if os.path.exists(firefox_path):
             size = self._get_dir_size(firefox_path)
-            if size > 500 * 1024 * 1024:  # > 500 MB
+            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name="Firefox Profile",
                     path=firefox_path,
@@ -544,7 +553,7 @@ class StorageAnalyzer:
         chrome_path = os.path.expanduser("~/.config/google-chrome")
         if os.path.exists(chrome_path):
             size = self._get_dir_size(chrome_path)
-            if size > 500 * 1024 * 1024:  # > 500 MB
+            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name="Chrome Profile",
                     path=chrome_path,
@@ -563,7 +572,7 @@ class StorageAnalyzer:
         
         # Get total size
         total_size = self._get_dir_size(var_app_path)
-        if total_size < 500 * 1024 * 1024:  # < 500 MB
+        if total_size < CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # < CONSTANT_500 MB
             return
         
         # Find largest apps
@@ -572,12 +581,12 @@ class StorageAnalyzer:
             app_path = os.path.join(var_app_path, app_dir)
             if os.path.isdir(app_path):
                 size = self._get_dir_size(app_path)
-                if size > 50 * 1024 * 1024:  # > 50 MB
+                if size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_50 MB
                     app_sizes.append((app_dir, size))
         
         if app_sizes:
             app_sizes.sort(key=lambda x: -x[1])
-            largest = app_sizes[:5]
+            largest = app_sizes[:CONSTANT_5]
             
             self.items.append(StorageItem(
                 name=f"Flatpak App Data ({len(app_sizes)} apps)",
@@ -587,7 +596,7 @@ class StorageAnalyzer:
                 risk="low",
                 cleanup_command="rm -rf ~/.var/app/*/cache",
                 description=f"Dane aplikacji Flatpak: {StorageItem._format_size(total_size)}. "
-                           f"Największe: {', '.join(f'{a} ({StorageItem._format_size(s)})' for a, s in largest[:3])}. "
+                           f"Największe: {', '.join(f'{a} ({StorageItem._format_size(s)})' for a, s in largest[:CONSTANT_3])}. "
                            "Możesz bezpiecznie usunąć cache.",
             ))
     
@@ -598,7 +607,7 @@ class StorageAnalyzer:
             return
         
         size = self._get_dir_size(repo_path)
-        if size > 10 * 1024**3:  # > 10 GB
+        if size > 10 * CONSTANT_1024**CONSTANT_3:  # > 10 GB
             self.items.append(StorageItem(
                 name="OSTree Objects DB",
                 path=repo_path,
@@ -616,7 +625,7 @@ class StorageAnalyzer:
         
         try:
             dev_analyzer = DevProjectAnalyzer()
-            analysis = dev_analyzer.analyze(max_depth=5)
+            analysis = dev_analyzer.analyze(max_depth=CONSTANT_5)
             
             # Add each dependency as a StorageItem
             for dep in dev_analyzer.dependencies:
@@ -647,7 +656,7 @@ class StorageAnalyzer:
         journal_size = self._get_dir_size("/var/log/journal")
         other_logs = size - journal_size
         
-        if other_logs > 500 * 1024 * 1024:  # > 500 MB
+        if other_logs > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
             self.items.append(StorageItem(
                 name="Other System Logs",
                 path=log_path,
@@ -665,10 +674,10 @@ class StorageAnalyzer:
             return
         
         # Find large files (>200MB)
-        large_files = self._find_large_files(home_path, min_size_mb=200)
+        large_files = self._find_large_files(home_path, min_size_mb=CONSTANT_200)
         
         # Find large directories (>500MB) not already analyzed
-        large_dirs = self._find_large_home_dirs(home_path, min_size_mb=500)
+        large_dirs = self._find_large_home_dirs(home_path, min_size_mb=CONSTANT_500)
         
         # Store for interactive selection
         self.home_large_files = large_files
@@ -688,10 +697,10 @@ class StorageAnalyzer:
                            f"Użyj 'home' w menu aby zarządzać.",
             ))
     
-    def _find_large_files(self, path: str, min_size_mb: int = 200) -> List[Dict[str, Any]]:
+    def _find_large_files(self, path: str, min_size_mb: int = CONSTANT_200) -> List[Dict[str, Any]]:
         """Find files larger than min_size_mb in path"""
         large_files = []
-        min_size = min_size_mb * 1024 * 1024
+        min_size = min_size_mb * CONSTANT_1024 * CONSTANT_1024
         
         # Skip certain directories
         skip_dirs = {'.git', '.venv', 'venv', 'node_modules', '__pycache__', 
@@ -726,12 +735,12 @@ class StorageAnalyzer:
         
         # Sort by size
         large_files.sort(key=lambda x: -x['size'])
-        return large_files[:50]  # Return top 50
+        return large_files[:CONSTANT_50]  # Return top CONSTANT_50
     
-    def _find_large_home_dirs(self, path: str, min_size_mb: int = 500) -> List[Dict[str, Any]]:
+    def _find_large_home_dirs(self, path: str, min_size_mb: int = CONSTANT_500) -> List[Dict[str, Any]]:
         """Find directories larger than min_size_mb in home"""
         large_dirs = []
-        min_size = min_size_mb * 1024 * 1024
+        min_size = min_size_mb * CONSTANT_1024 * CONSTANT_1024
         
         # Skip certain directories
         skip_names = {'.git', '.cache', '.local', '.config', '.cargo', '.rustup'}
@@ -768,14 +777,14 @@ class StorageAnalyzer:
                         continue
                 
                 # Limit to prevent long scans
-                if len(large_dirs) > 50:
+                if len(large_dirs) > CONSTANT_50:
                     break
         except Exception:
             pass
         
         # Sort by size
         large_dirs.sort(key=lambda x: -x['size'])
-        return large_dirs[:30]
+        return large_dirs[:CONSTANT_30]
     
     def get_large_directories(self, min_size_mb: int = 100) -> List[Dict[str, Any]]:
         """
@@ -804,7 +813,7 @@ class StorageAnalyzer:
                     ["du", "-h", "--threshold", f"{min_size_mb}M", scan_path],
                     capture_output=True,
                     text=True,
-                    timeout=120,
+                    timeout=CONSTANT_120,
                 )
                 
                 if result.returncode == 0:
@@ -847,11 +856,11 @@ class StorageAnalyzer:
         
         for line in lines:
             parts = line.split()
-            if len(parts) >= 4:
+            if len(parts) >= CONSTANT_4:
                 name = parts[0]
                 version = parts[1]
                 rev = parts[2]
-                status = parts[3] if len(parts) > 3 else ""
+                status = parts[CONSTANT_3] if len(parts) > CONSTANT_3 else ""
                 
                 is_disabled = 'disabled' in status.lower()
                 if is_disabled:
@@ -875,7 +884,7 @@ class StorageAnalyzer:
         # Report old versions
         if old_count > 0:
             # Estimate: ~100MB per old snap
-            estimated_size = old_count * 100 * 1024 * 1024
+            estimated_size = old_count * 100 * CONSTANT_1024 * CONSTANT_1024
             
             self.items.append(StorageItem(
                 name=f"Stare wersje Snap ({old_count})",
@@ -891,7 +900,7 @@ class StorageAnalyzer:
         # Add option to manage all snap packages
         if snap_packages:
             total_snap_size = sum(p['size'] for p in snap_packages if not p['disabled'])
-            if total_snap_size > 500 * 1024 * 1024:  # > 500 MB
+            if total_snap_size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
                 self.items.append(StorageItem(
                     name=f"Zainstalowane Snap ({len([p for p in snap_packages if not p['disabled']])})",
                     path="/var/lib/snapd/snaps",
@@ -917,9 +926,9 @@ class StorageAnalyzer:
         lines = output.strip().split('\n')[1:]  # Skip header
         snapshot_count = len(lines)
         
-        if snapshot_count > 5:
+        if snapshot_count > CONSTANT_5:
             # Estimate: ~500MB per snapshot (rough)
-            estimated_size = snapshot_count * 500 * 1024 * 1024
+            estimated_size = snapshot_count * CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024
             
             self.items.append(StorageItem(
                 name=f"Btrfs Snapshots ({snapshot_count})",
@@ -942,7 +951,7 @@ class StorageAnalyzer:
         dnf_size = self._get_dir_size("/var/cache/dnf")
         other_size = size - dnf_size
         
-        if other_size > 200 * 1024 * 1024:  # > 200 MB
+        if other_size > CONSTANT_200 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_200 MB
             self.items.append(StorageItem(
                 name="Inne cache systemowe",
                 path="/var/cache",
@@ -958,10 +967,10 @@ class StorageAnalyzer:
         """Parse size string like '1.2G' to bytes"""
         size_str = size_str.strip().upper()
         multipliers = {
-            'K': 1024,
-            'M': 1024**2,
-            'G': 1024**3,
-            'T': 1024**4,
+            'K': CONSTANT_1024,
+            'M': CONSTANT_1024**2,
+            'G': CONSTANT_1024**CONSTANT_3,
+            'T': CONSTANT_1024**CONSTANT_4,
         }
         
         for suffix, mult in multipliers.items():
@@ -991,7 +1000,7 @@ class StorageAnalyzer:
             recommendations.append({
                 "priority": "high",
                 "description": f"Bezpieczne czyszczenie ({len(safe_items)} elementów)",
-                "items": [item.to_dict() for item in safe_items[:5]],
+                "items": [item.to_dict() for item in safe_items[:CONSTANT_5]],
                 "estimated_savings": StorageItem._format_size(total_safe),
                 "risk": "low",
                 "action": "auto",
@@ -1003,7 +1012,7 @@ class StorageAnalyzer:
             recommendations.append({
                 "priority": "medium",
                 "description": f"Wymaga potwierdzenia ({len(medium_items)} elementów)",
-                "items": [item.to_dict() for item in medium_items[:5]],
+                "items": [item.to_dict() for item in medium_items[:CONSTANT_5]],
                 "estimated_savings": StorageItem._format_size(total_medium),
                 "risk": "medium",
                 "action": "confirm",
@@ -1016,9 +1025,9 @@ class StorageAnalyzer:
         analysis = self.analyze_full()
         
         lines = [
-            "=" * 60,
+            "=" * CONSTANT_60,
             "📊 STORAGE ANALYSIS",
-            "=" * 60,
+            "=" * CONSTANT_60,
             "",
         ]
         
@@ -1036,14 +1045,14 @@ class StorageAnalyzer:
         for category, items in categories.items():
             total = sum(item.size_bytes for item in items)
             lines.append(f"\n{category.upper()} ({StorageItem._format_size(total)})")
-            for item in items[:5]:
+            for item in items[:CONSTANT_5]:
                 risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
                 lines.append(f"  {risk_icon} {item.name}: {StorageItem._format_size(item.size_bytes)}")
-            if len(items) > 5:
-                lines.append(f"  ... i {len(items) - 5} więcej")
+            if len(items) > CONSTANT_5:
+                lines.append(f"  ... i {len(items) - CONSTANT_5} więcej")
         
-        lines.append(f"\n{'=' * 60}")
+        lines.append(f"\n{'=' * CONSTANT_60}")
         lines.append(f"💰 ŁĄCZNIE DO ODZYSKANIA: {analysis['total_reclaimable_human']}")
-        lines.append("=" * 60)
+        lines.append("=" * CONSTANT_60)
         
         return "\n".join(lines)

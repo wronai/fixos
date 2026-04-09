@@ -12,6 +12,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
+CONSTANT_4 = 4
+CONSTANT_8 = 8
+CONSTANT_12 = 12
+CONSTANT_384 = 384
+TIMEOUT_3600 = 3600
+
 # Próbuj załadować python-dotenv
 try:
     from dotenv import load_dotenv
@@ -162,7 +168,7 @@ class FixOsConfig:
 
     # Agent
     agent_mode: str = "hitl"          # hitl | autonomous
-    session_timeout: int = 3600
+    session_timeout: int = TIMEOUT_3600
     max_auto_fixes: int = 10          # limit dla trybu autonomous
 
     # UI
@@ -274,8 +280,8 @@ class FixOsConfig:
     def summary(self) -> str:
         """Krótkie podsumowanie konfiguracji (bez klucza API)."""
         if self.api_key:
-            if len(self.api_key) > 12:
-                key_masked = f"{self.api_key[:8]}...{self.api_key[-4:]}"
+            if len(self.api_key) > CONSTANT_12:
+                key_masked = f"{self.api_key[:CONSTANT_8]}...{self.api_key[-CONSTANT_4:]}"
             else:
                 key_masked = "***"
         else:
@@ -411,7 +417,7 @@ def interactive_provider_setup() -> Optional["FixOsConfig"]:
     env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     env_path.chmod(0o600)
 
-    masked = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
+    masked = f"{key[:CONSTANT_8]}...{key[-CONSTANT_4:]}" if len(key) > CONSTANT_12 else "***"
     print(f"  💾 Zapisano {key_env}={masked} → {env_path}")
     print()
 

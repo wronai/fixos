@@ -3,13 +3,26 @@ Cleanup command for fixOS CLI - service data cleanup with detailed flatpak suppo
 """
 import click
 import subprocess
-from fixos.cli.shared import BANNER
 from fixos.diagnostics.service_scanner import ServiceDataScanner
-from fixos.config import FixOsConfig
+
+CONSTANT_3 = 3
+CONSTANT_4 = 4
+CONSTANT_5 = 5
+CONSTANT_7 = 7
+CONSTANT_9 = 9
+CONSTANT_20 = 20
+CONSTANT_30 = 30
+CONSTANT_50 = 50
+CONSTANT_60 = 60
+CONSTANT_90 = 90
+CONSTANT_120 = 120
+CONSTANT_300 = 300
+CONSTANT_500 = 500
+CONSTANT_1024 = 1024
 
 
 @click.command("cleanup")
-@click.option("--threshold", "-t", default=500, type=int,
+@click.option("--threshold", "-t", default=CONSTANT_500, type=int,
               help="Próg wielkości w MB (domyślnie 500MB)")
 @click.option("--services", "-s", default=None,
               help="Usługi do przeskanowania: docker,ollama,npm,pip,... (domyślnie wszystkie)")
@@ -97,7 +110,7 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
 def _display_cleanup_summary(plan: dict, threshold: int) -> None:
     """Display cleanup plan summary header."""
     click.echo(click.style(f"\nSkanowanie usług (próg: {threshold} MB)...", fg="cyan"))
-    click.echo(click.style("═" * 60, fg="cyan"))
+    click.echo(click.style("═" * CONSTANT_60, fg="cyan"))
     
     if plan["services_found"] == 0:
         click.echo(click.style("\nNie znaleziono usług powyżej progu.", fg="green"))
@@ -128,7 +141,7 @@ def _display_service_item(svc: dict) -> None:
         elif svc["service_type"] == "ollama" and svc["details"].get("models"):
             models = svc["details"]["models"]
             if models:
-                click.echo(f"   Modele: {', '.join(models[:3])}{'...' if len(models) > 3 else ''}")
+                click.echo(f"   Modele: {', '.join(models[:CONSTANT_3])}{'...' if len(models) > CONSTANT_3 else ''}")
     click.echo()
 
 
@@ -274,9 +287,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
         return
     
     # Wyświetl menu z opcjami
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📋 WYBIERZ OPCJE DO WYKONANIA", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     
     if dry_run:
         click.echo(click.style("\n[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
@@ -302,9 +315,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
             click.echo(f"    {click.style(f'Elementów: {len(rec["items"])}', fg='white', dim=True)}")
     
     # Podsumowanie potencjalnych korzyści
-    click.echo("\n" + click.style("-"*60, fg="cyan"))
+    click.echo("\n" + click.style("-"*CONSTANT_60, fg="cyan"))
     click.echo(f"💰 {click.style('ŁĄCZNA POTENCJALNA KORZYŚĆ:', fg='green', bold=True)} ~{_format_bytes(total_potential_savings)}")
-    click.echo(click.style("-"*60, fg="cyan"))
+    click.echo(click.style("-"*CONSTANT_60, fg="cyan"))
     
     # Menu wyboru
     click.echo(f"\n{click.style('Dostępne opcje:', fg='white', bold=True)}")
@@ -346,9 +359,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
         "space_reclaimed": 0,
     }
     
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("🚀 WYKONYWANIE WYBRANYCH AKCJI", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan") + "\n")
+    click.echo(click.style("="*CONSTANT_60, fg="cyan") + "\n")
     
     for idx in selected_indices:
         rec = recommendations[idx]
@@ -378,27 +391,27 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
                 click.echo(click.style(f"   ❌ Błąd: {result.get('error', 'Unknown error')}", fg="red"))
     
     # Podsumowanie końcowe
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(f"   ✅ Wykonano: {len(results['executed'])}")
     click.echo(f"   ⏭️ Pominięto: {len(results['skipped'])}")
     click.echo(f"   ❌ Błędy: {len(results['failed'])}")
     
-    freed_gb = results['space_reclaimed'] / (1024**3)
+    freed_gb = results['space_reclaimed'] / (CONSTANT_1024**CONSTANT_3)
     if dry_run:
         click.echo(click.style(f"\n   💰 [DRY-RUN] Zwolniono by: {freed_gb:.2f} GB", fg="cyan"))
     else:
         click.echo(click.style(f"\n   💰 Odzyskano: {freed_gb:.2f} GB", fg="green"))
     
-    click.echo(click.style("="*60 + "\n", fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60 + "\n", fg="cyan"))
 
 
 def _display_flatpak_status(analysis: dict) -> None:
     """Wyświetl status Flatpak z rzeczywistymi danymi"""
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📊 STATUS FLATPAK", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     
     # Aplikacje
     apps_count = len(analysis.get('installed_apps', []))
@@ -424,7 +437,7 @@ def _display_flatpak_status(analysis: dict) -> None:
     if duplicates:
         dup_size = sum(d.get('total_size', 0) for d in duplicates)
         click.echo(f"\n🔄 Duplikaty aplikacji: {click.style(str(len(duplicates)), fg='yellow')} ({_format_bytes(dup_size)})")
-        for dup in duplicates[:3]:
+        for dup in duplicates[:CONSTANT_3]:
             click.echo(f"   • {dup.get('name', '?')} ({dup.get('count', 0)} wersje)")
     
     # Nieużywane runtime'y
@@ -442,13 +455,13 @@ def _display_flatpak_status(analysis: dict) -> None:
 
 def _display_detailed_recommendations(recommendations: list) -> None:
     """Wyświetl szczegółowe informacje o każdej rekomendacji"""
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📖 SZCZEGÓŁY REKOMENDACJI", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     
     for i, rec in enumerate(recommendations, 1):
         click.echo(f"\n{click.style(f'[{i}]', fg='cyan', bold=True)} {rec['description']}")
-        click.echo(click.style("-"*50, fg="white", dim=True))
+        click.echo(click.style("-"*CONSTANT_50, fg="white", dim=True))
         click.echo(f"\n{rec['explanation']}")
         
         if rec.get('items'):
@@ -495,10 +508,10 @@ def _parse_size_to_bytes(size_str: str) -> int:
     size_str = size_str.strip().upper().replace(' ', '')
     multipliers = {
         'B': 1,
-        'KB': 1024,
-        'MB': 1024**2,
-        'GB': 1024**3,
-        'TB': 1024**4,
+        'KB': CONSTANT_1024,
+        'MB': CONSTANT_1024**2,
+        'GB': CONSTANT_1024**CONSTANT_3,
+        'TB': CONSTANT_1024**CONSTANT_4,
     }
     
     for suffix, mult in sorted(multipliers.items(), key=lambda x: -len(x[0])):
@@ -517,9 +530,9 @@ def _parse_size_to_bytes(size_str: str) -> int:
 def _format_bytes(size_bytes: int) -> str:
     """Format bytes to human-readable string"""
     for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-        if size_bytes < 1024:
+        if size_bytes < CONSTANT_1024:
             return f"{size_bytes:.1f} {unit}"
-        size_bytes /= 1024
+        size_bytes /= CONSTANT_1024
     return f"{size_bytes:.1f} PB"
 
 
@@ -549,9 +562,9 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         return
     
     # Show recommendations
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📋 REKOMENDACJE", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     
     if dry_run:
         click.echo(click.style("\n[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
@@ -573,15 +586,15 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     if medium_items:
         total_medium = sum(item.size_bytes for item in medium_items)
         click.echo(f"\n{click.style('🟡 WYMAGA POTWIERDZENIA:', fg='yellow', bold=True)}")
-        for item in medium_items[:5]:
+        for item in medium_items[:CONSTANT_5]:
             click.echo(f"  • {item.name}: {_format_bytes(item.size_bytes)}")
             click.echo(f"    → {click.style(item.cleanup_command, fg='cyan', dim=True)}")
         click.echo(f"\n  💰 Łącznie: {click.style(_format_bytes(total_medium), fg='yellow')}")
     
     # Menu
-    click.echo("\n" + click.style("-"*60, fg="cyan"))
+    click.echo("\n" + click.style("-"*CONSTANT_60, fg="cyan"))
     click.echo(f"💰 {click.style('ŁĄCZNIE DO ODZYSKANIA:', fg='green', bold=True)} {analysis['total_reclaimable_human']}")
-    click.echo(click.style("-"*60, fg="cyan"))
+    click.echo(click.style("-"*CONSTANT_60, fg="cyan"))
     
     # Show category breakdown for dev_projects
     dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
@@ -639,10 +652,10 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             count = len(data["items"])
             total = data["total"]
             click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {count} folderów, {_format_bytes(total)}")
-            for item in data["items"][:5]:
+            for item in data["items"][:CONSTANT_5]:
                 click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
-            if count > 5:
-                click.echo(f"  ... i {count - 5} więcej")
+            if count > CONSTANT_5:
+                click.echo(f"  ... i {count - CONSTANT_5} więcej")
         return
     
     # Snap package management
@@ -660,7 +673,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                     snap_packages = []
                     for line in lines:
                         parts = line.split()
-                        if len(parts) >= 4:
+                        if len(parts) >= CONSTANT_4:
                             snap_packages.append({
                                 'name': parts[0],
                                 'version': parts[1],
@@ -759,7 +772,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                     ['sudo', 'snap', 'remove', pkg['name']],
                     capture_output=True,
                     text=True,
-                    timeout=120,
+                    timeout=CONSTANT_120,
                 )
                 if result.returncode == 0:
                     click.echo(click.style("  ✅ Odinstalowano", fg="green"))
@@ -786,21 +799,21 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         # Show large files
         if large_files:
             click.echo(f"\n{click.style('📄 DUŻE PLIKI (>200MB):', fg='red', bold=True)}")
-            for i, f in enumerate(large_files[:30], 1):
+            for i, f in enumerate(large_files[:CONSTANT_30], 1):
                 click.echo(f"  [{i:3d}] 📄 {click.style(f['path'], fg='cyan')}: {f['size_human']}")
             
-            if len(large_files) > 30:
-                click.echo(f"  ... i {len(large_files) - 30} więcej")
+            if len(large_files) > CONSTANT_30:
+                click.echo(f"  ... i {len(large_files) - CONSTANT_30} więcej")
         
         # Show large directories
         if large_dirs:
             click.echo(f"\n{click.style('📁 DUŻE FOLDERY (>500MB):', fg='magenta', bold=True)}")
             offset = len(large_files)
-            for i, d in enumerate(large_dirs[:20], 1):
+            for i, d in enumerate(large_dirs[:CONSTANT_20], 1):
                 click.echo(f"  [{offset + i:3d}] 📁 {click.style(d['path'], fg='yellow')}: {d['size_human']}")
             
-            if len(large_dirs) > 20:
-                click.echo(f"  ... i {len(large_dirs) - 20} więcej")
+            if len(large_dirs) > CONSTANT_20:
+                click.echo(f"  ... i {len(large_dirs) - CONSTANT_20} więcej")
         
         # Get selection
         total_items = len(large_files) + len(large_dirs)
@@ -818,7 +831,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         # Handle info:N
         if nums.startswith('info:'):
             try:
-                idx = int(nums[5:])
+                idx = int(nums[CONSTANT_5:])
                 if 1 <= idx <= len(large_files):
                     f = large_files[idx - 1]
                     click.echo(f"\n{click.style('📦 SZCZEGÓŁY PLIKU:', fg='yellow', bold=True)}")
@@ -920,12 +933,12 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         click.echo(f"  {click.style('filter:TYPE', fg='magenta')} - filtruj po typie (np. filter:venv)")
         
         # Show numbered list
-        for i, item in enumerate(analyzer.items[:50], 1):
+        for i, item in enumerate(analyzer.items[:CONSTANT_50], 1):
             risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
             click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
         
-        if len(analyzer.items) > 50:
-            click.echo(f"  ... i {len(analyzer.items) - 50} więcej (użyj filter:TYPE lub top:N)")
+        if len(analyzer.items) > CONSTANT_50:
+            click.echo(f"  ... i {len(analyzer.items) - CONSTANT_50} więcej (użyj filter:TYPE lub top:N)")
         
         # Interactive loop for selection
         items_to_clean = []
@@ -942,7 +955,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             # Handle info:N
             if nums.startswith('info:'):
                 try:
-                    idx = int(nums[5:])
+                    idx = int(nums[CONSTANT_5:])
                     if 1 <= idx <= len(analyzer.items):
                         item = analyzer.items[idx - 1]
                         click.echo(f"\n{click.style('📦 SZCZEGÓŁY ELEMENTU:', fg='yellow', bold=True)}")
@@ -962,7 +975,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             # Handle path:N
             if nums.startswith('path:'):
                 try:
-                    idx = int(nums[5:])
+                    idx = int(nums[CONSTANT_5:])
                     if 1 <= idx <= len(analyzer.items):
                         item = analyzer.items[idx - 1]
                         click.echo(f"\n{click.style('📁 ŚCIEŻKA:', fg='yellow')}")
@@ -982,7 +995,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             # Handle cmd:N
             if nums.startswith('cmd:'):
                 try:
-                    idx = int(nums[4:])
+                    idx = int(nums[CONSTANT_4:])
                     if 1 <= idx <= len(analyzer.items):
                         item = analyzer.items[idx - 1]
                         click.echo(f"\n{click.style('🔧 KOMENDA CZYSZCZENIA:', fg='yellow')}")
@@ -1000,7 +1013,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             
             # Handle filter:TYPE
             if nums.startswith('filter:'):
-                filter_type = nums[7:].strip()
+                filter_type = nums[CONSTANT_7:].strip()
                 filtered_items = []
                 for item in analyzer.items:
                     item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
@@ -1012,7 +1025,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                     continue
                 
                 click.echo(f"\n{click.style(f'🔍 FILTR: {filter_type}', fg='magenta', bold=True)}")
-                for i, item in enumerate(filtered_items[:50], 1):
+                for i, item in enumerate(filtered_items[:CONSTANT_50], 1):
                     risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
                     original_idx = analyzer.items.index(item) + 1
                     click.echo(f"  [{original_idx:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
@@ -1081,18 +1094,18 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             items_to_clean = analyzer.items
         elif selection == 'large':
             # Items > 1 GB
-            items_to_clean = [item for item in analyzer.items if item.size_bytes > 1024**3]
+            items_to_clean = [item for item in analyzer.items if item.size_bytes > CONSTANT_1024**CONSTANT_3]
             total_large = sum(item.size_bytes for item in items_to_clean)
             click.echo(click.style(f"\n🔴 Duże elementy (>1 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_large)}", fg="red"))
         elif selection == 'huge':
             # Items > 5 GB
-            items_to_clean = [item for item in analyzer.items if item.size_bytes > 5 * 1024**3]
+            items_to_clean = [item for item in analyzer.items if item.size_bytes > CONSTANT_5 * CONSTANT_1024**CONSTANT_3]
             total_huge = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n🔴 Bardzo duże elementy (>5 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_huge)}", fg="red"))
+            click.echo(click.style(f"\n🔴 Bardzo duże elementy (>CONSTANT_5 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_huge)}", fg="red"))
         elif selection == 'old':
             # Items not modified in 30+ days
             from datetime import datetime, timedelta
-            cutoff = datetime.now() - timedelta(days=30)
+            cutoff = datetime.now() - timedelta(days=CONSTANT_30)
             items_to_clean = [
                 item for item in analyzer.items
                 if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
@@ -1102,7 +1115,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         elif selection == 'stale':
             # Items not modified in 90+ days
             from datetime import datetime, timedelta
-            cutoff = datetime.now() - timedelta(days=90)
+            cutoff = datetime.now() - timedelta(days=CONSTANT_90)
             items_to_clean = [
                 item for item in analyzer.items
                 if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
@@ -1112,7 +1125,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
         elif selection.startswith('top:'):
             # Top N largest items
             try:
-                n = int(selection[4:])
+                n = int(selection[CONSTANT_4:])
                 items_to_clean = analyzer.items[:n]
                 total_top = sum(item.size_bytes for item in items_to_clean)
                 click.echo(click.style(f"\n🏆 Top {n} największych: {_format_bytes(total_top)}", fg="yellow"))
@@ -1121,7 +1134,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                 return
         elif selection.startswith('category:'):
             # Filter by category
-            selected_category = selection[9:].strip()
+            selected_category = selection[CONSTANT_9:].strip()
             items_to_clean = [item for item in analyzer.items if item.category == selected_category]
             
             if not items_to_clean:
@@ -1134,7 +1147,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             click.echo(click.style(f"\n📁 Kategoria '{selected_category}': {len(items_to_clean)} elementów, {_format_bytes(total_cat)}", fg="blue"))
         elif selection.startswith('type:'):
             # Filter by type (single or multiple)
-            selected_types = [t.strip() for t in selection[5:].split(',')]
+            selected_types = [t.strip() for t in selection[CONSTANT_5:].split(',')]
             
             for item in analyzer.items:
                 item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
@@ -1154,9 +1167,9 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     if not items_to_clean:
         return
     
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("🚀 WYKONYWANIE CZYSZCZENIA", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan") + "\n")
+    click.echo(click.style("="*CONSTANT_60, fg="cyan") + "\n")
     
     results = {"success": 0, "failed": 0, "space_reclaimed": 0}
     
@@ -1181,7 +1194,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                     item.cleanup_command.split(),
                     capture_output=True,
                     text=True,
-                    timeout=300,
+                    timeout=CONSTANT_300,
                 )
                 if result.returncode == 0:
                     click.echo(click.style("  ✅ Sukces", fg="green"))
@@ -1195,9 +1208,9 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
                 results['failed'] += 1
     
     # Summary
-    click.echo("\n" + click.style("="*60, fg="cyan"))
+    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
-    click.echo(click.style("="*60, fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(f"   ✅ Sukces: {results['success']}")
     click.echo(f"   ❌ Błędy: {results['failed']}")
     
@@ -1206,18 +1219,18 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     else:
         click.echo(click.style(f"\n   💰 Odzyskano: {_format_bytes(results['space_reclaimed'])}", fg="green"))
     
-    click.echo(click.style("="*60 + "\n", fg="cyan"))
+    click.echo(click.style("="*CONSTANT_60 + "\n", fg="cyan"))
 
 
 def _parse_size_to_gb(size_str: str) -> float:
     """Parse human-readable size to GB"""
     size_str = size_str.strip().upper()
     multipliers = {
-        'B': 1 / (1024**3),
-        'KB': 1 / (1024**2),
-        'MB': 1 / 1024,
+        'B': 1 / (CONSTANT_1024**CONSTANT_3),
+        'KB': 1 / (CONSTANT_1024**2),
+        'MB': 1 / CONSTANT_1024,
         'GB': 1,
-        'TB': 1024,
+        'TB': CONSTANT_1024,
     }
     
     for suffix, mult in sorted(multipliers.items(), key=lambda x: -len(x[0])):
@@ -1228,6 +1241,6 @@ def _parse_size_to_gb(size_str: str) -> float:
                 return 0
     
     try:
-        return float(size_str) / (1024**3)
+        return float(size_str) / (CONSTANT_1024**CONSTANT_3)
     except ValueError:
         return 0

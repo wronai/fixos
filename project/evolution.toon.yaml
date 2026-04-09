@@ -1,4 +1,4 @@
-# code2llm/evolution | 444 func | 62f | 2026-04-09
+# code2llm/evolution | 477 func | 73f | 2026-04-09
 
 NEXT[10] (ranked by impact):
   [1] !! SPLIT           fixos/cli/cleanup_cmd.py
@@ -17,29 +17,29 @@ NEXT[10] (ranked by impact):
       WHY: CC=172 exceeds 15
       EFFORT: ~1h  IMPACT: 10492
 
-  [5] !  SPLIT-FUNC      HITLSession._process_turn  CC=20  fan=28
-      WHY: CC=20 exceeds 15
-      EFFORT: ~1h  IMPACT: 560
-
-  [6] !! SPLIT-FUNC      interactive_provider_setup  CC=25  fan=21
-      WHY: CC=25 exceeds 15
-      EFFORT: ~1h  IMPACT: 525
-
-  [7] !  SPLIT-FUNC      fix  CC=18  fan=21
+  [5] !  SPLIT-FUNC      fix  CC=18  fan=21
       WHY: CC=18 exceeds 15
       EFFORT: ~1h  IMPACT: 378
 
-  [8] !  SPLIT-FUNC      report  CC=16  fan=22
+  [6] !  SPLIT-FUNC      report  CC=16  fan=22
       WHY: CC=16 exceeds 15
       EFFORT: ~1h  IMPACT: 352
 
-  [9] !  SPLIT-FUNC      run_llm_shell  CC=15  fan=23
+  [7] !  SPLIT-FUNC      run_llm_shell  CC=15  fan=23
       WHY: CC=15 exceeds 15
       EFFORT: ~1h  IMPACT: 345
 
-  [10] !  SPLIT-FUNC      render_md  CC=16  fan=19
+  [8] !  SPLIT-FUNC      diagnose_system  CC=16  fan=19
       WHY: CC=16 exceeds 15
       EFFORT: ~1h  IMPACT: 304
+
+  [9] !  SPLIT-FUNC      render_md  CC=16  fan=19
+      WHY: CC=16 exceeds 15
+      EFFORT: ~1h  IMPACT: 304
+
+  [10] !! SPLIT-FUNC      FlatpakAnalyzer.get_cleanup_recommendations  CC=27  fan=11
+      WHY: CC=27 exceeds 15
+      EFFORT: ~1h  IMPACT: 297
 
 
 RISKS[3]:
@@ -48,10 +48,10 @@ RISKS[3]:
   ⚠ Splitting fixos/diagnostics/flatpak_analyzer.py may break 24 import paths
 
 METRICS-TARGET:
-  CC̄:          5.6 → ≤3.9
+  CC̄:          5.3 → ≤3.7
   max-CC:      172 → ≤20
-  god-modules: 5 → 0
-  high-CC(≥15): 27 → ≤13
+  god-modules: 3 → 0
+  high-CC(≥15): 26 → ≤13
   hub-types:   0 → ≤0
 
 PATTERNS (language parser shared logic):
@@ -79,4 +79,4 @@ PATTERNS (language parser shared logic):
     - Standardized FunctionInfo/ClassInfo models
 
 HISTORY:
-  prev CC̄=5.0 → now CC̄=5.6
+  prev CC̄=5.6 → now CC̄=5.3

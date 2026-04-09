@@ -1,32 +1,32 @@
-# code2llm | 76f 15401L | python:75,shell:1 | 2026-04-09
-# CC̄=5.6 | critical:27/452 | dups:0 | cycles:0
+# code2llm | 88f 15765L | python:87,shell:1 | 2026-04-09
+# CC̄=5.3 | critical:26/485 | dups:0 | cycles:0
 
 HEALTH[20]:
   🟡 CC    run_llm_shell CC=15 (limit:15)
   🟡 CC    _identify_cache_type CC=17 (limit:15)
-  🟡 CC    interactive_provider_setup CC=25 (limit:15)
   🟡 CC    _docker CC=17 (limit:15)
+  🟡 CC    diagnose_system CC=16 (limit:15)
   🟡 CC    _analyze_docker CC=22 (limit:15)
   🟡 CC    _analyze_snap CC=15 (limit:15)
   🟡 CC    _find_leftover_data CC=15 (limit:15)
   🟡 CC    _analyze_repo_size CC=15 (limit:15)
   🟡 CC    get_cleanup_recommendations CC=27 (limit:15)
-  🟡 CC    _detect_de CC=15 (limit:15)
-  🟡 CC    _process_turn CC=20 (limit:15)
   🟡 CC    _install_package CC=27 (limit:15)
-  🟡 CC    _run_disk_analysis CC=18 (limit:15)
+  🟡 CC    _detect_de CC=15 (limit:15)
   🟡 CC    report CC=16 (limit:15)
+  🟡 CC    _run_disk_analysis CC=18 (limit:15)
   🟡 CC    _match_heuristic_command CC=18 (limit:15)
   🟡 CC    fix CC=18 (limit:15)
   🟡 CC    features_install CC=15 (limit:15)
-  🟡 CC    diagnose CC=16 (limit:15)
   🟡 CC    cleanup_services CC=16 (limit:15)
   🟡 CC    _display_unsafe_services CC=18 (limit:15)
+  🟡 CC    _cleanup_full_system CC=172 (limit:15)
+  🟡 CC    chat CC=15 (limit:15)
 
 REFACTOR[1]:
   1. split 20 high-CC methods  (CC>15)
 
-PIPELINES[338]:
+PIPELINES[358]:
   [1] Src [__init__]: __init__
       PURITY: 100% pure
   [2] Src [run]: run
@@ -39,41 +39,46 @@ PIPELINES[338]:
       PURITY: 100% pure
 
 LAYERS:
-  fixos/                          CC̄=5.6    ←in:73  →out:0
+  scripts/                        CC̄=5.4    ←in:0  →out:0
+  │ pyqual-calibrate           299L  0C    7m  CC=14     ←0
+  │
+  fixos/                          CC̄=5.3    ←in:73  →out:0
   │ !! cleanup_cmd               1246L  0C   14m  CC=172    ←0
   │ !! storage_analyzer          1058L  2C   31m  CC=22     ←0
   │ !! flatpak_analyzer           944L  3C   24m  CC=27     ←0
-  │ !! system_checks              512L  0C    9m  CC=14     ←0
-  │ !! hitl_session               509L  2C   20m  CC=20     ←0
   │ service_cleanup            473L  1C   10m  CC=14     ←2
-  │ !! config                     439L  1C    7m  CC=25     ←7
   │ !! disk_analyzer              433L  1C   15m  CC=17     ←0
   │ autonomous_session         433L  3C   22m  CC=8      ←0
   │ !! cleanup_planner            417L  4C   12m  CC=18     ←0
   │ dev_project_analyzer       403L  2C   13m  CC=11     ←0
   │ !! orchestrator               382L  2C   11m  CC=17     ←0
   │ !! ask_cmd                    354L  0C    8m  CC=18     ←0
+  │ config                     345L  1C    7m  CC=14     ←8
   │ llm_analyzer               333L  2C    8m  CC=13     ←0
   │ !! terminal                   316L  1C    8m  CC=16     ←2
   │ !! anonymizer                 299L  1C    9m  CC=18     ←2
   │ !! fix_cmd                    282L  0C    4m  CC=18     ←0
   │ executor                   271L  4C   11m  CC=11     ←0
   │ !! __init__                   267L  2C   12m  CC=15     ←0
-  │ web_search                 254L  1C    9m  CC=9      ←2
+  │ web_search                 254L  1C    9m  CC=9      ←3
   │ provider_cmd               250L  0C    3m  CC=9      ←0
   │ service_scanner            249L  3C    8m  CC=7      ←0
   │ !! service_details            242L  1C    7m  CC=17     ←0
   │ !! llm_shell                  240L  0C    4m  CC=15     ←0
+  │ session_handlers           227L  0C   10m  CC=9      ←0
+  │ session_io                 219L  0C   24m  CC=8      ←0
+  │ hitl_session               211L  1C   12m  CC=7      ←0
   │ !! llm                        206L  2C    6m  CC=15     ←0
   │ !! installer                  196L  1C   11m  CC=27     ←0
   │ !! scan_cmd                   187L  0C    3m  CC=18     ←1
-  │ platform_utils             184L  0C   10m  CC=8      ←7
+  │ platform_utils             184L  0C   10m  CC=8      ←8
   │ !! features_cmd               176L  0C    6m  CC=15     ←0
   │ !! security                   171L  1C    6m  CC=16     ←0
   │ graph                      163L  2C   11m  CC=13     ←0
   │ rollback                   162L  2C    6m  CC=7      ←2
   │ main                       158L  0C    3m  CC=6      ←0
   │ system_checks              156L  0C    8m  CC=6      ←2
+  │ config_interactive         149L  0C    5m  CC=9      ←1
   │ resources                  137L  1C    6m  CC=14     ←0
   │ orchestrate_cmd            132L  0C    1m  CC=13     ←0
   │ hardware                   129L  1C    6m  CC=12     ←0
@@ -87,21 +92,31 @@ LAYERS:
   │ !! report_cmd                 115L  0C    1m  CC=16     ←0
   │ disk                       113L  1C    4m  CC=12     ←0
   │ audio                      107L  1C    5m  CC=10     ←0
+  │ !! system_core                105L  0C    1m  CC=16     ←0
   │ base                        99L  4C    4m  CC=2      ←0
+  │ session_core                92L  1C    2m  CC=10     ←1
+  │ resources                   91L  0C    1m  CC=13     ←0
   │ rollback_cmd                90L  0C    4m  CC=7      ←0
   │ profiles                    88L  1C    4m  CC=8      ←1
-  │ anonymizer                  86L  0C    2m  CC=5      ←5
+  │ anonymizer                  86L  0C    2m  CC=5      ←6
+  │ security                    84L  0C    1m  CC=4      ←0
   │ config_cmd                  83L  0C    4m  CC=4      ←0
   │ quickfix_cmd                76L  0C    1m  CC=12     ←0
+  │ system_checks               73L  0C    1m  CC=7      ←0
   │ schemas                     71L  5C    0m  CC=0.0    ←0
   │ __init__                    65L  1C    3m  CC=4      ←2
+  │ thumbnails                  62L  0C    1m  CC=1      ←0
   │ shared                      62L  1C    3m  CC=6      ←0
+  │ audio                       60L  0C    1m  CC=1      ←0
   │ profile_cmd                 59L  0C    3m  CC=4      ←0
   │ autonomous                  49L  0C    1m  CC=1      ←0
   │ history_cmd                 49L  0C    1m  CC=5      ←0
   │ watch_cmd                   49L  0C    1m  CC=2      ←0
+  │ _shared                     44L  0C    2m  CC=7      ←6
+  │ hardware                    42L  0C    1m  CC=1      ←0
   │ __init__                    39L  0C    1m  CC=2      ←2
   │ hitl                        36L  0C    1m  CC=1      ←1
+  │ __init__                    20L  0C    0m  CC=0.0    ←0
   │ timeout                     17L  1C    1m  CC=1      ←0
   │ __init__                    11L  0C    0m  CC=0.0    ←0
   │ __init__                     9L  0C    0m  CC=0.0    ←0
@@ -113,9 +128,6 @@ LAYERS:
   │ __init__                     2L  0C    0m  CC=0.0    ←0
   │ __init__                     1L  0C    0m  CC=0.0    ←0
   │ __init__                     0L  0C    0m  CC=0.0    ←0
-  │
-  scripts/                        CC̄=5.4    ←in:0  →out:0
-  │ pyqual-calibrate           299L  0C    7m  CC=14     ←0
   │
   ./                              CC̄=0.0    ←in:0  →out:0
   │ setup                       45L  0C    0m  CC=0.0    ←0
@@ -138,10 +150,10 @@ COUPLING:
   HUB: fixos.features/ (fan-in=12)
   HUB: fixos/ (fan-in=73)
   HUB: fixos.utils/ (fan-in=18)
+  SMELL: fixos.orchestrator/ fan-out=8 → split needed
   SMELL: fixos.agent/ fan-out=31 → split needed
   SMELL: fixos.plugins/ fan-out=32 → split needed
   SMELL: fixos.cli/ fan-out=38 → split needed
-  SMELL: fixos.orchestrator/ fan-out=8 → split needed
 
 EXTERNAL:
   validation: run `vallm batch .` → validation.toon

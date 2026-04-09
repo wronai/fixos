@@ -1,16 +1,19 @@
-# fixOS | 76f 15401L | shell:1,python:75 | 2026-04-09
-# stats: 451 func | 0 cls | 76 mod | CC̄=5.6 | critical:27 | cycles:0
-# alerts[5]: CC _cleanup_full_system=172; fan-out _cleanup_full_system=61; fan-out HITLSession._process_turn=28; CC FeatureInstaller._install_package=27; CC FlatpakAnalyzer.get_cleanup_recommendations=27
-# hotspots[5]: _cleanup_full_system fan=61; HITLSession._process_turn fan=28; StorageAnalyzer.analyze_full fan=24; orchestrate fan=24; run_llm_shell fan=23
-# evolution: CC̄ 5.0→5.6 (regressed +0.6)
+# fixOS | 88f 15765L | shell:1,python:87 | 2026-04-09
+# stats: 484 func | 0 cls | 88 mod | CC̄=5.3 | critical:26 | cycles:0
+# alerts[5]: CC _cleanup_full_system=172; fan-out _cleanup_full_system=61; CC FeatureInstaller._install_package=27; CC FlatpakAnalyzer.get_cleanup_recommendations=27; fan-out StorageAnalyzer.analyze_full=24
+# hotspots[5]: _cleanup_full_system fan=61; StorageAnalyzer.analyze_full fan=24; orchestrate fan=24; run_llm_shell fan=23; report fan=22
+# evolution: CC̄ 5.6→5.3 (improved -0.3)
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
-M[76]:
+M[88]:
   fixos/__init__.py,2
   fixos/agent/__init__.py,39
   fixos/agent/autonomous.py,49
   fixos/agent/autonomous_session.py,433
   fixos/agent/hitl.py,36
-  fixos/agent/hitl_session.py,509
+  fixos/agent/hitl_session.py,211
+  fixos/agent/session_core.py,92
+  fixos/agent/session_handlers.py,227
+  fixos/agent/session_io.py,219
   fixos/anonymizer.py,86
   fixos/cli/__init__.py,8
   fixos/cli/ask_cmd.py,354
@@ -30,8 +33,17 @@ M[76]:
   fixos/cli/shared.py,62
   fixos/cli/token_cmd.py,124
   fixos/cli/watch_cmd.py,49
-  fixos/config.py,439
+  fixos/config.py,345
+  fixos/config_interactive.py,149
   fixos/diagnostics/__init__.py,2
+  fixos/diagnostics/checks/__init__.py,20
+  fixos/diagnostics/checks/_shared.py,44
+  fixos/diagnostics/checks/audio.py,60
+  fixos/diagnostics/checks/hardware.py,42
+  fixos/diagnostics/checks/resources.py,91
+  fixos/diagnostics/checks/security.py,84
+  fixos/diagnostics/checks/system_core.py,105
+  fixos/diagnostics/checks/thumbnails.py,62
   fixos/diagnostics/dev_project_analyzer.py,403
   fixos/diagnostics/disk_analyzer.py,433
   fixos/diagnostics/flatpak_analyzer.py,944
@@ -39,7 +51,7 @@ M[76]:
   fixos/diagnostics/service_details.py,242
   fixos/diagnostics/service_scanner.py,249
   fixos/diagnostics/storage_analyzer.py,1058
-  fixos/diagnostics/system_checks.py,512
+  fixos/diagnostics/system_checks.py,73
   fixos/features/__init__.py,267
   fixos/features/auditor.py,127
   fixos/features/catalog.py,119
@@ -107,24 +119,12 @@ D:
   fixos/features/installer.py:
     e: FeatureInstaller
     FeatureInstaller: __init__(2),install(1),_install_package(1),_install_repo(1),_install_native(1),_install_flatpak(1),_install_pip(1),_install_cargo(1),_install_npm(1),_run_script(1),get_rollback_commands(1)  # Safely installs packages using native package manager or oth...
-  fixos/config.py:
-    e: FixOsConfig,_load_env_files,detect_provider_from_key,interactive_provider_setup,get_providers_list
-    FixOsConfig: load(0),validate(0),summary(0)
-    _load_env_files()
-    detect_provider_from_key(key)
-    interactive_provider_setup()
-    get_providers_list()
   fixos/diagnostics/storage_analyzer.py:
     e: StorageItem,StorageAnalyzer
     StorageItem: to_dict(0),_format_size(0)  # Represents a storage item that can be cleaned...
     StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
 
 Analizuje...
-  fixos/agent/hitl_session.py:
-    e: CmdResult,HITLSession,run_hitl_session
-    CmdResult:
-    HITLSession: __init__(3),_setup_timeout(0),_clear_timeout(0),remaining(0),fmt_time(0),_initialize_messages(0),_print_header(0),_extract_fixes(0),_extract_search_topic(1),_print_action_menu(0),_ask_user_problem(0),_print_cmd_preview(2),_print_cmd_result(1),_run_cmd(2),_handle_llm_error(0),_check_low_confidence(1),_process_turn(0),run(0),_print_summary(0)  # Interactive Human-in-the-Loop diagnostic and repair session...
-    run_hitl_session(diagnostics;config;show_data)
   fixos/cli/scan_cmd.py:
     e: scan,_run_disk_analysis,_print_quick_issues
     scan(modules;output;show_raw;no_banner;disc;dry_run;interactive;json_output;llm_fallback;profile)
@@ -177,6 +177,9 @@ Analizuje...
 
 Tryby:
 - hitl: każda komen...
+  fixos/diagnostics/checks/system_core.py:
+    e: diagnose_system
+    diagnose_system()
   fixos/cli/report_cmd.py:
     e: report
     report(output_format;output;modules;profile)
@@ -216,20 +219,16 @@ Tryby:
     e: LLMError,LLMClient
     LLMError(Exception):  # Błąd komunikacji z LLM...
     LLMClient: __init__(1),chat(1),chat_stream(1),chat_structured(2),_extract_json(0),ping(0)  # Wrapper nad openai.OpenAI kompatybilny z wieloma providerami...
-  fixos/diagnostics/system_checks.py:
-    e: _psutil_required,_cmd,diagnose_audio,diagnose_thumbnails,diagnose_hardware,diagnose_system,diagnose_security,diagnose_resources,get_full_diagnostics
-    _psutil_required()
-    _cmd(cmd;timeout)
-    diagnose_audio()
-    diagnose_thumbnails()
-    diagnose_hardware()
-    diagnose_system()
-    diagnose_security()
-    diagnose_resources()
-    get_full_diagnostics(modules;progress_callback)
   fixos/diagnostics/service_cleanup.py:
     e: ServiceCleaner
     ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(0),is_safe_cleanup(1),get_cleanup_hints(1),get_service_description(0),get_cleanup_command(1),_chrome_cleanup_command(0),get_preview_command(1)  # Plans and executes cleanup of service data...
+  fixos/config.py:
+    e: FixOsConfig,_load_env_files,detect_provider_from_key,interactive_provider_setup,get_providers_list
+    FixOsConfig: load(0),validate(0),summary(0)
+    _load_env_files()
+    detect_provider_from_key(key)
+    interactive_provider_setup()
+    get_providers_list()
   fixos/plugins/builtin/resources.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_cpu(0),_check_ram(0),_check_top_processes(0),_check_zombies(0),_check_swap(0)
@@ -242,6 +241,9 @@ Tryby:
     extract_current_metrics(content)
     calibrate(workdir;margin;dry_run;force;provided_metrics)
     main()
+  fixos/diagnostics/checks/resources.py:
+    e: diagnose_resources
+    diagnose_resources()
   fixos/cli/orchestrate_cmd.py:
     e: orchestrate
     orchestrate(provider;token;model;no_banner;mode;modules;dry_run;max_iterations;output)
@@ -260,12 +262,12 @@ Tryby:
   fixos/cli/quickfix_cmd.py:
     e: quickfix
     quickfix(dry_run;modules)
-  fixos/plugins/builtin/disk.py:
-    e: Plugin
-    Plugin(DiagnosticPlugin): diagnose(0),_check_usage(0),_check_inodes(0),_check_readonly(0)
   fixos/plugins/builtin/hardware.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_gpu(0),_check_battery(0),_check_touchpad(0),_check_camera(0),_check_dmi(0)
+  fixos/plugins/builtin/disk.py:
+    e: Plugin
+    Plugin(DiagnosticPlugin): diagnose(0),_check_usage(0),_check_inodes(0),_check_readonly(0)
   fixos/diagnostics/dev_project_analyzer.py:
     e: ProjectDependency,DevProjectAnalyzer
     ProjectDependency: to_dict(0),_format_size(0)  # Represents a dependency folder that can be cleaned...
@@ -277,6 +279,11 @@ Tryby:
     ExecutionResult: to_context(0)
     CommandExecutor: __init__(3),is_dangerous(1),needs_sudo(1),add_sudo(1),_make_noninteractive(1),check_idempotent(1),execute_sync(4),execute(3)  # Bezpieczny executor komend z:
 - walidacją niebezpiecznych wz...
+  fixos/agent/session_core.py:
+    e: CmdResult,extract_fixes,extract_search_topic
+    CmdResult:  # Result of executed command...
+    extract_fixes(reply)
+    extract_search_topic(llm_reply)
   fixos/features/auditor.py:
     e: AuditResult,FeatureAuditor
     AuditResult: to_dict(0)  # Result of feature audit - what's installed, what's missing...
@@ -287,6 +294,25 @@ Tryby:
   fixos/plugins/builtin/thumbnails.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_cache(0),_check_ffmpegthumbnailer(0),_check_totem(0),_check_gstreamer(0)
+  fixos/config_interactive.py:
+    e: _print_provider_menu,_get_user_choice,_get_api_key,_save_to_env,interactive_provider_setup
+    _print_provider_menu()
+    _get_user_choice(num_map)
+    _get_api_key(provider)
+    _save_to_env(provider;key;key_env)
+    interactive_provider_setup()
+  fixos/agent/session_handlers.py:
+    e: handle_quit,handle_skip_all,handle_describe_problem,handle_execute_all,handle_fix_by_number,handle_direct_command,handle_search,handle_free_text,run_single_command,parse_user_input
+    handle_quit()
+    handle_skip_all(messages)
+    handle_describe_problem(messages;ask_fn)
+    handle_execute_all(fixes;messages;executed;run_cmd_fn)
+    handle_fix_by_number(user_in;fixes;messages;executed;run_cmd_fn)
+    handle_direct_command(user_in;messages;executed;run_cmd_fn)
+    handle_search(user_in;messages;serpapi_key)
+    handle_free_text(user_in;messages)
+    run_single_command(cmd;comment)
+    parse_user_input(user_in;fixes;messages;executed;serpapi_key)
   fixos/cli/provider_cmd.py:
     e: llm_providers,providers,test_llm
     llm_providers(free)
@@ -316,24 +342,61 @@ Tryby:
     _cmd_exists(cmd)
     setup_signal_timeout(seconds;handler)
     cancel_signal_timeout()
-  fixos/features/renderer.py:
-    e: FeatureRenderer
-    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
+  fixos/agent/session_io.py:
+    e: print_session_header,fmt_time,print_action_menu,ask_user_problem,print_cmd_preview,print_cmd_result,print_session_summary,print_thinking,clear_thinking,print_llm_reply,print_llm_error,print_blocked_command,print_timeout,print_session_ended,print_session_interrupted,print_executing_all,print_no_commands,print_invalid_option,print_no_results,print_searching,ask_execute_prompt,ask_low_confidence_search,ask_send_data,get_user_input
+    print_session_header(os_info;pkg_manager;model;timeout;remaining_fn)
+    fmt_time(s)
+    print_action_menu(fixes;remaining;total_tokens)
+    ask_user_problem()
+    print_cmd_preview(cmd;comment)
+    print_cmd_result(result)
+    print_session_summary(messages_count;elapsed;total_tokens;executed)
+    print_thinking()
+    clear_thinking()
+    print_llm_reply(reply)
+    print_llm_error(e)
+    print_blocked_command(cmd;reason)
+    print_timeout()
+    print_session_ended()
+    print_session_interrupted()
+    print_executing_all(count)
+    print_no_commands()
+    print_invalid_option(user_in;max_option)
+    print_no_results()
+    print_searching()
+    ask_execute_prompt()
+    ask_low_confidence_search()
+    ask_send_data()
+    get_user_input(remaining)
   fixos/agent/autonomous_session.py:
     e: FixAction,AgentReport,AutonomousSession,run_autonomous_session
     FixAction:
     AgentReport: summary(0)
     AutonomousSession: __init__(4),_setup_timeout(0),_clear_timeout(0),_confirm_start(0),_initialize_messages(0),_get_remaining_time(0),_check_timeout(0),_query_llm(0),_handle_llm_error(0),_parse_action(1),_is_forbidden(1),_add_sudo(1),_execute_command(1),_handle_search(1),_handle_exec(1),_handle_skip(1),_handle_done(0),_process_turn(0),run(0),_print_report(0)  # Self-directed autonomous diagnostic and repair session...
     run_autonomous_session(diagnostics;config;show_data;max_fixes)
+  fixos/features/renderer.py:
+    e: FeatureRenderer
+    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
   fixos/features/profiles.py:
     e: UserProfile
     UserProfile: load(2),list_available(1),resolve_packages(2),to_dict(0)  # A user profile defining what packages/features they want...
+  fixos/diagnostics/system_checks.py:
+    e: get_full_diagnostics
+    get_full_diagnostics(modules;progress_callback)
   fixos/diagnostics/service_scanner.py:
     e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
     ServiceType(Enum):  # Service types that can be scanned and cleaned...
     ServiceDataInfo:  # Information about service data...
     ServiceDataScanner: __init__(1),scan_all_services(0),scan_service(1),_analyze_service_path(2),_get_path_size_mb(1),get_cleanup_plan(1),cleanup_service(2)  # Scans for large service data directories and allows cleanup...
     main()
+  fixos/diagnostics/checks/_shared.py:
+    e: _psutil_required,_cmd
+    _psutil_required()
+    _cmd(cmd;timeout)
+  fixos/agent/hitl_session.py:
+    e: HITLSession,run_hitl_session
+    HITLSession: __init__(3),_setup_timeout(0),_clear_timeout(0),remaining(0),_initialize_messages(0),_print_header(0),_handle_llm_error(0),_check_low_confidence(1),_process_turn(0),run(0),_print_summary(0)  # Interactive Human-in-the-Loop diagnostic and repair session...
+    run_hitl_session(diagnostics;config;show_data)
   fixos/features/catalog.py:
     e: PackageInfo,PackageCategory,PackageCatalog
     PackageInfo: get_distro_name(1),is_available_on(1)  # Information about a single package...
@@ -385,6 +448,9 @@ Tryby:
   fixos/cli/history_cmd.py:
     e: history
     history(limit;json_output)
+  fixos/diagnostics/checks/security.py:
+    e: diagnose_security
+    diagnose_security()
   fixos/cli/profile_cmd.py:
     e: profile,profile_list,profile_show
     profile()
@@ -413,6 +479,15 @@ Tryby:
     DiagnosticPlugin(ABC): diagnose(0),can_run(0),get_metadata(0)  # Bazowa klasa dla pluginów diagnostycznych fixOS.
 
 Aby stworz...
+  fixos/diagnostics/checks/audio.py:
+    e: diagnose_audio
+    diagnose_audio()
+  fixos/diagnostics/checks/hardware.py:
+    e: diagnose_hardware
+    diagnose_hardware()
+  fixos/diagnostics/checks/thumbnails.py:
+    e: diagnose_thumbnails
+    diagnose_thumbnails()
   fixos/agent/hitl.py:
     e: run_hitl_session
     run_hitl_session(diagnostics;config;show_data)
@@ -428,6 +503,7 @@ Aby stworz...
   fixos/cli/__init__.py:
   fixos/__init__.py:
   fixos/diagnostics/__init__.py:
+  fixos/diagnostics/checks/__init__.py:
   fixos/plugins/__init__.py:
   fixos/plugins/builtin/__init__.py:
   fixos/providers/__init__.py:

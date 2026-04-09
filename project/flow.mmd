@@ -17,9 +17,9 @@ flowchart TD
         fixos__cli__rollback_cmd__rollback_list["rollback_list"]
         fixos__cli__rollback_cmd__rollback_show["rollback_show"]
         fixos__cli__rollback_cmd__rollback_undo["rollback_undo"]
-        fixos__cli__provider_cmd__llm_providers["llm_providers"]
-        fixos__cli__provider_cmd__providers["providers"]
-        ...["+43 more"]
+        fixos__cli__ask_cmd__ask["ask"]
+        fixos__cli__ask_cmd___match_heuristic_command["_match_heuristic_command"]
+        ...["+49 more"]
     end
 
     subgraph Core
@@ -38,7 +38,7 @@ flowchart TD
         fixos__diagnostics__system_checks__diagnose_resources["diagnose_resources"]
         fixos__diagnostics__system_checks__get_full_diagnostics["get_full_diagnostics"]
         fixos__diagnostics__disk_analyzer__DiskAnalyzer__analyze_disk_usage["analyze_disk_usage"]
-        ...["+246 more"]
+        ...["+302 more"]
     end
 
     class fixos__watch__WatchDaemon__run,fixos__watch__WatchDaemon__stop,fixos__watch__WatchDaemon___check_for_new_issues,fixos__watch__WatchDaemon___notify,fixos__platform_utils__install_package_cmd,fixos__llm_shell___timeout_handler,fixos__llm_shell__run_llm_shell,fixos__diagnostics__system_checks__diagnose_audio,fixos__diagnostics__system_checks__diagnose_thumbnails,fixos__diagnostics__system_checks__diagnose_hardware entry

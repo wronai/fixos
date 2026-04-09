@@ -1,20 +1,20 @@
-# fixOS | 73f 12016L | shell:1,python:72 | 2026-04-04
-# stats: 380 func | 0 cls | 73 mod | CC̄=5.0 | critical:22 | cycles:0
-# alerts[5]: fan-out HITLSession._process_turn=28; CC FeatureInstaller._install_package=27; CC interactive_provider_setup=25; fan-out _cleanup_flatpak_detailed=24; fan-out orchestrate=24
-# hotspots[5]: HITLSession._process_turn fan=28; orchestrate fan=24; _cleanup_flatpak_detailed fan=24; run_llm_shell fan=23; report fan=22
-# evolution: CC̄ 5.0→5.0 (flat 0.0)
+# fixOS | 76f 15401L | shell:1,python:75 | 2026-04-09
+# stats: 451 func | 0 cls | 76 mod | CC̄=5.6 | critical:27 | cycles:0
+# alerts[5]: CC _cleanup_full_system=172; fan-out _cleanup_full_system=61; fan-out HITLSession._process_turn=28; CC FeatureInstaller._install_package=27; CC FlatpakAnalyzer.get_cleanup_recommendations=27
+# hotspots[5]: _cleanup_full_system fan=61; HITLSession._process_turn fan=28; StorageAnalyzer.analyze_full fan=24; orchestrate fan=24; run_llm_shell fan=23
+# evolution: CC̄ 5.0→5.6 (regressed +0.6)
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
-M[73]:
+M[76]:
   fixos/__init__.py,2
   fixos/agent/__init__.py,39
   fixos/agent/autonomous.py,49
-  fixos/agent/autonomous_session.py,430
+  fixos/agent/autonomous_session.py,433
   fixos/agent/hitl.py,36
-  fixos/agent/hitl_session.py,510
+  fixos/agent/hitl_session.py,509
   fixos/anonymizer.py,86
   fixos/cli/__init__.py,8
   fixos/cli/ask_cmd.py,354
-  fixos/cli/cleanup_cmd.py,371
+  fixos/cli/cleanup_cmd.py,1246
   fixos/cli/config_cmd.py,83
   fixos/cli/features_cmd.py,176
   fixos/cli/fix_cmd.py,282
@@ -30,18 +30,20 @@ M[73]:
   fixos/cli/shared.py,62
   fixos/cli/token_cmd.py,124
   fixos/cli/watch_cmd.py,49
-  fixos/config.py,433
+  fixos/config.py,439
   fixos/diagnostics/__init__.py,2
-  fixos/diagnostics/disk_analyzer.py,419
-  fixos/diagnostics/flatpak_analyzer.py,332
-  fixos/diagnostics/service_cleanup.py,355
+  fixos/diagnostics/dev_project_analyzer.py,403
+  fixos/diagnostics/disk_analyzer.py,433
+  fixos/diagnostics/flatpak_analyzer.py,944
+  fixos/diagnostics/service_cleanup.py,473
   fixos/diagnostics/service_details.py,242
   fixos/diagnostics/service_scanner.py,249
+  fixos/diagnostics/storage_analyzer.py,1058
   fixos/diagnostics/system_checks.py,512
   fixos/features/__init__.py,267
   fixos/features/auditor.py,127
   fixos/features/catalog.py,119
-  fixos/features/installer.py,197
+  fixos/features/installer.py,196
   fixos/features/profiles.py,88
   fixos/features/renderer.py,124
   fixos/fixes/__init__.py,4
@@ -49,7 +51,7 @@ M[73]:
   fixos/interactive/cleanup_planner.py,417
   fixos/llm_shell.py,240
   fixos/orchestrator/__init__.py,9
-  fixos/orchestrator/executor.py,272
+  fixos/orchestrator/executor.py,271
   fixos/orchestrator/graph.py,163
   fixos/orchestrator/orchestrator.py,382
   fixos/orchestrator/rollback.py,162
@@ -77,8 +79,31 @@ M[73]:
   fixos/utils/web_search.py,254
   fixos/watch.py,120
   project.sh,40
+  scripts/pyqual-calibrate.py,299
   setup.py,45
 D:
+  fixos/cli/cleanup_cmd.py:
+    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_cleanup_full_system,_parse_size_to_gb
+    cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only;full_analysis)
+    _display_cleanup_summary(plan;threshold)
+    _display_service_item(svc)
+    _execute_safe_cleanup(services;scanner)
+    _display_unsafe_services(services)
+    _cleanup_single_service(service_name;scanner;json_output;dry_run)
+    _cleanup_flatpak_detailed(scanner;json_output;dry_run)
+    _display_flatpak_status(analysis)
+    _display_detailed_recommendations(recommendations)
+    _parse_selection(selection;max_count)
+    _parse_size_to_bytes(size_str)
+    _format_bytes(size_bytes)
+    _cleanup_full_system(json_output;dry_run)
+    _parse_size_to_gb(size_str)
+  fixos/diagnostics/flatpak_analyzer.py:
+    e: FlatpakItemType,FlatpakItemInfo,FlatpakAnalyzer,analyze_flatpak_for_cleanup
+    FlatpakItemType(Enum):
+    FlatpakItemInfo: to_dict(0)  # Detailed info about a Flatpak item (app, runtime, or data)...
+    FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1),_load_installed_refs(0),_find_unused_runtimes(0),_find_leftover_data(0),_find_orphaned_apps(0),_find_duplicate_apps(0),_analyze_repo_size(0),_get_flatpak_size_note(3),get_largest_apps(1),get_cleanup_summary(0),get_cleanup_recommendations(0),ask_user_and_cleanup(1),_execute_cleanup_action(1),_execute_flatpak_uninstall_unused(0),_execute_flatpak_repair(0),_execute_flatpak_vacuum(0),_execute_flatpak_uninstall_all(0),_execute_leftover_data_cleanup(1)  # Advanced analyzer for Flatpak cleanup decisions...
+    analyze_flatpak_for_cleanup()
   fixos/features/installer.py:
     e: FeatureInstaller
     FeatureInstaller: __init__(2),install(1),_install_package(1),_install_repo(1),_install_native(1),_install_flatpak(1),_install_pip(1),_install_cargo(1),_install_npm(1),_run_script(1),get_rollback_commands(1)  # Safely installs packages using native package manager or oth...
@@ -89,16 +114,12 @@ D:
     detect_provider_from_key(key)
     interactive_provider_setup()
     get_providers_list()
-  fixos/cli/cleanup_cmd.py:
-    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_parse_size_to_gb
-    cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only)
-    _display_cleanup_summary(plan;threshold)
-    _display_service_item(svc)
-    _execute_safe_cleanup(services;scanner)
-    _display_unsafe_services(services)
-    _cleanup_single_service(service_name;scanner;json_output;dry_run)
-    _cleanup_flatpak_detailed(scanner;json_output;dry_run)
-    _parse_size_to_gb(size_str)
+  fixos/diagnostics/storage_analyzer.py:
+    e: StorageItem,StorageAnalyzer
+    StorageItem: to_dict(0),_format_size(0)  # Represents a storage item that can be cleaned...
+    StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
+
+Analizuje...
   fixos/agent/hitl_session.py:
     e: CmdResult,HITLSession,run_hitl_session
     CmdResult:
@@ -121,7 +142,7 @@ D:
     _validate_result_with_llm(prompt;cmd_str;result;cfg)
   fixos/cli/fix_cmd.py:
     e: fix,handle_disk_cleanup_mode,execute_cleanup_actions,try_llm_fallback_for_failures
-    fix(provider;token;model;no_banner;mode;timeout;modules;no_show_data;output;max_fixes;disc;dry_run;interactive;json_output;llm_fallback)
+    fix(provider;token;model;no_banner;mode;timeout;modules;no_show_data;output;max_fixes;disc;dry_run;interactive;json_output;llm_fallback;show_raw)
     handle_disk_cleanup_mode(disk_analysis;cfg;dry_run;interactive;json_output;llm_fallback)
     execute_cleanup_actions(actions;cfg;llm_fallback)
     try_llm_fallback_for_failures(failed_actions;cfg)
@@ -179,12 +200,6 @@ Tryby:
     format_time(seconds)
     execute_command(cmd)
     run_llm_shell(diagnostics_data;token;model;timeout;verbose;base_url)
-  fixos/diagnostics/flatpak_analyzer.py:
-    e: FlatpakItemType,FlatpakItemInfo,FlatpakAnalyzer,analyze_flatpak_for_cleanup
-    FlatpakItemType(Enum):
-    FlatpakItemInfo: to_dict(0)  # Detailed info about a Flatpak item (app, runtime, or data)...
-    FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1),_load_installed_refs(0),_find_unused_runtimes(0),_find_leftover_data(0),_find_orphaned_apps(0),get_cleanup_summary(0)  # Advanced analyzer for Flatpak cleanup decisions...
-    analyze_flatpak_for_cleanup()
   fixos/features/__init__.py:
     e: SystemInfo,SystemDetector
     SystemInfo:  # Complete system information snapshot...
@@ -214,10 +229,19 @@ Tryby:
     get_full_diagnostics(modules;progress_callback)
   fixos/diagnostics/service_cleanup.py:
     e: ServiceCleaner
-    ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(0),is_safe_cleanup(0),get_service_description(0),get_cleanup_command(1),get_preview_command(1)  # Plans and executes cleanup of service data...
+    ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(0),is_safe_cleanup(1),get_cleanup_hints(1),get_service_description(0),get_cleanup_command(1),_chrome_cleanup_command(0),get_preview_command(1)  # Plans and executes cleanup of service data...
   fixos/plugins/builtin/resources.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_cpu(0),_check_ram(0),_check_top_processes(0),_check_zombies(0),_check_swap(0)
+  scripts/pyqual-calibrate.py:
+    e: read_last_metrics_from_db,parse_pyqual_yaml,update_metric,calculate_new_threshold,extract_current_metrics,calibrate,main
+    read_last_metrics_from_db(workdir)
+    parse_pyqual_yaml(config_path)
+    update_metric(content;metric_name;new_value)
+    calculate_new_threshold(actual_value;current_threshold;margin_percent;is_upper_limit)
+    extract_current_metrics(content)
+    calibrate(workdir;margin;dry_run;force;provided_metrics)
+    main()
   fixos/cli/orchestrate_cmd.py:
     e: orchestrate
     orchestrate(provider;token;model;no_banner;mode;modules;dry_run;max_iterations;output)
@@ -242,6 +266,10 @@ Tryby:
   fixos/plugins/builtin/hardware.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_gpu(0),_check_battery(0),_check_touchpad(0),_check_camera(0),_check_dmi(0)
+  fixos/diagnostics/dev_project_analyzer.py:
+    e: ProjectDependency,DevProjectAnalyzer
+    ProjectDependency: to_dict(0),_format_size(0)  # Represents a dependency folder that can be cleaned...
+    DevProjectAnalyzer: __init__(1),analyze(1),_scan_directory(3),_check_dependency_folder(1),_create_dependency(3),_get_dir_size(1),_check_can_recreate(2),get_old_dependencies(1),get_large_dependencies(1),get_summary(0),get_cleanup_commands(0)  # Analyze developer projects for dependency folders that can b...
   fixos/orchestrator/executor.py:
     e: DangerousCommandError,CommandTimeoutError,ExecutionResult,CommandExecutor
     DangerousCommandError(Exception): __init__(2)
@@ -253,12 +281,12 @@ Tryby:
     e: AuditResult,FeatureAuditor
     AuditResult: to_dict(0)  # Result of feature audit - what's installed, what's missing...
     FeatureAuditor: __init__(2),audit(1),_check_conditions(1),_is_installed(1)  # Compares installed packages with profile requirements...
-  fixos/plugins/builtin/thumbnails.py:
-    e: Plugin
-    Plugin(DiagnosticPlugin): diagnose(0),_check_cache(0),_check_ffmpegthumbnailer(0),_check_totem(0),_check_gstreamer(0)
   fixos/plugins/builtin/audio.py:
     e: Plugin
     Plugin(DiagnosticPlugin): diagnose(0),_check_alsa(0),_check_pipewire(0),_check_wireplumber(0),_check_sof(0)
+  fixos/plugins/builtin/thumbnails.py:
+    e: Plugin
+    Plugin(DiagnosticPlugin): diagnose(0),_check_cache(0),_check_ffmpegthumbnailer(0),_check_totem(0),_check_gstreamer(0)
   fixos/cli/provider_cmd.py:
     e: llm_providers,providers,test_llm
     llm_providers(free)
@@ -288,29 +316,29 @@ Tryby:
     _cmd_exists(cmd)
     setup_signal_timeout(seconds;handler)
     cancel_signal_timeout()
+  fixos/features/renderer.py:
+    e: FeatureRenderer
+    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
   fixos/agent/autonomous_session.py:
     e: FixAction,AgentReport,AutonomousSession,run_autonomous_session
     FixAction:
     AgentReport: summary(0)
     AutonomousSession: __init__(4),_setup_timeout(0),_clear_timeout(0),_confirm_start(0),_initialize_messages(0),_get_remaining_time(0),_check_timeout(0),_query_llm(0),_handle_llm_error(0),_parse_action(1),_is_forbidden(1),_add_sudo(1),_execute_command(1),_handle_search(1),_handle_exec(1),_handle_skip(1),_handle_done(0),_process_turn(0),run(0),_print_report(0)  # Self-directed autonomous diagnostic and repair session...
     run_autonomous_session(diagnostics;config;show_data;max_fixes)
-  fixos/features/renderer.py:
-    e: FeatureRenderer
-    FeatureRenderer: render_audit(0),_get_source_info(1),render_package_list(1),render_system_info(0)  # Renders audit results for terminal display...
   fixos/features/profiles.py:
     e: UserProfile
     UserProfile: load(2),list_available(1),resolve_packages(2),to_dict(0)  # A user profile defining what packages/features they want...
-  fixos/features/catalog.py:
-    e: PackageInfo,PackageCategory,PackageCatalog
-    PackageInfo: get_distro_name(1),is_available_on(1)  # Information about a single package...
-    PackageCategory:  # A category of packages (e.g., core_utils, dev_tools)...
-    PackageCatalog: __init__(0),load(1),get_package(1),get_packages_by_category(1),list_categories(0)  # Manages the package database...
   fixos/diagnostics/service_scanner.py:
     e: ServiceType,ServiceDataInfo,ServiceDataScanner,main
     ServiceType(Enum):  # Service types that can be scanned and cleaned...
     ServiceDataInfo:  # Information about service data...
     ServiceDataScanner: __init__(1),scan_all_services(0),scan_service(1),_analyze_service_path(2),_get_path_size_mb(1),get_cleanup_plan(1),cleanup_service(2)  # Scans for large service data directories and allows cleanup...
     main()
+  fixos/features/catalog.py:
+    e: PackageInfo,PackageCategory,PackageCatalog
+    PackageInfo: get_distro_name(1),is_available_on(1)  # Information about a single package...
+    PackageCategory:  # A category of packages (e.g., core_utils, dev_tools)...
+    PackageCatalog: __init__(0),load(1),get_package(1),get_packages_by_category(1),list_categories(0)  # Manages the package database...
   fixos/cli/rollback_cmd.py:
     e: rollback,rollback_list,rollback_show,rollback_undo
     rollback()
@@ -396,9 +424,9 @@ Aby stworz...
     SessionTimeout(Exception):  # Wyjątek rzucany po przekroczeniu limitu czasu sesji...
     timeout_handler(signum;frame)
   project.sh:
+  setup.py:
   fixos/cli/__init__.py:
   fixos/__init__.py:
-  setup.py:
   fixos/diagnostics/__init__.py:
   fixos/plugins/__init__.py:
   fixos/plugins/builtin/__init__.py:

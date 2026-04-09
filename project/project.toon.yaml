@@ -1,63 +1,60 @@
-# fixOS | 380 func | 60f | 15390L | python | 2026-04-04
+# fixOS | 451 func | 63f | 18875L | python | 2026-04-09
 
 HEALTH:
-  CC̄=5.0  critical=56 (limit:10)  dup=1  cycles=0
+  CC̄=5.6  critical=69 (limit:10)  dup=1  cycles=0
 
 ALERTS[20]:
+  !!! cc_exceeded      _cleanup_full_system = 172 (limit:15)
+  !!! high_fan_out     _cleanup_full_system = 61 (limit:10)
   !!! high_fan_out     HITLSession._process_turn = 28 (limit:10)
+  !!! cc_exceeded      FlatpakAnalyzer.get_cleanup_recommendations = 27 (limit:15)
   !!! cc_exceeded      FeatureInstaller._install_package = 27 (limit:15)
   !!! cc_exceeded      interactive_provider_setup = 25 (limit:15)
+  !!! high_fan_out     StorageAnalyzer.analyze_full = 24 (limit:10)
   !!! high_fan_out     orchestrate = 24 (limit:10)
-  !!! high_fan_out     _cleanup_flatpak_detailed = 24 (limit:10)
   !!! high_fan_out     run_llm_shell = 23 (limit:10)
   !!! high_fan_out     report = 22 (limit:10)
-  !!! high_fan_out     interactive_provider_setup = 21 (limit:10)
-  !!! high_fan_out     fix = 21 (limit:10)
-  !!  cc_exceeded      _cleanup_flatpak_detailed = 23 (limit:15)
 
-MODULES[73] (top by size):
+MODULES[76] (top by size):
+  M[fixos/cli/cleanup_cmd.py] 1246L C:0 F:14 CC↑172 D:0 (python)
+  M[fixos/diagnostics/storage_analyzer.py] 1058L C:2 F:31 CC↑22 D:0 (python)
+  M[fixos/diagnostics/flatpak_analyzer.py] 944L C:3 F:24 CC↑27 D:0 (python)
   M[fixos/diagnostics/system_checks.py] 512L C:0 F:9 CC↑14 D:0 (python)
-  M[fixos/agent/hitl_session.py] 510L C:2 F:20 CC↑20 D:0 (python)
-  M[fixos/config.py] 433L C:1 F:7 CC↑25 D:2 (python)
-  M[fixos/agent/autonomous_session.py] 430L C:3 F:22 CC↑8 D:0 (python)
-  M[fixos/diagnostics/disk_analyzer.py] 419L C:1 F:15 CC↑17 D:0 (python)
+  M[fixos/agent/hitl_session.py] 509L C:2 F:20 CC↑20 D:0 (python)
+  M[fixos/diagnostics/service_cleanup.py] 473L C:1 F:10 CC↑14 D:0 (python)
+  M[fixos/config.py] 439L C:1 F:7 CC↑25 D:2 (python)
+  M[fixos/diagnostics/disk_analyzer.py] 433L C:1 F:15 CC↑17 D:0 (python)
+  M[fixos/agent/autonomous_session.py] 433L C:3 F:22 CC↑8 D:0 (python)
   M[fixos/interactive/cleanup_planner.py] 417L C:4 F:12 CC↑18 D:0 (python)
+  M[fixos/diagnostics/dev_project_analyzer.py] 403L C:2 F:13 CC↑11 D:0 (python)
   M[fixos/orchestrator/orchestrator.py] 382L C:2 F:11 CC↑17 D:0 (python)
-  M[fixos/cli/cleanup_cmd.py] 371L C:0 F:8 CC↑23 D:0 (python)
-  M[fixos/diagnostics/service_cleanup.py] 355L C:1 F:8 CC↑14 D:0 (python)
   M[fixos/cli/ask_cmd.py] 354L C:0 F:8 CC↑18 D:0 (python)
   M[fixos/providers/llm_analyzer.py] 333L C:2 F:8 CC↑13 D:0 (python)
-  M[fixos/diagnostics/flatpak_analyzer.py] 332L C:3 F:12 CC↑15 D:0 (python)
   M[fixos/utils/terminal.py] 316L C:1 F:8 CC↑16 D:2 (python)
-  M[fixos/utils/anonymizer.py] 299L C:1 F:9 CC↑18 D:2 (python)
-  M[fixos/cli/fix_cmd.py] 282L C:0 F:4 CC↑18 D:0 (python)
-  LANGS: python:72/shell:1
+  LANGS: python:75/shell:1
 
 HOTSPOTS[10]:
+  ★ _cleanup_full_system fan=61  // Full system storage analysis and cleanup.
+
+Analizuje cały system: DNF, kernels, 
   ★ HITLSession._process_turn fan=28  // Analysis pipeline, 28 stages
+  ★ StorageAnalyzer.analyze_full fan=24  // Analysis pipeline, 24 stages
   ★ orchestrate fan=24  // Zaawansowana orkiestracja napraw z grafem problemów.
 
 
 Różnica od 'fix':
   - Bu
-  ★ _cleanup_flatpak_detailed fan=24  // Detailed interactive Flatpak cleanup showing unused runtimes, 
-leftover data, an
   ★ run_llm_shell fan=23  // Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
 
 Args:
  
-  ★ report fan=22  // Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
-
-
-Przykłady:
-  fixos
 
 REFACTOR[15]:
   [1] H/L Split interactive_provider_setup (CC=25 → target CC<10)
-  [2] H/L Split FeatureInstaller._install_package (CC=27 → target CC<10)
-  [3] H/H Split god module fixos/agent/hitl_session.py (510L, 2 classes)
-  [4] H/H Split god module fixos/diagnostics/system_checks.py (512L, 0 classes)
-  [5] M/L Split run_llm_shell (CC=15 → target CC<10)
+  [2] H/L Split FlatpakAnalyzer.get_cleanup_recommendations (CC=27 → target CC<10)
+  [3] H/L Split FeatureInstaller._install_package (CC=27 → target CC<10)
+  [4] H/L Split _cleanup_full_system (CC=172 → target CC<10)
+  [5] H/H Split god module fixos/cli/cleanup_cmd.py (1246L, 0 classes)
 
 EVOLUTION:
-  2026-04-04 CC̄=5.0 crit=56 15390L // Automated analysis
+  2026-04-09 CC̄=5.6 crit=69 18875L // Automated analysis

@@ -1,14 +1,21 @@
-# redup/duplication | 2 groups | 78f 15479L | 2026-04-09
+# redup/duplication | 3 groups | 90f 15843L | 2026-04-09
 
 SUMMARY:
-  files_scanned: 78
-  total_lines:   15479
-  dup_groups:    2
-  dup_fragments: 7
-  saved_lines:   23
-  scan_ms:       6807
+  files_scanned: 90
+  total_lines:   15843
+  dup_groups:    3
+  dup_fragments: 13
+  saved_lines:   38
+  scan_ms:       4198
 
-DUPLICATES[2] (ranked by impact):
+DUPLICATES[3] (ranked by impact):
+  [8967cd01b62426bf]   STRU  print_timeout  L=3 N=6 saved=15 sim=1.00
+      fixos/agent/session_io.py:156-158  (print_timeout)
+      fixos/agent/session_io.py:161-163  (print_session_ended)
+      fixos/agent/session_io.py:166-168  (print_session_interrupted)
+      fixos/agent/session_io.py:176-178  (print_no_commands)
+      fixos/agent/session_io.py:186-188  (print_no_results)
+      fixos/agent/session_io.py:191-193  (print_searching)
   [aaae754bdb04529d]   STRU  config  L=3 N=5 saved=12 sim=1.00
       fixos/cli/config_cmd.py:8-10  (config)
       fixos/cli/features_cmd.py:21-23  (features)
@@ -19,14 +26,17 @@ DUPLICATES[2] (ranked by impact):
       fixos/utils/terminal.py:183-193  (print_stdout_box)
       fixos/utils/terminal.py:196-206  (print_stderr_box)
 
-REFACTOR[2] (ranked by priority):
-  [1] ○ extract_function   → fixos/cli/utils/config.py
+REFACTOR[3] (ranked by priority):
+  [1] ○ extract_function   → fixos/agent/utils/print_timeout.py
+      WHY: 6 occurrences of 3-line block across 1 files — saves 15 lines
+      FILES: fixos/agent/session_io.py
+  [2] ○ extract_function   → fixos/cli/utils/config.py
       WHY: 5 occurrences of 3-line block across 5 files — saves 12 lines
       FILES: fixos/cli/config_cmd.py, fixos/cli/features_cmd.py, fixos/cli/profile_cmd.py, fixos/cli/rollback_cmd.py, fixos/cli/token_cmd.py
-  [2] ○ extract_function   → fixos/utils/utils/print_stdout_box.py
+  [3] ○ extract_function   → fixos/utils/utils/print_stdout_box.py
       WHY: 2 occurrences of 11-line block across 1 files — saves 11 lines
       FILES: fixos/utils/terminal.py
 
 METRICS-TARGET:
-  dup_groups:  2 → 0
-  saved_lines: 23 lines recoverable
+  dup_groups:  3 → 0
+  saved_lines: 38 lines recoverable

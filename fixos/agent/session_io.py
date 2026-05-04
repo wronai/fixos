@@ -30,7 +30,7 @@ _session_ref = None
 
 
 @contextmanager
-def _suspend_timeout():
+def suspend_timeout():
     """Context manager to temporarily suspend session timeout during user input."""
     global _timeout_handler, _timeout_seconds, _session_ref
     try:
@@ -118,7 +118,7 @@ def ask_user_problem() -> str:
     console.print()
     console.print(Panel(body, title="[bold cyan]💬 OPISZ SWÓJ PROBLEM[/bold cyan]", border_style="cyan"))
     try:
-        with _suspend_timeout():
+        with suspend_timeout():
             return console.input("  [bold cyan]Twój problem:[/bold cyan] ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""
@@ -230,13 +230,13 @@ def print_searching() -> None:
 
 def ask_execute_prompt() -> str:
     """Ask user if they want to execute a command."""
-    with _suspend_timeout():
+    with suspend_timeout():
         return console.input("  [bold]Wykonać?[/bold] \\[Y/n]: ").strip().lower()
 
 
 def ask_low_confidence_search() -> bool:
     """Ask user if they want to search when LLM is uncertain."""
-    with _suspend_timeout():
+    with suspend_timeout():
         return console.input(
             "\n  [dim]💡 LLM niepewny – szukać zewnętrznie? [y/N]:[/dim] "
         ).strip().lower() in ("y", "yes", "tak")
@@ -244,7 +244,7 @@ def ask_low_confidence_search() -> bool:
 
 def ask_send_data() -> bool:
     """Ask user if they want to send data to LLM."""
-    with _suspend_timeout():
+    with suspend_timeout():
         ans = console.input("\n  Czy wysłać te dane do LLM? \\[Y/n]: ").strip().lower()
     return ans not in ("n", "no", "nie")
 
@@ -252,7 +252,7 @@ def ask_send_data() -> bool:
 def get_user_input(remaining: int) -> str:
     """Get user input with prompt."""
     try:
-        with _suspend_timeout():
+        with suspend_timeout():
             return console.input(f"\n  [bold cyan]fixos [{fmt_time(remaining)}] ❯[/bold cyan] ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""

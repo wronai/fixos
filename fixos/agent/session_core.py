@@ -47,6 +47,8 @@ IMPORTANT RULES:
 - Do NOT use read-only diagnostics as fixes (e.g. `df -h`, `free -h`, `ls`, `cat`, `grep`, `systemctl status`).
 - If needed, mention diagnostics in explanation, but propose executable repair steps in `Komenda`.
 - For package upgrades and heavy operations, provide the real fix command (e.g. `dnf upgrade -y`).
+- When disk usage is critically high (>90%), ALWAYS propose cleanup commands FIRST.
+- NEVER suggest package upgrades or installations BEFORE cleanup has freed sufficient space and been verified.
 
 Always end with:
 ━━━ DOSTĘPNE AKCJE ━━━
@@ -63,9 +65,26 @@ IMPORTANT: Adapt commands to the detected OS (Linux/Windows/macOS).
 
 def _is_diagnostic_only_command(cmd: str) -> bool:
     """Return True if command is read-only and not a repair action."""
-    normalized = cmd.strip().lower()
+    # Split by common shell delimiters to check each part
+    parts = re.split(r' && | \|\| |; ', cmd)
+    
+    # If any part of a compound command looks like a repair, the whole thing is actionable
+    for part in parts:
+        if not _is_part_diagnostic_only(part):
+            return False
+    return True
+
+
+def _is_part_diagnostic_only(part: str) -> bool:
+    """Helper for _is_diagnostic_only_command to check a single command part."""
+    normalized = part.strip().lower()
     if normalized.startswith("sudo "):
         normalized = normalized[5:].strip()
+
+    # Special case: diagnostic tools used for cleanup/repair
+    if normalized.startswith("journalctl"):
+        if "--vacuum-" in normalized or "--flush" in normalized or "--rotate" in normalized:
+            return False
 
     diagnostic_prefixes = (
         "df ",

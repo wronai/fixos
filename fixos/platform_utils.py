@@ -88,6 +88,24 @@ def is_dangerous(cmd: str) -> Optional[str]:
     return None
 
 
+def is_interactive_blocker(cmd: str) -> Optional[str]:
+    """Returns reason string if command is likely to hang in non-interactive session."""
+    import re
+    patterns = [
+        (r"\bnewgrp\b", "newgrp replaces the shell and waits for input"),
+        (r"\bsu\s+-(\s+|$)", "su - starts a new login shell"),
+        (r"\bexec\s+bash\b", "exec replaces the process"),
+        (r"\btop\b(?!.*\b-b\b)", "top is interactive unless run in batch mode (-b)"),
+        (r"\bvim?\b", "editors require terminal interaction"),
+        (r"\bnano\b", "editors require terminal interaction"),
+        (r"\bless\b", "pagers require terminal interaction"),
+    ]
+    for pat, reason in patterns:
+        if re.search(pat, cmd, re.IGNORECASE):
+            return reason
+    return None
+
+
 def run_command(
     cmd: str,
     timeout: int = 120,

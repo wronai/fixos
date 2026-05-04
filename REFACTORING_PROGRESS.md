@@ -25,6 +25,24 @@
 - **Functions**: `fix()` → `None`, `handle_disk_cleanup_mode()` → `None`
 - **Status**: ✅ Complete – other CLI commands pending
 
+### 5. Fixed Diagnostic Command Filtering
+- **File**: [fixos/agent/session_core.py](fixos/agent/session_core.py)
+- **Issue**: Cleanup commands like `journalctl --vacuum-size` were hidden (filtered as diagnostic-only)
+- **Solution**: Refined regex to allow diagnostic tools with cleanup flags; added compound command support (&&, ;, ||)
+- **Status**: ✅ Complete
+
+### 6. Prevented Interactive Command Hangs
+- **File**: [fixos/platform_utils.py](fixos/platform_utils.py), [fixos/agent/session_handlers.py](fixos/agent/session_handlers.py)
+- **Issue**: Commands like `newgrp` hang in non-interactive sessions
+- **Solution**: Added `is_interactive_blocker` detection and user warning/confirmation prompt
+- **Status**: ✅ Complete
+
+### 7. Suspended Session Timeout during Execution
+- **File**: [fixos/agent/session_handlers.py](fixos/agent/session_handlers.py)
+- **Issue**: Session expired while running long commands (e.g. `dnf upgrade`)
+- **Solution**: Wrapped `run_command` in `suspend_timeout()` context manager
+- **Status**: ✅ Complete
+
 ### 5. Created Global Constants Module
 - **File**: [fixos/constants.py](fixos/constants.py) (NEW)
 - **Content**: 15+ named constants for timeouts, limits, display formatting

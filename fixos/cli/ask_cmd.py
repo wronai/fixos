@@ -36,7 +36,7 @@ _OBJECT_KEYWORDS: list[tuple[list[str], tuple]] = [
 ]
 
 
-def _object_based_match(prompt_lower: str) -> object:
+def _object_based_match(prompt_lower: str) -> object | None:
     """Fallback object-based matching when no action keyword is found."""
     for keywords, cmd in _OBJECT_KEYWORDS:
         if any(kw in prompt_lower for kw in keywords):
@@ -44,7 +44,7 @@ def _object_based_match(prompt_lower: str) -> object:
     return None
 
 
-def _match_heuristic_command(prompt_lower: str) -> object:
+def _match_heuristic_command(prompt_lower: str) -> object | None:
     """
     Match user prompt against heuristic keyword mappings.
 
@@ -62,14 +62,15 @@ def _match_heuristic_command(prompt_lower: str) -> object:
     return _object_based_match(prompt_lower)
 
 
-def _format_command(matched_cmd) -> str:
+def _format_command(matched_cmd: object) -> str:
     """Convert matched command to string format."""
     if isinstance(matched_cmd, str):
         return matched_cmd
-    else:
+    elif isinstance(matched_cmd, (list, tuple)):
         cmd_program = matched_cmd[0]
         cmd_args = matched_cmd[1] if len(matched_cmd) > 1 else []
-        return " ".join([cmd_program] + cmd_args)
+        return " ".join([str(cmd_program)] + [str(a) for a in cmd_args])
+    return str(matched_cmd)
 
 
 def _build_output_dict(

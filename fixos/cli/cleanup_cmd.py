@@ -4,7 +4,16 @@ Cleanup command for fixOS CLI - service data cleanup with detailed flatpak suppo
 import click
 import subprocess
 from fixos.diagnostics.service_scanner import ServiceDataScanner
+from fixos.constants import (
+    DEFAULT_COMMAND_TIMEOUT,
+    FAST_COMMAND_TIMEOUT,
+    MAX_SEARCH_QUERY_LENGTH,
+    HOSTNAME_DISPLAY_LENGTH,
+    CONFIG_DISPLAY_LENGTH,
+    MAX_OUTPUT_LINES,
+)
 
+# Local constants for internal logic
 CONSTANT_3 = 3
 CONSTANT_4 = 4
 CONSTANT_5 = 5
@@ -16,7 +25,7 @@ CONSTANT_50 = 50
 CONSTANT_60 = 60
 CONSTANT_90 = 90
 CONSTANT_120 = 120
-CONSTANT_300 = 300
+CONSTANT_300 = DEFAULT_COMMAND_TIMEOUT
 CONSTANT_500 = 500
 CONSTANT_1024 = 1024
 
@@ -104,7 +113,7 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
 def _display_cleanup_summary(plan: dict, threshold: int) -> None:
     """Display cleanup plan summary header."""
     click.echo(click.style(f"\nSkanowanie usług (próg: {threshold} MB)...", fg="cyan"))
-    click.echo(click.style("═" * CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'═' * CONSTANT_60}", fg="cyan"))
     
     if plan["services_found"] == 0:
         click.echo(click.style("\nNie znaleziono usług powyżej progu.", fg="green"))
@@ -281,9 +290,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None
         return
     
     # Wyświetl menu z opcjami
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📋 WYBIERZ OPCJE DO WYKONANIA", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
     
     if dry_run:
         click.echo(click.style("\n[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))

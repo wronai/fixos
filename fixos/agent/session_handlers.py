@@ -13,7 +13,7 @@ from ..constants import (
     LONG_COMMAND_TIMEOUT,
 )
 from ..platform_utils import (
-    is_dangerous, elevate_cmd, run_command,
+    is_dangerous, is_interactive_blocker, elevate_cmd, run_command,
 )
 from ..utils.anonymizer import anonymize
 from ..utils.web_search import search_all, format_results_for_llm
@@ -84,6 +84,34 @@ def handle_describe_problem(messages: list, ask_fn) -> bool:
     return True
 
 
+def _sort_fixes_by_priority(fixes: list) -> list:
+    """Move cleanup commands before disk-consuming operations."""
+    cleanup_patterns = (
+        r"journalctl.*--vacuum",
+        r"dnf\s+(remove|autoremove|clean)",
+        r"apt\s+(autoremove|clean)",
+        r"pacman\s+-Sc",
+        r"rm\s+-[rf]",
+        r"swapoff",
+    )
+    disk_hungry_patterns = (
+        r"\bdnf\s+(upgrade|update|distro-sync|install)\b",
+        r"\bapt(-get)?\s+(upgrade|install|full-upgrade)\b",
+        r"\bpacman\s+-S[yuy]*\b",
+        r"\bflatpak\s+(update|install)\b",
+    )
+
+    def score(item):
+        cmd = item[0].lower()
+        if any(re.search(p, cmd) for p in cleanup_patterns):
+            return 0
+        if any(re.search(p, cmd) for p in disk_hungry_patterns):
+            return 2
+        return 1
+
+    return sorted(fixes, key=score)
+
+
 def handle_execute_all(
     fixes: list,
     messages: list,
@@ -94,7 +122,8 @@ def handle_execute_all(
     if not fixes:
         io.print_no_commands()
         return True
-    
+
+    fixes = _sort_fixes_by_priority(fixes)
     io.print_executing_all(len(fixes))
     summary_lines = []
     for cmd, comment in fixes:
@@ -192,12 +221,24 @@ def handle_free_text(user_in: str, messages: list) -> bool:
 def run_single_command(cmd: str, comment: str) -> CmdResult:
     """Run a command with full transparency and safety checks."""
     cmd = elevate_cmd(cmd)
+    
+    # Check for dangerous commands
     danger = is_dangerous(cmd)
     if danger:
         io.print_blocked_command(cmd, danger)
         return CmdResult(cmd=cmd, comment=comment, ok=False,
                          stdout="", stderr=f"Zablokowano: {danger}", returncode=-99)
     
+    # Check for interactive blockers
+    blocker = is_interactive_blocker(cmd)
+    if blocker:
+        from rich.text import Text
+        io.console.print(f"\n  [bold yellow]⚠️  OSTRZEŻENIE:[/bold yellow] {blocker}")
+        io.console.print(f"  Ta komenda może zawiesić sesję w trybie nieinteraktywnym.")
+        if io.console.input("  Czy na pewno chcesz spróbować? [y/N]: ").lower() not in ("y", "yes", "tak"):
+            return CmdResult(cmd=cmd, comment=comment, ok=False,
+                             stdout="", stderr="Anulowano przez użytkownika (interaktywna).", returncode=-1, skipped=True)
+
     io.print_cmd_preview(cmd, comment)
     ans = io.ask_execute_prompt()
     if ans in ("n", "no", "nie"):
@@ -206,7 +247,11 @@ def run_single_command(cmd: str, comment: str) -> CmdResult:
     
     timeout = _resolve_command_timeout(cmd)
     io.console.print("  [dim]⏳ Wykonuję...[/dim]", end="")
-    ok, stdout, stderr, rc = run_command(cmd, timeout=timeout)
+    
+    # Suspend session timeout during command execution
+    with io.suspend_timeout():
+        ok, stdout, stderr, rc = run_command(cmd, timeout=timeout)
+    
     io.console.print("\r" + " " * 30 + "\r", end="")
     result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                        stdout=stdout, stderr=stderr, returncode=rc)

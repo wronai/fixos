@@ -2,6 +2,8 @@
 Natural language command (ask) for fixOS CLI
 """
 import click
+import yaml
+import subprocess
 
 
 @click.command("ask")
@@ -111,8 +113,6 @@ def _build_output_dict(
 
 def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) -> None:
     """Execute a heuristic-matched command and output result."""
-    import subprocess
-    import yaml
     
     if dry_run:
         output = _build_output_dict(
@@ -161,8 +161,6 @@ def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) ->
 
 def _execute_with_llm(prompt: str, dry_run: bool, cfg) -> None:
     """Generate and execute command using LLM when no heuristic match found."""
-    import subprocess
-    import yaml
     from fixos.providers.llm import LLMClient
     
     llm_provider = f"{cfg.provider}/{cfg.model}"
@@ -236,7 +234,6 @@ def _handle_natural_command(prompt: str, dry_run: bool = False) -> None:
     """
     Handle natural language commands with heuristic matching and LLM fallback.
     """
-    import yaml
     from fixos.config import FixOsConfig
     
     prompt_lower = prompt.lower()
@@ -268,8 +265,6 @@ def _handle_natural_command(prompt: str, dry_run: bool = False) -> None:
 
 def _validate_result_with_llm(prompt: str, cmd_str: str, result, cfg) -> None:
     """Validate command result using LLM - generates check command and assesses outcome."""
-    import yaml
-    import subprocess
     from fixos.providers.llm import LLMClient
     
     try:

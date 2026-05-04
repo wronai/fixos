@@ -2,6 +2,7 @@
 Scan command for fixOS CLI - system diagnostics
 """
 import click
+import json
 from pathlib import Path
 from fixos.cli.shared import add_shared_options, BANNER
 
@@ -68,7 +69,6 @@ def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
         _run_disk_analysis(data, json_output=json_output, is_fix_mode=False)
 
     if show_raw:
-        import json
         click.echo(json.dumps(data, indent=2, default=str))
     else:
         # Display regular diagnostic summary
@@ -76,7 +76,6 @@ def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
         
     if output:
         try:
-            import json
             Path(output).write_text(
                 json.dumps(data, ensure_ascii=False, indent=2, default=str),
                 encoding="utf-8"
@@ -158,7 +157,6 @@ def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False)
 
 def _print_quick_issues(data: dict) -> None:
     """Wyświetla szybki przegląd problemów z zebranych danych."""
-    import click
     click.echo(click.style("\nSzybki przegląd problemów:", fg="cyan"))
     issues = []
 

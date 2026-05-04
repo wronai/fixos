@@ -16,19 +16,16 @@ import subprocess
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
 from enum import Enum
+from ..constants import (
+    FLATPAK_BLOAT_RATIO_CRITICAL,
+    FLATPAK_BLOAT_RATIO_NORMAL,
+    MAX_DUPLICATE_APPS_SHOW,
+    MAX_LARGE_APPS_SHOW,
+    FLATPAK_LEFTOVER_THRESHOLD_MB,
+    FAST_COMMAND_TIMEOUT,
+    DEFAULT_COMMAND_TIMEOUT,
+)
 
-CONSTANT_1 = 1.5
-MAX_2 = 2.5
-CONSTANT_3 = 3
-CONSTANT_4 = 4
-CONSTANT_5 = 5
-TIMEOUT_30 = 30
-CONSTANT_50 = 50
-TIMEOUT_60 = 60
-TIMEOUT_300 = 300
-CONSTANT_500 = 500
-TIMEOUT_600 = 600
-CONSTANT_1024 = 1024
 
 class FlatpakItemType(Enum):
     APP = "app"
@@ -114,7 +111,7 @@ class FlatpakAnalyzer:
                 ["flatpak"] + args,
                 capture_output=True,
                 text=True,
-                timeout=TIMEOUT_30,
+                timeout=FAST_COMMAND_TIMEOUT,
             )
             if result.returncode == 0:
                 return result.stdout
@@ -127,10 +124,10 @@ class FlatpakAnalyzer:
         size_str = size_str.strip().upper()
         multipliers = {
             'B': 1,
-            'KB': CONSTANT_1024,
-            'MB': CONSTANT_1024 ** 2,
-            'GB': CONSTANT_1024 ** CONSTANT_3,
-            'TB': CONSTANT_1024 ** CONSTANT_4,
+            'KB': 1024,
+            'MB': 1024 ** 2,
+            'GB': 1024 ** 3,
+            'TB': 1024 ** 4,
         }
         
         for suffix, mult in sorted(multipliers.items(), key=lambda x: -len(x[0])):
@@ -149,9 +146,9 @@ class FlatpakAnalyzer:
     def _format_size(self, size_bytes: int) -> str:
         """Format bytes to human-readable string"""
         for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-            if size_bytes < CONSTANT_1024:
+            if size_bytes < 1024:
                 return f"{size_bytes:.1f} {unit}"
-            size_bytes /= CONSTANT_1024
+            size_bytes /= 1024
         return f"{size_bytes:.1f} PB"
     
     def _load_installed_refs(self):
@@ -341,7 +338,7 @@ class FlatpakAnalyzer:
         try:
             result = subprocess.run(
                 ["du", "-sb", path],
-                capture_output=True, text=True, timeout=TIMEOUT_60,
+                capture_output=True, text=True, timeout=FAST_COMMAND_TIMEOUT,
             )
             if result.returncode == 0:
                 return int(result.stdout.split()[0])
@@ -405,7 +402,7 @@ class FlatpakAnalyzer:
         # REAL bloat = actual usage significantly > reported + overhead
         # Normal overhead: ~1.5-2x for OSTree structure
         
-        normal_overhead = CONSTANT_1  # OSTree can have 50% overhead for metadata
+        normal_overhead = FLATPAK_BLOAT_RATIO_NORMAL  # OSTree can have 50% overhead for metadata
         expected_max_size = total_reported_size * normal_overhead
         
         # Only flag as bloat if actual > expected by significant margin
@@ -419,7 +416,7 @@ class FlatpakAnalyzer:
             
             # Only flag if ratio > 2.5x (significant bloat beyond normal overhead)
             # AND the absolute difference is > 1GB (avoid false positives)
-            if ratio > MAX_2 and (actual_disk_usage - expected_max_size) > CONSTANT_1024**CONSTANT_3:
+            if ratio > FLATPAK_BLOAT_RATIO_CRITICAL and (actual_disk_usage - expected_max_size) > 1024**3:
                 bloat_detected = True
                 wasted_size = actual_disk_usage - expected_max_size
             elif ratio > 2.0:
@@ -447,11 +444,11 @@ class FlatpakAnalyzer:
     
     def _get_flatpak_size_note(self, ratio: float, actual: int, reported: int) -> str:
         """Get explanation note about Flatpak size"""
-        if ratio < CONSTANT_1:
+        if ratio < FLATPAK_BLOAT_RATIO_NORMAL:
             return "Flatpak jest dobrze zarządzany - minimalny overhead."
         elif ratio < 2.0:
             return "Normalny overhead OSTree - brak potrzeby czyszczenia."
-        elif ratio < MAX_2:
+        elif ratio < FLATPAK_BLOAT_RATIO_CRITICAL:
             return (
                 "Umiarkowany overhead - prawdopodobnie normalne dla dużej instalacji.\n"
                 "Możesz uruchomić 'flatpak repair --vacuum' ale oszczędność będzie mała."
@@ -523,7 +520,7 @@ class FlatpakAnalyzer:
         ratio = self.repo_bloat.get('ratio', 0)
         note = self.repo_bloat.get('note', '')
         if self.repo_bloat.get('bloat_detected'):
-            if self.repo_bloat.get('wasted_size', 0) > CONSTANT_1024 ** CONSTANT_3:
+            if self.repo_bloat.get('wasted_size', 0) > 1024 ** 3:
                 recs.append({
                     "priority": "medium",
                     "action": "flatpak repair --vacuum",
@@ -562,8 +559,8 @@ class FlatpakAnalyzer:
         if not self.duplicate_apps:
             return recs
         total_dup_size = sum(d.get('total_size', 0) for d in self.duplicate_apps)
-        if total_dup_size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:
-            dup_names = [d['name'] for d in self.duplicate_apps[:CONSTANT_3]]
+        if total_dup_size > FLATPAK_LEFTOVER_THRESHOLD_MB * 1024 * 1024:
+            dup_names = [d['name'] for d in self.duplicate_apps[:MAX_DUPLICATE_APPS_SHOW]]
             recs.append({
                 "priority": "high",
                 "action": "flatpak uninstall <duplicate_app>",
@@ -587,7 +584,7 @@ class FlatpakAnalyzer:
         """Recommendations for unused runtimes."""
         recs: List[Dict[str, Any]] = []
         total_unused = sum(r.size_bytes for r in self.unused_runtimes)
-        if total_unused > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:
+        if total_unused > FLATPAK_LEFTOVER_THRESHOLD_MB * 1024 * 1024:
             recs.append({
                 "priority": "high",
                 "action": "flatpak uninstall --unused -y",
@@ -607,18 +604,18 @@ class FlatpakAnalyzer:
     def _rec_large_apps(self) -> List[Dict[str, Any]]:
         """Recommendations for large apps."""
         recs: List[Dict[str, Any]] = []
-        largest_apps = self.get_largest_apps(CONSTANT_5)
+        largest_apps = self.get_largest_apps(MAX_LARGE_APPS_SHOW)
         if not largest_apps:
             return recs
         total_large = sum(a['size'] for a in largest_apps)
-        if total_large > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:
+        if total_large > 500 * 1024 * 1024:
             recs.append({
                 "priority": "medium",
                 "action": "flatpak uninstall <app>",
                 "description": "📱 Usuń duże aplikacje (opcjonalnie)",
                 "explanation": (
                     "Największe aplikacje w Twoim systemie:\n"
-                    + "\n".join(f"  • {a['name']} - {a['size_human']}" for a in largest_apps[:CONSTANT_5])
+                    + "\n".join(f"  • {a['name']} - {a['size_human']}" for a in largest_apps[:MAX_LARGE_APPS_SHOW])
                     + f"\n\n💡 Jeśli nie używasz którejś, możesz ją usunąć:\n"
                     + f"  flatpak uninstall {largest_apps[0]['ref']}\n\n"
                     + f"💰 Potencjalne odzyskanie: do {self._format_size(total_large)}"
@@ -634,7 +631,7 @@ class FlatpakAnalyzer:
         """Recommendations for leftover data and orphaned apps."""
         recs: List[Dict[str, Any]] = []
         total_leftover = sum(d.size_bytes for d in self.leftover_data)
-        if total_leftover > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:
+        if total_leftover > FLATPAK_LEFTOVER_THRESHOLD_MB * 1024 * 1024:
             recs.append({
                 "priority": "medium",
                 "action": "rm -rf ~/.var/app/<unused_app>",
@@ -670,7 +667,7 @@ class FlatpakAnalyzer:
             sum(a.size_bytes for a in self.installed_apps)
             + sum(r.size_bytes for r in self.installed_runtimes)
         )
-        if total > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024 * CONSTANT_1024:
+        if total > 50 * 1024 * 1024 * 1024:
             return [{
                 "priority": "low",
                 "action": "flatpak uninstall --all",
@@ -730,9 +727,9 @@ class FlatpakAnalyzer:
             print("✅ Brak rekomendacji czyszczenia - Flatpak jest w dobrym stanie.")
             return results
         
-        print("\n" + "="*TIMEOUT_60)
+        print("\n" + "="*60)
         print("🔧 FLATPAK CLEANUP RECOMMENDATIONS")
-        print("="*TIMEOUT_60 + "\n")
+        print("="*60 + "\n")
         
         for i, rec in enumerate(recommendations, 1):
             print(f"\n[{i}/{len(recommendations)}] {rec['description']}")
@@ -780,14 +777,14 @@ class FlatpakAnalyzer:
                 results['skipped'].append(rec['action'])
                 print(f"   ⏭️ Pominięto")
         
-        print("\n" + "="*TIMEOUT_60)
+        print("\n" + "="*60)
         print("📊 PODSUMOWANIE")
-        print("="*TIMEOUT_60)
+        print("="*60)
         print(f"   Wykonano: {len(results['executed'])}")
         print(f"   Pominięto: {len(results['skipped'])}")
         print(f"   Błędy: {len(results['failed'])}")
         print(f"   Odzyskano: {self._format_size(results['space_reclaimed'])}")
-        print("="*TIMEOUT_60 + "\n")
+        print("="*60 + "\n")
         
         return results
     

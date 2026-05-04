@@ -2,14 +2,14 @@
 Report command for fixOS CLI
 """
 import click
+import json
 from pathlib import Path
 
 
 def _render_report_json(results: list, timestamp: str) -> str:
     """Render diagnostic results as a JSON string."""
-    import json as json_module
     data = {"timestamp": timestamp, "results": [r.to_dict() for r in results]}
-    return json_module.dumps(data, indent=2, ensure_ascii=False)
+    return json.dumps(data, indent=2, ensure_ascii=False)
 
 
 def _render_report_markdown(results: list, timestamp: str) -> str:

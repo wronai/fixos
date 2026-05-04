@@ -65,7 +65,6 @@ def config_show() -> None:
 @click.option("--force", is_flag=True, help="Nadpisz istniejący plik")
 def config_init(force: bool) -> None:
     """Zainicjalizuj plik konfiguracyjny .env."""
-    from pathlib import Path
 
     env_path = Path(".env")
     if env_path.exists() and not force:

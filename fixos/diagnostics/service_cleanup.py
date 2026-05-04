@@ -7,10 +7,11 @@ import os
 import shlex
 import subprocess
 from typing import Dict, Any, List
+from ..constants import (
+    DEFAULT_COMMAND_TIMEOUT,
+    SIZE_THRESHOLD_GB_DEFAULT,
+)
 
-# Cleanup operation timeouts
-CLEANUP_TIMEOUT_SECONDS = 300
-SIZE_THRESHOLD_GB_DEFAULT = 1.0
 
 
 class ServiceCleaner:
@@ -80,7 +81,7 @@ class ServiceCleaner:
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=CLEANUP_TIMEOUT_SECONDS
+                timeout=DEFAULT_COMMAND_TIMEOUT
             )
 
             # Check new size

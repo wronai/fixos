@@ -11,6 +11,7 @@ except ModuleNotFoundError:  # pragma: no cover
     psutil = None
 
 from ...platform_utils import IS_LINUX as _IS_LINUX, IS_WINDOWS as _IS_WINDOWS, IS_MAC as _IS_MAC, SYSTEM as _SYSTEM
+from ...constants import DIAGNOSTIC_CMD_TIMEOUT
 
 
 def _psutil_required() -> bool:
@@ -18,7 +19,7 @@ def _psutil_required() -> bool:
     return psutil is not None
 
 
-def _cmd(cmd: str, timeout: int = 20) -> str:
+def _cmd(cmd: str, timeout: int = DIAGNOSTIC_CMD_TIMEOUT) -> str:
     """Run a command and return output as string."""
     try:
         result = subprocess.run(

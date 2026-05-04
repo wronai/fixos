@@ -16,6 +16,7 @@ from enum import Enum
 
 from .service_details import ServiceDetailsProvider
 from .service_cleanup import ServiceCleaner
+from ..constants import SERVICE_SCAN_THRESHOLD_MB
 
 
 class ServiceType(Enum):
@@ -92,7 +93,7 @@ class ServiceDataInfo:
 class ServiceDataScanner:
     """Scans for large service data directories and allows cleanup."""
 
-    DEFAULT_THRESHOLD_MB = 500
+    DEFAULT_THRESHOLD_MB = SERVICE_SCAN_THRESHOLD_MB
 
     SERVICE_PATHS = {
         ServiceType.DOCKER: ["/var/lib/docker", "~/.docker"],

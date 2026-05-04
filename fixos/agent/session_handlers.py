@@ -13,6 +13,7 @@ from ..constants import (
     LONG_COMMAND_TIMEOUT,
     MAX_ANON_PREVIEW_LENGTH,
     MAX_STDERR_PREVIEW_LENGTH,
+    MAX_DIRECT_CMD_PREVIEW_LENGTH,
 )
 from ..platform_utils import (
     is_dangerous, is_interactive_blocker, elevate_cmd, run_command,
@@ -189,7 +190,7 @@ def handle_direct_command(
     anon_out, _ = anonymize(f"{result.stdout}\n{result.stderr}")
     messages.append({
         "role": "user",
-        "content": f"User ran: `{cmd}`\nResult: {anon_out[:600]}\nWhat next?"
+        "content": f"User ran: `{cmd}`\nResult: {anon_out[:MAX_DIRECT_CMD_PREVIEW_LENGTH]}\nWhat next?"
     })
     return True
 

@@ -17,6 +17,12 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from ..constants import (
+    DEV_PROJECT_MAX_DEPTH,
+    DEV_PROJECT_MIN_SIZE_MB,
+    DEV_PROJECT_OLD_DAYS,
+    FAST_COMMAND_TIMEOUT,
+)
 
 
 @dataclass
@@ -175,7 +181,7 @@ class DevProjectAnalyzer:
         self.dependencies: List[ProjectDependency] = []
         self.total_size = 0
         
-    def analyze(self, max_depth: int = 5) -> Dict[str, Any]:
+    def analyze(self, max_depth: int = DEV_PROJECT_MAX_DEPTH) -> Dict[str, Any]:
         """
         Scan home directory for dependency folders.
         
@@ -314,7 +320,7 @@ class DevProjectAnalyzer:
                 ["du", "-sb", str(path)],
                 capture_output=True,
                 text=True,
-                timeout=60,
+                timeout=FAST_COMMAND_TIMEOUT,
             )
             if result.returncode == 0:
                 return int(result.stdout.split()[0])
@@ -334,12 +340,12 @@ class DevProjectAnalyzer:
         
         return False
     
-    def get_old_dependencies(self, days: int = 30) -> List[ProjectDependency]:
+    def get_old_dependencies(self, days: int = DEV_PROJECT_OLD_DAYS) -> List[ProjectDependency]:
         """Get dependencies not modified in X days"""
         cutoff = datetime.now() - timedelta(days=days)
         return [dep for dep in self.dependencies if dep.last_modified and dep.last_modified < cutoff]
     
-    def get_large_dependencies(self, min_size_mb: int = 100) -> List[ProjectDependency]:
+    def get_large_dependencies(self, min_size_mb: int = DEV_PROJECT_MIN_SIZE_MB) -> List[ProjectDependency]:
         """Get dependencies larger than X MB"""
         min_bytes = min_size_mb * 1024 * 1024
         return [dep for dep in self.dependencies if dep.size_bytes >= min_bytes]

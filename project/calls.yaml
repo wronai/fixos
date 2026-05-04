@@ -1,16 +1,751 @@
 project: /home/tom/github/wronai/fixOS
 generated_from: code2llm call graph analysis
 stats:
-  total_nodes: 156
-  total_edges: 143
-  modules_count: 36
+  total_nodes: 174
+  total_edges: 161
+  modules_count: 40
 nodes:
-  fixos.plugins.builtin.audio.Plugin._check_pipewire:
-    name: _check_pipewire
+  fixos.cli.ask_cmd._handle_natural_command:
+    name: _handle_natural_command
+    module: fixos.cli.ask_cmd
+    line: 230
+    cyclomatic_complexity: 3
+    calls_out: 9
+    calls_in: 1
+  fixos.cli.ask_cmd._format_command:
+    name: _format_command
+    module: fixos.cli.ask_cmd
+    line: 61
+    cyclomatic_complexity: 3
+    calls_out: 3
+    calls_in: 1
+  fixos.platform_utils.cancel_signal_timeout:
+    name: cancel_signal_timeout
+    module: fixos.platform_utils
+    line: 180
+    cyclomatic_complexity: 2
+    calls_out: 1
+    calls_in: 2
+  fixos.cli.cleanup_cmd._filter_by_prefix_category:
+    name: _filter_by_prefix_category
+    module: fixos.cli.cleanup_cmd
+    line: 1021
+    cyclomatic_complexity: 6
+    calls_out: 12
+    calls_in: 1
+  fixos.cli.cleanup_cmd._filter_by_age:
+    name: _filter_by_age
+    module: fixos.cli.cleanup_cmd
+    line: 994
+    cyclomatic_complexity: 6
+    calls_out: 8
+    calls_in: 2
+  fixos.utils.anonymizer._get_sensitive:
+    name: _get_sensitive
+    module: fixos.utils.anonymizer
+    line: 34
+    cyclomatic_complexity: 4
+    calls_out: 3
+    calls_in: 1
+  fixos.agent.get_remaining_time:
+    name: get_remaining_time
+    module: fixos.agent
+    line: 22
+    cyclomatic_complexity: 2
+    calls_out: 4
+    calls_in: 3
+  fixos.cli.cleanup_cmd._resolve_home_selection:
+    name: _resolve_home_selection
+    module: fixos.cli.cleanup_cmd
+    line: 740
+    cyclomatic_complexity: 4
+    calls_out: 8
+    calls_in: 1
+  fixos.agent.session_handlers.parse_user_input:
+    name: parse_user_input
+    module: fixos.agent.session_handlers
+    line: 179
+    cyclomatic_complexity: 9
+    calls_out: 11
+    calls_in: 0
+  fixos.plugins.builtin.audio.Plugin._check_wireplumber:
+    name: _check_wireplumber
     module: fixos.plugins.builtin.audio
-    line: 91
+    line: 97
     cyclomatic_complexity: 2
     calls_out: 2
+    calls_in: 0
+  fixos.platform_utils.run_command:
+    name: run_command
+    module: fixos.platform_utils
+    line: 91
+    cyclomatic_complexity: 5
+    calls_out: 4
+    calls_in: 33
+  fixos.anonymizer.anonymize:
+    name: anonymize
+    module: fixos.anonymizer
+    line: 30
+    cyclomatic_complexity: 5
+    calls_out: 14
+    calls_in: 14
+  fixos.agent.hitl.run_hitl_session:
+    name: run_hitl_session
+    module: fixos.agent.hitl
+    line: 24
+    cyclomatic_complexity: 1
+    calls_out: 2
+    calls_in: 1
+  fixos.system_checks.get_memory_info:
+    name: get_memory_info
+    module: fixos.system_checks
+    line: 45
+    cyclomatic_complexity: 1
+    calls_out: 7
+    calls_in: 1
+  fixos.plugins.builtin.hardware.Plugin._check_camera:
+    name: _check_camera
+    module: fixos.plugins.builtin.hardware
+    line: 117
+    cyclomatic_complexity: 3
+    calls_out: 3
+    calls_in: 0
+  fixos.utils.web_search.search_ddg:
+    name: search_ddg
+    module: fixos.utils.web_search
+    line: 174
+    cyclomatic_complexity: 8
+    calls_out: 15
+    calls_in: 1
+  fixos.cli.cleanup_cmd._format_bytes:
+    name: _format_bytes
+    module: fixos.cli.cleanup_cmd
+    line: 530
+    cyclomatic_complexity: 3
+    calls_out: 0
+    calls_in: 33
+  fixos.utils.terminal.print_stdout_box:
+    name: print_stdout_box
+    module: fixos.utils.terminal
+    line: 193
+    cyclomatic_complexity: 2
+    calls_out: 8
+    calls_in: 2
+  fixos.utils.web_search._http_get:
+    name: _http_get
+    module: fixos.utils.web_search
+    line: 26
+    cyclomatic_complexity: 2
+    calls_out: 4
+    calls_in: 5
+  fixos.utils.terminal.print_stderr_box:
+    name: print_stderr_box
+    module: fixos.utils.terminal
+    line: 206
+    cyclomatic_complexity: 2
+    calls_out: 8
+    calls_in: 2
+  fixos.cli.ask_cmd._match_heuristic_command:
+    name: _match_heuristic_command
+    module: fixos.cli.ask_cmd
+    line: 31
+    cyclomatic_complexity: 18
+    calls_out: 2
+    calls_in: 1
+  fixos.agent.autonomous_session.AutonomousSession._get_remaining_time:
+    name: _get_remaining_time
+    module: fixos.agent.autonomous_session
+    line: 168
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 0
+  fixos.plugins.builtin.security.Plugin._check_fail2ban:
+    name: _check_fail2ban
+    module: fixos.plugins.builtin.security
+    line: 164
+    cyclomatic_complexity: 4
+    calls_out: 4
+    calls_in: 0
+  fixos.utils.anonymizer._dict_to_markdown:
+    name: _dict_to_markdown
+    module: fixos.utils.anonymizer
+    line: 253
+    cyclomatic_complexity: 9
+    calls_out: 20
+    calls_in: 2
+  fixos.agent.session_handlers.handle_search:
+    name: handle_search
+    module: fixos.agent.session_handlers
+    line: 129
+    cyclomatic_complexity: 2
+    calls_out: 6
+    calls_in: 1
+  fixos.cli.cleanup_cmd._display_full_system_menu:
+    name: _display_full_system_menu
+    module: fixos.cli.cleanup_cmd
+    line: 551
+    cyclomatic_complexity: 12
+    calls_out: 79
+    calls_in: 1
+  fixos.diagnostics.checks.resources.diagnose_resources:
+    name: diagnose_resources
+    module: fixos.diagnostics.checks.resources
+    line: 10
+    cyclomatic_complexity: 13
+    calls_out: 49
+    calls_in: 0
+  fixos.platform_utils.get_os_info:
+    name: get_os_info
+    module: fixos.platform_utils
+    line: 22
+    cyclomatic_complexity: 5
+    calls_out: 8
+    calls_in: 1
+  fixos.cli.cleanup_cmd._snap_fetch_packages:
+    name: _snap_fetch_packages
+    module: fixos.cli.cleanup_cmd
+    line: 611
+    cyclomatic_complexity: 6
+    calls_out: 8
+    calls_in: 1
+  fixos.plugins.builtin.hardware.Plugin._check_touchpad:
+    name: _check_touchpad
+    module: fixos.plugins.builtin.hardware
+    line: 111
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 0
+  fixos.utils.web_search.search_fedora_bugzilla:
+    name: search_fedora_bugzilla
+    module: fixos.utils.web_search
+    line: 39
+    cyclomatic_complexity: 4
+    calls_out: 8
+    calls_in: 1
+  fixos.plugins.builtin.disk.Plugin._check_usage:
+    name: _check_usage
+    module: fixos.plugins.builtin.disk
+    line: 74
+    cyclomatic_complexity: 6
+    calls_out: 8
+    calls_in: 0
+  fixos.anonymizer.get_sensitive_values:
+    name: get_sensitive_values
+    module: fixos.anonymizer
+    line: 12
+    cyclomatic_complexity: 4
+    calls_out: 3
+    calls_in: 1
+  fixos.cli.main.cli:
+    name: cli
+    module: fixos.cli.main
+    line: 13
+    cyclomatic_complexity: 3
+    calls_out: 5
+    calls_in: 1
+  fixos.agent.session_io.get_user_input:
+    name: get_user_input
+    module: fixos.agent.session_io
+    line: 252
+    cyclomatic_complexity: 2
+    calls_out: 4
+    calls_in: 0
+  fixos.cli.cleanup_cmd._handle_snap_management:
+    name: _handle_snap_management
+    module: fixos.cli.cleanup_cmd
+    line: 650
+    cyclomatic_complexity: 18
+    calls_out: 44
+    calls_in: 1
+  fixos.agent.hitl_session.HITLSession._initialize_messages:
+    name: _initialize_messages
+    module: fixos.agent.hitl_session
+    line: 72
+    cyclomatic_complexity: 3
+    calls_out: 5
+    calls_in: 0
+  project.map.toon.display_anonymized_preview:
+    name: display_anonymized_preview
+    module: project.map.toon
+    line: 520
+    cyclomatic_complexity: 0
+    calls_out: 0
+    calls_in: 2
+  scripts.pyqual-calibrate.calibrate:
+    name: calibrate
+    module: scripts.pyqual-calibrate
+    line: 128
+    cyclomatic_complexity: 14
+    calls_out: 26
+    calls_in: 1
+  fixos.config.detect_provider_from_key:
+    name: detect_provider_from_key
+    module: fixos.config
+    line: 315
+    cyclomatic_complexity: 3
+    calls_out: 1
+    calls_in: 1
+  fixos.cli.cleanup_cmd._build_dep_types:
+    name: _build_dep_types
+    module: fixos.cli.cleanup_cmd
+    line: 539
+    cyclomatic_complexity: 4
+    calls_out: 2
+    calls_in: 2
+  fixos.cli.cleanup_cmd._filter_by_prefix_type:
+    name: _filter_by_prefix_type
+    module: fixos.cli.cleanup_cmd
+    line: 1034
+    cyclomatic_complexity: 10
+    calls_out: 14
+    calls_in: 1
+  fixos.diagnostics.checks._shared._cmd:
+    name: _cmd
+    module: fixos.diagnostics.checks._shared
+    line: 21
+    cyclomatic_complexity: 7
+    calls_out: 3
+    calls_in: 142
+  fixos.plugins.builtin.thumbnails.Plugin._check_totem:
+    name: _check_totem
+    module: fixos.plugins.builtin.thumbnails
+    line: 100
+    cyclomatic_complexity: 2
+    calls_out: 3
+    calls_in: 0
+  fixos.config_interactive._get_api_key:
+    name: _get_api_key
+    module: fixos.config_interactive
+    line: 59
+    cyclomatic_complexity: 4
+    calls_out: 9
+    calls_in: 1
+  fixos.cli.fix_cmd._collect_diagnostics:
+    name: _collect_diagnostics
+    module: fixos.cli.fix_cmd
+    line: 17
+    cyclomatic_complexity: 7
+    calls_out: 14
+    calls_in: 1
+  fixos.cli.features_cmd._interactive_profile_select:
+    name: _interactive_profile_select
+    module: fixos.cli.features_cmd
+    line: 137
+    cyclomatic_complexity: 11
+    calls_out: 22
+    calls_in: 1
+  fixos.utils.terminal.print_cmd_block:
+    name: print_cmd_block
+    module: fixos.utils.terminal
+    line: 177
+    cyclomatic_complexity: 4
+    calls_out: 6
+    calls_in: 1
+  fixos.cli.cleanup_cmd._display_service_group:
+    name: _display_service_group
+    module: fixos.cli.cleanup_cmd
+    line: 186
+    cyclomatic_complexity: 8
+    calls_out: 15
+    calls_in: 1
+  fixos.cli.scan_cmd._run_disk_analysis:
+    name: _run_disk_analysis
+    module: fixos.cli.scan_cmd
+    line: 127
+    cyclomatic_complexity: 8
+    calls_out: 15
+    calls_in: 2
+  fixos.cli.scan_cmd._display_disk_fix_mode:
+    name: _display_disk_fix_mode
+    module: fixos.cli.scan_cmd
+    line: 88
+    cyclomatic_complexity: 6
+    calls_out: 11
+    calls_in: 1
+  fixos.agent.session_handlers.handle_direct_command:
+    name: handle_direct_command
+    module: fixos.agent.session_handlers
+    line: 111
+    cyclomatic_complexity: 1
+    calls_out: 5
+    calls_in: 1
+  fixos.platform_utils.needs_elevation:
+    name: needs_elevation
+    module: fixos.platform_utils
+    line: 41
+    cyclomatic_complexity: 5
+    calls_out: 7
+    calls_in: 1
+  fixos.agent.session_core.extract_search_topic:
+    name: extract_search_topic
+    module: fixos.agent.session_core
+    line: 82
+    cyclomatic_complexity: 3
+    calls_out: 4
+    calls_in: 1
+  fixos.diagnostics.checks._shared._psutil_required:
+    name: _psutil_required
+    module: fixos.diagnostics.checks._shared
+    line: 16
+    cyclomatic_complexity: 1
+    calls_out: 0
+    calls_in: 2
+  fixos.agent.autonomous_session.AutonomousSession._handle_exec:
+    name: _handle_exec
+    module: fixos.agent.autonomous_session
+    line: 274
+    cyclomatic_complexity: 4
+    calls_out: 16
+    calls_in: 0
+  fixos.agent.session_io.ask_send_data:
+    name: ask_send_data
+    module: fixos.agent.session_io
+    line: 245
+    cyclomatic_complexity: 1
+    calls_out: 4
+    calls_in: 0
+  fixos.plugins.builtin.security.Plugin._check_firewall:
+    name: _check_firewall
+    module: fixos.plugins.builtin.security
+    line: 109
+    cyclomatic_complexity: 8
+    calls_out: 8
+    calls_in: 0
+  fixos.platform_utils.get_package_manager:
+    name: get_package_manager
+    module: fixos.platform_utils
+    line: 123
+    cyclomatic_complexity: 8
+    calls_out: 3
+    calls_in: 2
+  fixos.utils.terminal.render_md:
+    name: render_md
+    module: fixos.utils.terminal
+    line: 95
+    cyclomatic_complexity: 9
+    calls_out: 30
+    calls_in: 0
+  fixos.plugins.builtin.resources.Plugin._check_cpu:
+    name: _check_cpu
+    module: fixos.plugins.builtin.resources
+    line: 84
+    cyclomatic_complexity: 5
+    calls_out: 5
+    calls_in: 0
+  fixos.system_checks.get_network_info:
+    name: get_network_info
+    module: fixos.system_checks
+    line: 79
+    cyclomatic_complexity: 4
+    calls_out: 3
+    calls_in: 1
+  fixos.platform_utils._cmd_exists:
+    name: _cmd_exists
+    module: fixos.platform_utils
+    line: 162
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 3
+  fixos.system_checks.get_top_processes:
+    name: get_top_processes
+    module: fixos.system_checks
+    line: 95
+    cyclomatic_complexity: 3
+    calls_out: 4
+    calls_in: 1
+  scripts.pyqual-calibrate.main:
+    name: main
+    module: scripts.pyqual-calibrate
+    line: 233
+    cyclomatic_complexity: 6
+    calls_out: 12
+    calls_in: 0
+  fixos.agent.hitl_session.HITLSession.__init__:
+    name: __init__
+    module: fixos.agent.hitl_session
+    line: 35
+    cyclomatic_complexity: 2
+    calls_out: 5
+    calls_in: 0
+  fixos.agent.session_handlers.handle_execute_all:
+    name: handle_execute_all
+    module: fixos.agent.session_handlers
+    line: 50
+    cyclomatic_complexity: 4
+    calls_out: 9
+    calls_in: 1
+  fixos.orchestrator.orchestrator.FixOrchestrator._evaluate_and_rediagnose:
+    name: _evaluate_and_rediagnose
+    module: fixos.orchestrator.orchestrator
+    line: 266
+    cyclomatic_complexity: 10
+    calls_out: 23
+    calls_in: 0
+  fixos.agent.session_io.ask_user_problem:
+    name: ask_user_problem
+    module: fixos.agent.session_io
+    line: 103
+    cyclomatic_complexity: 2
+    calls_out: 11
+    calls_in: 0
+  fixos.plugins.builtin.hardware.Plugin._check_gpu:
+    name: _check_gpu
+    module: fixos.plugins.builtin.hardware
+    line: 83
+    cyclomatic_complexity: 3
+    calls_out: 2
+    calls_in: 0
+  fixos.diagnostics.checks.hardware.diagnose_hardware:
+    name: diagnose_hardware
+    module: fixos.diagnostics.checks.hardware
+    line: 10
+    cyclomatic_complexity: 1
+    calls_out: 18
+    calls_in: 0
+  fixos.utils.web_search.search_ask_fedora:
+    name: search_ask_fedora
+    module: fixos.utils.web_search
+    line: 65
+    cyclomatic_complexity: 4
+    calls_out: 11
+    calls_in: 1
+  fixos.system_checks.get_full_diagnostics:
+    name: get_full_diagnostics
+    module: fixos.system_checks
+    line: 128
+    cyclomatic_complexity: 1
+    calls_out: 16
+    calls_in: 2
+  fixos.llm_shell._handle_user_turn:
+    name: _handle_user_turn
+    module: fixos.llm_shell
+    line: 119
+    cyclomatic_complexity: 8
+    calls_out: 16
+    calls_in: 1
+  scripts.pyqual-calibrate.extract_current_metrics:
+    name: extract_current_metrics
+    module: scripts.pyqual-calibrate
+    line: 109
+    cyclomatic_complexity: 4
+    calls_out: 9
+    calls_in: 1
+  fixos.plugins.builtin.resources.Plugin._check_zombies:
+    name: _check_zombies
+    module: fixos.plugins.builtin.resources
+    line: 120
+    cyclomatic_complexity: 3
+    calls_out: 5
+    calls_in: 0
+  fixos.platform_utils.setup_signal_timeout:
+    name: setup_signal_timeout
+    module: fixos.platform_utils
+    line: 167
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 2
+  fixos.agent.session_io._suspend_timeout:
+    name: _suspend_timeout
+    module: fixos.agent.session_io
+    line: 33
+    cyclomatic_complexity: 4
+    calls_out: 3
+    calls_in: 5
+  fixos.cli.ask_cmd._execute_heuristic_command:
+    name: _execute_heuristic_command
+    module: fixos.cli.ask_cmd
+    line: 107
+    cyclomatic_complexity: 9
+    calls_out: 12
+    calls_in: 1
+  fixos.llm_shell.run_llm_shell:
+    name: run_llm_shell
+    module: fixos.llm_shell
+    line: 156
+    cyclomatic_complexity: 8
+    calls_out: 34
+    calls_in: 0
+  fixos.orchestrator.orchestrator.FixOrchestrator._default_progress:
+    name: _default_progress
+    module: fixos.orchestrator.orchestrator
+    line: 381
+    cyclomatic_complexity: 8
+    calls_out: 8
+    calls_in: 0
+  fixos.diagnostics.checks.system_core._collect_os_info:
+    name: _collect_os_info
+    module: fixos.diagnostics.checks.system_core
+    line: 13
+    cyclomatic_complexity: 3
+    calls_out: 9
+    calls_in: 1
+  fixos.agent.session_io.print_session_header:
+    name: print_session_header
+    module: fixos.agent.session_io
+    line: 57
+    cyclomatic_complexity: 1
+    calls_out: 8
+    calls_in: 0
+  fixos.orchestrator.orchestrator.FixOrchestrator.load_from_diagnostics:
+    name: load_from_diagnostics
+    module: fixos.orchestrator.orchestrator
+    line: 112
+    cyclomatic_complexity: 5
+    calls_out: 26
+    calls_in: 0
+  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error:
+    name: _handle_llm_error
+    module: fixos.agent.autonomous_session
+    line: 186
+    cyclomatic_complexity: 4
+    calls_out: 3
+    calls_in: 0
+  fixos.system_checks.run_cmd:
+    name: run_cmd
+    module: fixos.system_checks
+    line: 12
+    cyclomatic_complexity: 6
+    calls_out: 3
+    calls_in: 15
+  fixos.agent.hitl_session.HITLSession._setup_timeout:
+    name: _setup_timeout
+    module: fixos.agent.hitl_session
+    line: 54
+    cyclomatic_complexity: 1
+    calls_out: 3
+    calls_in: 0
+  fixos.cli.ask_cmd._execute_with_llm:
+    name: _execute_with_llm
+    module: fixos.cli.ask_cmd
+    line: 157
+    cyclomatic_complexity: 8
+    calls_out: 21
+    calls_in: 1
+  fixos.agent.session_core.extract_fixes:
+    name: extract_fixes
+    module: fixos.agent.session_core
+    line: 60
+    cyclomatic_complexity: 10
+    calls_out: 19
+    calls_in: 1
+  fixos.cli.main._print_welcome:
+    name: _print_welcome
+    module: fixos.cli.main
+    line: 42
+    cyclomatic_complexity: 6
+    calls_out: 61
+    calls_in: 1
+  fixos.agent.session_handlers.handle_fix_by_number:
+    name: handle_fix_by_number
+    module: fixos.agent.session_handlers
+    line: 81
+    cyclomatic_complexity: 2
+    calls_out: 9
+    calls_in: 1
+  fixos.cli.cleanup_cmd._handle_home_analysis:
+    name: _handle_home_analysis
+    module: fixos.cli.cleanup_cmd
+    line: 770
+    cyclomatic_complexity: 11
+    calls_out: 49
+    calls_in: 1
+  fixos.utils.anonymizer._format_key_title:
+    name: _format_key_title
+    module: fixos.utils.anonymizer
+    line: 278
+    cyclomatic_complexity: 1
+    calls_out: 3
+    calls_in: 1
+  fixos.cli.token_cmd.token_set:
+    name: token_set
+    module: fixos.cli.token_cmd
+    line: 19
+    cyclomatic_complexity: 7
+    calls_out: 29
+    calls_in: 0
+  fixos.orchestrator.orchestrator.FixOrchestrator._default_confirm:
+    name: _default_confirm
+    module: fixos.orchestrator.orchestrator
+    line: 363
+    cyclomatic_complexity: 3
+    calls_out: 6
+    calls_in: 0
+  fixos.diagnostics.checks.system_core.diagnose_system:
+    name: diagnose_system
+    module: fixos.diagnostics.checks.system_core
+    line: 63
+    cyclomatic_complexity: 11
+    calls_out: 23
+    calls_in: 0
+  scripts.pyqual-calibrate.parse_pyqual_yaml:
+    name: parse_pyqual_yaml
+    module: scripts.pyqual-calibrate
+    line: 56
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 1
+  fixos.agent.session_handlers.handle_skip_all:
+    name: handle_skip_all
+    module: fixos.agent.session_handlers
+    line: 28
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 1
+  fixos.plugins.builtin.disk.Plugin._check_inodes:
+    name: _check_inodes
+    module: fixos.plugins.builtin.disk
+    line: 91
+    cyclomatic_complexity: 6
+    calls_out: 8
+    calls_in: 0
+  fixos.config_interactive._get_user_choice:
+    name: _get_user_choice
+    module: fixos.config_interactive
+    line: 45
+    cyclomatic_complexity: 6
+    calls_out: 7
+    calls_in: 1
+  fixos.diagnostics.checks.thumbnails.diagnose_thumbnails:
+    name: diagnose_thumbnails
+    module: fixos.diagnostics.checks.thumbnails
+    line: 10
+    cyclomatic_complexity: 1
+    calls_out: 21
+    calls_in: 0
+  fixos.utils.terminal.print_problem_header:
+    name: print_problem_header
+    module: fixos.utils.terminal
+    line: 241
+    cyclomatic_complexity: 3
+    calls_out: 10
+    calls_in: 1
+  fixos.cli.cleanup_cmd._parse_numeric_range_set:
+    name: _parse_numeric_range_set
+    module: fixos.cli.cleanup_cmd
+    line: 704
+    cyclomatic_complexity: 5
+    calls_out: 10
+    calls_in: 3
+  fixos.agent.hitl_session.HITLSession._process_turn:
+    name: _process_turn
+    module: fixos.agent.hitl_session
+    line: 134
+    cyclomatic_complexity: 7
+    calls_out: 16
+    calls_in: 0
+  fixos.config_interactive.interactive_provider_setup:
+    name: interactive_provider_setup
+    module: fixos.config_interactive
+    line: 119
+    cyclomatic_complexity: 5
+    calls_out: 10
+    calls_in: 0
+  fixos.utils.anonymizer.anonymize:
+    name: anonymize
+    module: fixos.utils.anonymizer
+    line: 77
+    cyclomatic_complexity: 8
+    calls_out: 21
     calls_in: 0
   fixos.cli.scan_cmd._display_disk_scan_mode:
     name: _display_disk_scan_mode
@@ -26,82 +761,12 @@ nodes:
     cyclomatic_complexity: 5
     calls_out: 5
     calls_in: 0
-  fixos.plugins.builtin.resources.Plugin._check_top_processes:
-    name: _check_top_processes
-    module: fixos.plugins.builtin.resources
-    line: 114
-    cyclomatic_complexity: 2
-    calls_out: 1
-    calls_in: 0
-  fixos.agent.session_io.print_session_header:
-    name: print_session_header
-    module: fixos.agent.session_io
-    line: 57
-    cyclomatic_complexity: 1
-    calls_out: 8
-    calls_in: 0
-  fixos.agent.hitl_session.HITLSession._process_turn:
-    name: _process_turn
-    module: fixos.agent.hitl_session
-    line: 134
-    cyclomatic_complexity: 7
-    calls_out: 16
-    calls_in: 0
-  fixos.utils.anonymizer.anonymize:
-    name: anonymize
+  fixos.utils.anonymizer._format_diagnostics_markdown:
+    name: _format_diagnostics_markdown
     module: fixos.utils.anonymizer
-    line: 51
-    cyclomatic_complexity: 15
-    calls_out: 48
-    calls_in: 0
-  fixos.platform_utils.setup_signal_timeout:
-    name: setup_signal_timeout
-    module: fixos.platform_utils
-    line: 167
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 2
-  fixos.cli.ask_cmd._format_command:
-    name: _format_command
-    module: fixos.cli.ask_cmd
-    line: 61
+    line: 198
     cyclomatic_complexity: 3
-    calls_out: 3
-    calls_in: 1
-  fixos.agent.session_io.print_cmd_result:
-    name: print_cmd_result
-    module: fixos.agent.session_io
-    line: 132
-    cyclomatic_complexity: 8
-    calls_out: 13
-    calls_in: 0
-  fixos.utils.anonymizer._format_key_title:
-    name: _format_key_title
-    module: fixos.utils.anonymizer
-    line: 298
-    cyclomatic_complexity: 1
-    calls_out: 3
-    calls_in: 1
-  fixos.agent.autonomous_session.AutonomousSession._get_remaining_time:
-    name: _get_remaining_time
-    module: fixos.agent.autonomous_session
-    line: 168
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 0
-  fixos.cli.scan_cmd._display_disk_fix_mode:
-    name: _display_disk_fix_mode
-    module: fixos.cli.scan_cmd
-    line: 88
-    cyclomatic_complexity: 6
-    calls_out: 11
-    calls_in: 1
-  fixos.platform_utils.get_os_info:
-    name: get_os_info
-    module: fixos.platform_utils
-    line: 22
-    cyclomatic_complexity: 5
-    calls_out: 8
+    calls_out: 5
     calls_in: 1
   fixos.agent.session_handlers.handle_quit:
     name: handle_quit
@@ -110,894 +775,12 @@ nodes:
     cyclomatic_complexity: 1
     calls_out: 1
     calls_in: 1
-  fixos.cli.main.main:
-    name: main
-    module: fixos.cli.main
-    line: 120
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 0
-  fixos.cli.cleanup_cmd._display_unsafe_services:
-    name: _display_unsafe_services
-    module: fixos.cli.cleanup_cmd
-    line: 208
-    cyclomatic_complexity: 4
-    calls_out: 10
-    calls_in: 1
-  fixos.cli.cleanup_cmd._handle_snap_management:
-    name: _handle_snap_management
-    module: fixos.cli.cleanup_cmd
-    line: 611
-    cyclomatic_complexity: 26
-    calls_out: 60
-    calls_in: 1
-  scripts.pyqual-calibrate.calibrate:
-    name: calibrate
-    module: scripts.pyqual-calibrate
-    line: 128
-    cyclomatic_complexity: 14
-    calls_out: 26
-    calls_in: 1
-  fixos.agent.autonomous_session.AutonomousSession._initialize_messages:
-    name: _initialize_messages
-    module: fixos.agent.autonomous_session
-    line: 151
-    cyclomatic_complexity: 2
-    calls_out: 3
-    calls_in: 0
-  fixos.plugins.builtin.security.Plugin._check_open_ports:
-    name: _check_open_ports
-    module: fixos.plugins.builtin.security
-    line: 131
-    cyclomatic_complexity: 7
-    calls_out: 8
-    calls_in: 0
-  fixos.system_checks.get_full_diagnostics:
-    name: get_full_diagnostics
-    module: fixos.system_checks
-    line: 128
-    cyclomatic_complexity: 1
-    calls_out: 16
-    calls_in: 2
-  fixos.agent.session_io.ask_execute_prompt:
-    name: ask_execute_prompt
-    module: fixos.agent.session_io
-    line: 231
-    cyclomatic_complexity: 1
-    calls_out: 4
-    calls_in: 0
-  fixos.plugins.builtin.disk.Plugin._check_inodes:
-    name: _check_inodes
-    module: fixos.plugins.builtin.disk
-    line: 91
-    cyclomatic_complexity: 6
-    calls_out: 8
-    calls_in: 0
-  fixos.plugins.builtin.thumbnails.Plugin._check_totem:
-    name: _check_totem
-    module: fixos.plugins.builtin.thumbnails
-    line: 100
-    cyclomatic_complexity: 2
-    calls_out: 3
-    calls_in: 0
-  fixos.utils.terminal.print_problem_header:
-    name: print_problem_header
-    module: fixos.utils.terminal
-    line: 241
-    cyclomatic_complexity: 3
-    calls_out: 10
-    calls_in: 1
-  fixos.system_checks.run_cmd:
-    name: run_cmd
-    module: fixos.system_checks
-    line: 12
-    cyclomatic_complexity: 6
-    calls_out: 3
-    calls_in: 15
-  fixos.cli.cleanup_cmd._display_service_group:
-    name: _display_service_group
-    module: fixos.cli.cleanup_cmd
-    line: 186
-    cyclomatic_complexity: 8
-    calls_out: 15
-    calls_in: 1
-  fixos.orchestrator.orchestrator.FixOrchestrator.load_from_diagnostics:
-    name: load_from_diagnostics
-    module: fixos.orchestrator.orchestrator
-    line: 112
-    cyclomatic_complexity: 5
-    calls_out: 26
-    calls_in: 0
-  fixos.utils.terminal.print_stdout_box:
-    name: print_stdout_box
-    module: fixos.utils.terminal
-    line: 193
-    cyclomatic_complexity: 2
-    calls_out: 8
-    calls_in: 2
-  fixos.system_checks.get_fedora_specific:
-    name: get_fedora_specific
-    module: fixos.system_checks
-    line: 107
-    cyclomatic_complexity: 1
-    calls_out: 15
-    calls_in: 1
-  fixos.diagnostics.checks.resources.diagnose_resources:
-    name: diagnose_resources
-    module: fixos.diagnostics.checks.resources
-    line: 10
-    cyclomatic_complexity: 13
-    calls_out: 49
-    calls_in: 0
-  fixos.plugins.builtin.hardware.Plugin._check_battery:
-    name: _check_battery
-    module: fixos.plugins.builtin.hardware
-    line: 89
-    cyclomatic_complexity: 8
-    calls_out: 16
-    calls_in: 0
-  fixos.plugins.builtin.disk.Plugin._check_usage:
-    name: _check_usage
-    module: fixos.plugins.builtin.disk
-    line: 74
-    cyclomatic_complexity: 6
-    calls_out: 8
-    calls_in: 0
-  fixos.agent.session_handlers.handle_describe_problem:
-    name: handle_describe_problem
-    module: fixos.agent.session_handlers
-    line: 35
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 1
-  fixos.agent.session_handlers.handle_execute_all:
-    name: handle_execute_all
-    module: fixos.agent.session_handlers
-    line: 50
-    cyclomatic_complexity: 4
-    calls_out: 9
-    calls_in: 1
-  fixos.cli.ask_cmd._build_output_dict:
-    name: _build_output_dict
-    module: fixos.cli.ask_cmd
-    line: 71
-    cyclomatic_complexity: 8
-    calls_out: 0
-    calls_in: 5
-  fixos.llm_shell.run_llm_shell:
-    name: run_llm_shell
-    module: fixos.llm_shell
-    line: 100
-    cyclomatic_complexity: 15
-    calls_out: 53
-    calls_in: 0
-  fixos.agent.autonomous_session.AutonomousSession._handle_search:
-    name: _handle_search
-    module: fixos.agent.autonomous_session
-    line: 247
-    cyclomatic_complexity: 3
-    calls_out: 8
-    calls_in: 0
-  fixos.diagnostics.checks._shared._cmd:
-    name: _cmd
-    module: fixos.diagnostics.checks._shared
-    line: 21
-    cyclomatic_complexity: 7
-    calls_out: 3
-    calls_in: 142
-  fixos.utils.terminal._is_divider_line:
-    name: _is_divider_line
-    module: fixos.utils.terminal
-    line: 62
-    cyclomatic_complexity: 1
-    calls_out: 2
-    calls_in: 1
-  fixos.agent.hitl_session.HITLSession._initialize_messages:
-    name: _initialize_messages
-    module: fixos.agent.hitl_session
-    line: 72
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 0
-  fixos.diagnostics.checks.hardware.diagnose_hardware:
-    name: diagnose_hardware
-    module: fixos.diagnostics.checks.hardware
-    line: 10
-    cyclomatic_complexity: 1
-    calls_out: 18
-    calls_in: 0
-  fixos.platform_utils.elevate_cmd:
-    name: elevate_cmd
-    module: fixos.platform_utils
-    line: 61
-    cyclomatic_complexity: 3
-    calls_out: 2
-    calls_in: 1
-  fixos.utils.web_search.search_ask_fedora:
-    name: search_ask_fedora
-    module: fixos.utils.web_search
-    line: 65
-    cyclomatic_complexity: 4
-    calls_out: 11
-    calls_in: 1
-  fixos.system_checks.get_disk_info:
-    name: get_disk_info
-    module: fixos.system_checks
-    line: 60
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 1
-  fixos.agent.session_io.fmt_time:
-    name: fmt_time
-    module: fixos.agent.session_io
-    line: 68
-    cyclomatic_complexity: 1
-    calls_out: 0
-    calls_in: 4
-  fixos.plugins.builtin.thumbnails.Plugin._check_ffmpegthumbnailer:
-    name: _check_ffmpegthumbnailer
-    module: fixos.plugins.builtin.thumbnails
-    line: 96
-    cyclomatic_complexity: 2
-    calls_out: 3
-    calls_in: 0
-  fixos.plugins.builtin.audio.Plugin._check_wireplumber:
-    name: _check_wireplumber
-    module: fixos.plugins.builtin.audio
-    line: 97
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 0
-  fixos.platform_utils.is_dangerous:
-    name: is_dangerous
-    module: fixos.platform_utils
-    line: 72
-    cyclomatic_complexity: 3
-    calls_out: 1
-    calls_in: 1
-  fixos.plugins.builtin.hardware.Plugin._check_touchpad:
-    name: _check_touchpad
-    module: fixos.plugins.builtin.hardware
-    line: 111
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 0
-  fixos.agent.session_handlers.parse_user_input:
-    name: parse_user_input
-    module: fixos.agent.session_handlers
-    line: 179
-    cyclomatic_complexity: 9
-    calls_out: 11
-    calls_in: 0
-  fixos.cli.cleanup_cmd._build_dep_types:
-    name: _build_dep_types
-    module: fixos.cli.cleanup_cmd
-    line: 539
-    cyclomatic_complexity: 4
-    calls_out: 2
-    calls_in: 2
-  scripts.pyqual-calibrate.parse_pyqual_yaml:
-    name: parse_pyqual_yaml
-    module: scripts.pyqual-calibrate
-    line: 56
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 1
-  fixos.platform_utils.get_package_manager:
-    name: get_package_manager
-    module: fixos.platform_utils
-    line: 123
-    cyclomatic_complexity: 8
-    calls_out: 3
-    calls_in: 2
-  fixos.agent.hitl_session.HITLSession._handle_llm_error:
-    name: _handle_llm_error
-    module: fixos.agent.hitl_session
-    line: 104
-    cyclomatic_complexity: 4
-    calls_out: 4
-    calls_in: 0
-  fixos.agent.session_handlers.handle_fix_by_number:
-    name: handle_fix_by_number
-    module: fixos.agent.session_handlers
-    line: 81
-    cyclomatic_complexity: 2
-    calls_out: 9
-    calls_in: 1
-  fixos.utils.terminal.print_cmd_block:
-    name: print_cmd_block
-    module: fixos.utils.terminal
-    line: 177
-    cyclomatic_complexity: 4
-    calls_out: 6
-    calls_in: 1
-  fixos.agent.hitl_session.HITLSession.__init__:
-    name: __init__
-    module: fixos.agent.hitl_session
-    line: 35
-    cyclomatic_complexity: 2
-    calls_out: 5
-    calls_in: 0
-  fixos.agent.get_remaining_time:
-    name: get_remaining_time
-    module: fixos.agent
-    line: 22
-    cyclomatic_complexity: 2
-    calls_out: 4
-    calls_in: 3
-  fixos.cli.features_cmd._interactive_profile_select:
-    name: _interactive_profile_select
-    module: fixos.cli.features_cmd
-    line: 137
-    cyclomatic_complexity: 11
-    calls_out: 22
-    calls_in: 1
-  fixos.orchestrator.orchestrator.FixOrchestrator._default_confirm:
-    name: _default_confirm
-    module: fixos.orchestrator.orchestrator
-    line: 363
-    cyclomatic_complexity: 3
-    calls_out: 6
-    calls_in: 0
-  fixos.config._load_env_files:
-    name: _load_env_files
-    module: fixos.config
-    line: 135
-    cyclomatic_complexity: 13
-    calls_out: 14
-    calls_in: 1
-  fixos.plugins.builtin.security.Plugin._check_ssh:
-    name: _check_ssh
-    module: fixos.plugins.builtin.security
-    line: 150
-    cyclomatic_complexity: 8
-    calls_out: 8
-    calls_in: 0
-  fixos.platform_utils.install_package_cmd:
-    name: install_package_cmd
-    module: fixos.platform_utils
-    line: 141
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 0
-  fixos.utils.web_search.search_ddg:
-    name: search_ddg
-    module: fixos.utils.web_search
-    line: 174
-    cyclomatic_complexity: 8
-    calls_out: 15
-    calls_in: 1
-  fixos.plugins.builtin.audio.Plugin._check_alsa:
-    name: _check_alsa
-    module: fixos.plugins.builtin.audio
-    line: 84
-    cyclomatic_complexity: 6
-    calls_out: 5
-    calls_in: 0
-  fixos.utils.anonymizer._get_sensitive:
-    name: _get_sensitive
-    module: fixos.utils.anonymizer
-    line: 34
-    cyclomatic_complexity: 4
-    calls_out: 3
-    calls_in: 1
-  fixos.cli.cleanup_cmd._cleanup_full_system:
-    name: _cleanup_full_system
-    module: fixos.cli.cleanup_cmd
-    line: 1059
-    cyclomatic_complexity: 18
-    calls_out: 30
-    calls_in: 1
-  scripts.pyqual-calibrate.extract_current_metrics:
-    name: extract_current_metrics
-    module: scripts.pyqual-calibrate
-    line: 109
-    cyclomatic_complexity: 4
-    calls_out: 9
-    calls_in: 1
-  fixos.plugins.builtin.security.Plugin._check_selinux:
-    name: _check_selinux
-    module: fixos.plugins.builtin.security
-    line: 124
-    cyclomatic_complexity: 3
-    calls_out: 4
-    calls_in: 0
-  fixos.platform_utils.run_command:
-    name: run_command
-    module: fixos.platform_utils
-    line: 91
-    cyclomatic_complexity: 5
-    calls_out: 4
-    calls_in: 33
-  fixos.cli.ask_cmd._match_heuristic_command:
-    name: _match_heuristic_command
-    module: fixos.cli.ask_cmd
-    line: 31
-    cyclomatic_complexity: 18
-    calls_out: 2
-    calls_in: 1
-  fixos.utils.anonymizer._render_dict_list_value:
-    name: _render_dict_list_value
-    module: fixos.utils.anonymizer
-    line: 236
-    cyclomatic_complexity: 6
-    calls_out: 7
-    calls_in: 1
-  fixos.agent.session_handlers.handle_skip_all:
-    name: handle_skip_all
-    module: fixos.agent.session_handlers
-    line: 28
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 1
-  fixos.cli.ask_cmd._execute_with_llm:
-    name: _execute_with_llm
-    module: fixos.cli.ask_cmd
-    line: 157
-    cyclomatic_complexity: 8
-    calls_out: 21
-    calls_in: 1
-  fixos.orchestrator.orchestrator.FixOrchestrator._default_progress:
-    name: _default_progress
-    module: fixos.orchestrator.orchestrator
-    line: 381
-    cyclomatic_complexity: 8
-    calls_out: 8
-    calls_in: 0
-  fixos.agent.session_io.ask_user_problem:
-    name: ask_user_problem
-    module: fixos.agent.session_io
-    line: 103
-    cyclomatic_complexity: 2
-    calls_out: 11
-    calls_in: 0
-  fixos.cli.cleanup_cmd._cleanup_flatpak_detailed:
-    name: _cleanup_flatpak_detailed
-    module: fixos.cli.cleanup_cmd
-    line: 259
-    cyclomatic_complexity: 12
-    calls_out: 111
-    calls_in: 1
-  fixos.cli.cleanup_cmd._display_full_system_menu:
-    name: _display_full_system_menu
-    module: fixos.cli.cleanup_cmd
-    line: 551
-    cyclomatic_complexity: 12
-    calls_out: 79
-    calls_in: 1
-  fixos.agent.session_core.extract_fixes:
-    name: extract_fixes
-    module: fixos.agent.session_core
-    line: 60
-    cyclomatic_complexity: 10
-    calls_out: 19
-    calls_in: 1
-  fixos.agent.session_io.ask_send_data:
-    name: ask_send_data
-    module: fixos.agent.session_io
-    line: 245
-    cyclomatic_complexity: 1
-    calls_out: 4
-    calls_in: 0
-  fixos.agent.session_io.get_user_input:
-    name: get_user_input
-    module: fixos.agent.session_io
-    line: 252
-    cyclomatic_complexity: 2
-    calls_out: 4
-    calls_in: 0
-  fixos.agent.session_core.extract_search_topic:
-    name: extract_search_topic
-    module: fixos.agent.session_core
-    line: 82
-    cyclomatic_complexity: 3
-    calls_out: 4
-    calls_in: 1
-  fixos.config.FixOsConfig.load:
-    name: load
-    module: fixos.config
-    line: 189
-    cyclomatic_complexity: 14
-    calls_out: 26
-    calls_in: 0
-  fixos.utils.web_search.format_results_for_llm:
-    name: format_results_for_llm
-    module: fixos.utils.web_search
-    line: 245
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 5
-  fixos.diagnostics.checks.thumbnails.diagnose_thumbnails:
-    name: diagnose_thumbnails
-    module: fixos.diagnostics.checks.thumbnails
-    line: 10
-    cyclomatic_complexity: 1
-    calls_out: 21
-    calls_in: 0
-  fixos.plugins.builtin.resources.Plugin._check_zombies:
-    name: _check_zombies
-    module: fixos.plugins.builtin.resources
-    line: 120
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 0
-  fixos.cli.main._print_welcome:
-    name: _print_welcome
-    module: fixos.cli.main
-    line: 42
-    cyclomatic_complexity: 6
-    calls_out: 61
-    calls_in: 1
-  fixos.diagnostics.checks.security.diagnose_security:
-    name: diagnose_security
-    module: fixos.diagnostics.checks.security
-    line: 10
-    cyclomatic_complexity: 4
-    calls_out: 36
-    calls_in: 0
-  fixos.cli.cleanup_cmd._display_flatpak_status:
-    name: _display_flatpak_status
-    module: fixos.cli.cleanup_cmd
-    line: 410
-    cyclomatic_complexity: 9
-    calls_out: 65
-    calls_in: 1
-  fixos.system_checks.get_memory_info:
-    name: get_memory_info
-    module: fixos.system_checks
-    line: 45
-    cyclomatic_complexity: 1
-    calls_out: 7
-    calls_in: 1
-  fixos.diagnostics.checks.system_core._collect_os_info:
-    name: _collect_os_info
-    module: fixos.diagnostics.checks.system_core
-    line: 13
-    cyclomatic_complexity: 3
-    calls_out: 9
-    calls_in: 1
-  fixos.agent.session_handlers.handle_direct_command:
-    name: handle_direct_command
-    module: fixos.agent.session_handlers
-    line: 111
-    cyclomatic_complexity: 1
-    calls_out: 5
-    calls_in: 1
-  scripts.pyqual-calibrate.main:
-    name: main
-    module: scripts.pyqual-calibrate
-    line: 233
-    cyclomatic_complexity: 6
-    calls_out: 12
-    calls_in: 0
-  fixos.utils.anonymizer.display_anonymized_preview:
-    name: display_anonymized_preview
-    module: fixos.utils.anonymizer
-    line: 139
-    cyclomatic_complexity: 5
-    calls_out: 18
-    calls_in: 2
-  fixos.system_checks.get_top_processes:
-    name: get_top_processes
-    module: fixos.system_checks
-    line: 95
-    cyclomatic_complexity: 3
-    calls_out: 4
-    calls_in: 1
-  fixos.config_interactive._print_provider_menu:
-    name: _print_provider_menu
-    module: fixos.config_interactive
-    line: 12
-    cyclomatic_complexity: 9
-    calls_out: 19
-    calls_in: 1
-  fixos.utils.web_search.search_fedora_bugzilla:
-    name: search_fedora_bugzilla
-    module: fixos.utils.web_search
-    line: 39
-    cyclomatic_complexity: 4
-    calls_out: 8
-    calls_in: 1
-  fixos.cli.ask_cmd._handle_natural_command:
-    name: _handle_natural_command
-    module: fixos.cli.ask_cmd
-    line: 230
-    cyclomatic_complexity: 3
-    calls_out: 9
-    calls_in: 1
-  fixos.agent.hitl_session.HITLSession._setup_timeout:
-    name: _setup_timeout
-    module: fixos.agent.hitl_session
-    line: 54
-    cyclomatic_complexity: 1
-    calls_out: 3
-    calls_in: 0
-  fixos.diagnostics.checks.system_core.diagnose_system:
-    name: diagnose_system
-    module: fixos.diagnostics.checks.system_core
-    line: 63
-    cyclomatic_complexity: 11
-    calls_out: 23
-    calls_in: 0
-  fixos.cli.features_cmd.features_audit:
-    name: features_audit
-    module: fixos.cli.features_cmd
-    line: 29
-    cyclomatic_complexity: 4
-    calls_out: 18
-    calls_in: 0
-  fixos.cli.ask_cmd.ask:
-    name: ask
-    module: fixos.cli.ask_cmd
-    line: 10
-    cyclomatic_complexity: 1
-    calls_out: 4
-    calls_in: 0
   fixos.plugins.builtin.thumbnails.Plugin._check_cache:
     name: _check_cache
     module: fixos.plugins.builtin.thumbnails
     line: 83
     cyclomatic_complexity: 5
     calls_out: 11
-    calls_in: 0
-  fixos.config_interactive._get_api_key:
-    name: _get_api_key
-    module: fixos.config_interactive
-    line: 59
-    cyclomatic_complexity: 4
-    calls_out: 9
-    calls_in: 1
-  fixos.utils.anonymizer._dict_to_markdown:
-    name: _dict_to_markdown
-    module: fixos.utils.anonymizer
-    line: 273
-    cyclomatic_complexity: 9
-    calls_out: 20
-    calls_in: 2
-  fixos.utils.terminal.render_md:
-    name: render_md
-    module: fixos.utils.terminal
-    line: 95
-    cyclomatic_complexity: 9
-    calls_out: 30
-    calls_in: 0
-  fixos.cli.ask_cmd._validate_result_with_llm:
-    name: _validate_result_with_llm
-    module: fixos.cli.ask_cmd
-    line: 264
-    cyclomatic_complexity: 14
-    calls_out: 16
-    calls_in: 2
-  fixos.plugins.builtin.resources.Plugin._check_cpu:
-    name: _check_cpu
-    module: fixos.plugins.builtin.resources
-    line: 84
-    cyclomatic_complexity: 5
-    calls_out: 5
-    calls_in: 0
-  fixos.system_checks.get_network_info:
-    name: get_network_info
-    module: fixos.system_checks
-    line: 79
-    cyclomatic_complexity: 4
-    calls_out: 3
-    calls_in: 1
-  fixos.cli.token_cmd.token_set:
-    name: token_set
-    module: fixos.cli.token_cmd
-    line: 19
-    cyclomatic_complexity: 7
-    calls_out: 29
-    calls_in: 0
-  fixos.config_interactive.interactive_provider_setup:
-    name: interactive_provider_setup
-    module: fixos.config_interactive
-    line: 119
-    cyclomatic_complexity: 5
-    calls_out: 10
-    calls_in: 0
-  fixos.plugins.builtin.hardware.Plugin._check_camera:
-    name: _check_camera
-    module: fixos.plugins.builtin.hardware
-    line: 117
-    cyclomatic_complexity: 3
-    calls_out: 3
-    calls_in: 0
-  fixos.agent.autonomous_session.AutonomousSession._handle_exec:
-    name: _handle_exec
-    module: fixos.agent.autonomous_session
-    line: 274
-    cyclomatic_complexity: 4
-    calls_out: 16
-    calls_in: 0
-  fixos.plugins.builtin.thumbnails.Plugin._check_gstreamer:
-    name: _check_gstreamer
-    module: fixos.plugins.builtin.thumbnails
-    line: 104
-    cyclomatic_complexity: 4
-    calls_out: 4
-    calls_in: 0
-  fixos.anonymizer.anonymize:
-    name: anonymize
-    module: fixos.anonymizer
-    line: 30
-    cyclomatic_complexity: 5
-    calls_out: 14
-    calls_in: 14
-  fixos.agent.session_handlers.handle_search:
-    name: handle_search
-    module: fixos.agent.session_handlers
-    line: 129
-    cyclomatic_complexity: 2
-    calls_out: 6
-    calls_in: 1
-  fixos.diagnostics.checks.audio.diagnose_audio:
-    name: diagnose_audio
-    module: fixos.diagnostics.checks.audio
-    line: 10
-    cyclomatic_complexity: 1
-    calls_out: 25
-    calls_in: 0
-  fixos.utils.web_search.search_serpapi:
-    name: search_serpapi
-    module: fixos.utils.web_search
-    line: 150
-    cyclomatic_complexity: 5
-    calls_out: 9
-    calls_in: 1
-  fixos.utils.web_search.search_arch_wiki:
-    name: search_arch_wiki
-    module: fixos.utils.web_search
-    line: 87
-    cyclomatic_complexity: 9
-    calls_out: 11
-    calls_in: 1
-  fixos.config_interactive._save_to_env:
-    name: _save_to_env
-    module: fixos.config_interactive
-    line: 83
-    cyclomatic_complexity: 8
-    calls_out: 13
-    calls_in: 1
-  fixos.cli.cleanup_cmd._handle_home_analysis:
-    name: _handle_home_analysis
-    module: fixos.cli.cleanup_cmd
-    line: 712
-    cyclomatic_complexity: 23
-    calls_out: 79
-    calls_in: 1
-  fixos.platform_utils._cmd_exists:
-    name: _cmd_exists
-    module: fixos.platform_utils
-    line: 162
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 3
-  fixos.cli.main.cli:
-    name: cli
-    module: fixos.cli.main
-    line: 13
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 1
-  fixos.config_interactive._get_user_choice:
-    name: _get_user_choice
-    module: fixos.config_interactive
-    line: 45
-    cyclomatic_complexity: 6
-    calls_out: 7
-    calls_in: 1
-  fixos.agent.hitl_session.HITLSession._clear_timeout:
-    name: _clear_timeout
-    module: fixos.agent.hitl_session
-    line: 63
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 0
-  fixos.agent.hitl_session.HITLSession._check_low_confidence:
-    name: _check_low_confidence
-    module: fixos.agent.hitl_session
-    line: 115
-    cyclomatic_complexity: 7
-    calls_out: 8
-    calls_in: 0
-  fixos.agent.session_io._suspend_timeout:
-    name: _suspend_timeout
-    module: fixos.agent.session_io
-    line: 33
-    cyclomatic_complexity: 4
-    calls_out: 3
-    calls_in: 5
-  fixos.anonymizer.get_sensitive_values:
-    name: get_sensitive_values
-    module: fixos.anonymizer
-    line: 12
-    cyclomatic_complexity: 4
-    calls_out: 3
-    calls_in: 1
-  fixos.plugins.builtin.audio.Plugin._check_sof:
-    name: _check_sof
-    module: fixos.plugins.builtin.audio
-    line: 103
-    cyclomatic_complexity: 2
-    calls_out: 2
-    calls_in: 0
-  fixos.plugins.builtin.security.Plugin._check_firewall:
-    name: _check_firewall
-    module: fixos.plugins.builtin.security
-    line: 109
-    cyclomatic_complexity: 8
-    calls_out: 8
-    calls_in: 0
-  fixos.config.detect_provider_from_key:
-    name: detect_provider_from_key
-    module: fixos.config
-    line: 315
-    cyclomatic_complexity: 3
-    calls_out: 1
-    calls_in: 1
-  fixos.cli.scan_cmd._run_disk_analysis:
-    name: _run_disk_analysis
-    module: fixos.cli.scan_cmd
-    line: 127
-    cyclomatic_complexity: 8
-    calls_out: 15
-    calls_in: 2
-  fixos.diagnostics.checks._shared._psutil_required:
-    name: _psutil_required
-    module: fixos.diagnostics.checks._shared
-    line: 16
-    cyclomatic_complexity: 1
-    calls_out: 0
-    calls_in: 2
-  fixos.platform_utils.needs_elevation:
-    name: needs_elevation
-    module: fixos.platform_utils
-    line: 41
-    cyclomatic_complexity: 5
-    calls_out: 7
-    calls_in: 1
-  fixos.agent.session_handlers.run_single_command:
-    name: run_single_command
-    module: fixos.agent.session_handlers
-    line: 155
-    cyclomatic_complexity: 3
-    calls_out: 12
-    calls_in: 0
-  fixos.utils.web_search._http_get:
-    name: _http_get
-    module: fixos.utils.web_search
-    line: 26
-    cyclomatic_complexity: 2
-    calls_out: 4
-    calls_in: 5
-  fixos.system_checks.get_cpu_info:
-    name: get_cpu_info
-    module: fixos.system_checks
-    line: 32
-    cyclomatic_complexity: 2
-    calls_out: 8
-    calls_in: 1
-  fixos.utils.web_search.search_all:
-    name: search_all
-    module: fixos.utils.web_search
-    line: 206
-    cyclomatic_complexity: 5
-    calls_out: 15
-    calls_in: 5
-  fixos.agent.hitl_session.HITLSession.remaining:
-    name: remaining
-    module: fixos.agent.hitl_session
-    line: 67
-    cyclomatic_complexity: 1
-    calls_out: 1
-    calls_in: 0
-  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error:
-    name: _handle_llm_error
-    module: fixos.agent.autonomous_session
-    line: 186
-    cyclomatic_complexity: 4
-    calls_out: 3
     calls_in: 0
   fixos.agent.session_io.ask_low_confidence_search:
     name: ask_low_confidence_search
@@ -1006,68 +789,96 @@ nodes:
     cyclomatic_complexity: 1
     calls_out: 4
     calls_in: 0
-  fixos.diagnostics.checks.system_core._collect_platform_details:
-    name: _collect_platform_details
-    module: fixos.diagnostics.checks.system_core
-    line: 34
-    cyclomatic_complexity: 3
-    calls_out: 14
+  fixos.diagnostics.checks.audio.diagnose_audio:
+    name: diagnose_audio
+    module: fixos.diagnostics.checks.audio
+    line: 10
+    cyclomatic_complexity: 1
+    calls_out: 25
+    calls_in: 0
+  fixos.config_interactive._save_to_env:
+    name: _save_to_env
+    module: fixos.config_interactive
+    line: 83
+    cyclomatic_complexity: 8
+    calls_out: 13
     calls_in: 1
-  fixos.plugins.builtin.security.Plugin._check_fail2ban:
-    name: _check_fail2ban
-    module: fixos.plugins.builtin.security
-    line: 164
+  fixos.utils.web_search.search_all:
+    name: search_all
+    module: fixos.utils.web_search
+    line: 206
+    cyclomatic_complexity: 5
+    calls_out: 15
+    calls_in: 5
+  fixos.agent.hitl_session.HITLSession._check_low_confidence:
+    name: _check_low_confidence
+    module: fixos.agent.hitl_session
+    line: 115
+    cyclomatic_complexity: 7
+    calls_out: 8
+    calls_in: 0
+  fixos.agent.session_io.print_session_summary:
+    name: print_session_summary
+    module: fixos.agent.session_io
+    line: 154
+    cyclomatic_complexity: 3
+    calls_out: 4
+    calls_in: 0
+  fixos.plugins.builtin.thumbnails.Plugin._check_gstreamer:
+    name: _check_gstreamer
+    module: fixos.plugins.builtin.thumbnails
+    line: 104
     cyclomatic_complexity: 4
     calls_out: 4
     calls_in: 0
-  fixos.orchestrator.orchestrator.FixOrchestrator._evaluate_and_rediagnose:
-    name: _evaluate_and_rediagnose
-    module: fixos.orchestrator.orchestrator
-    line: 266
-    cyclomatic_complexity: 10
-    calls_out: 23
+  fixos.config._load_env_files:
+    name: _load_env_files
+    module: fixos.config
+    line: 135
+    cyclomatic_complexity: 13
+    calls_out: 14
+    calls_in: 1
+  fixos.config_interactive._print_provider_menu:
+    name: _print_provider_menu
+    module: fixos.config_interactive
+    line: 12
+    cyclomatic_complexity: 9
+    calls_out: 19
+    calls_in: 1
+  fixos.plugins.builtin.security.Plugin._check_ssh:
+    name: _check_ssh
+    module: fixos.plugins.builtin.security
+    line: 150
+    cyclomatic_complexity: 8
+    calls_out: 8
     calls_in: 0
-  fixos.plugins.builtin.hardware.Plugin._check_dmi:
-    name: _check_dmi
-    module: fixos.plugins.builtin.hardware
-    line: 121
-    cyclomatic_complexity: 3
+  fixos.cli.cleanup_cmd._display_flatpak_status:
+    name: _display_flatpak_status
+    module: fixos.cli.cleanup_cmd
+    line: 410
+    cyclomatic_complexity: 9
+    calls_out: 65
+    calls_in: 1
+  fixos.plugins.builtin.security.Plugin._check_open_ports:
+    name: _check_open_ports
+    module: fixos.plugins.builtin.security
+    line: 131
+    cyclomatic_complexity: 7
+    calls_out: 8
+    calls_in: 0
+  fixos.cli.ask_cmd.ask:
+    name: ask
+    module: fixos.cli.ask_cmd
+    line: 10
+    cyclomatic_complexity: 1
     calls_out: 4
     calls_in: 0
-  fixos.utils.terminal.print_stderr_box:
-    name: print_stderr_box
-    module: fixos.utils.terminal
-    line: 206
-    cyclomatic_complexity: 2
-    calls_out: 8
-    calls_in: 2
-  fixos.utils.anonymizer._format_diagnostics_markdown:
-    name: _format_diagnostics_markdown
-    module: fixos.utils.anonymizer
-    line: 218
-    cyclomatic_complexity: 3
-    calls_out: 5
-    calls_in: 1
-  fixos.plugins.builtin.hardware.Plugin._check_gpu:
-    name: _check_gpu
-    module: fixos.plugins.builtin.hardware
-    line: 83
+  fixos.platform_utils.elevate_cmd:
+    name: elevate_cmd
+    module: fixos.platform_utils
+    line: 61
     cyclomatic_complexity: 3
     calls_out: 2
-    calls_in: 0
-  fixos.cli.cleanup_cmd._parse_numeric_range_set:
-    name: _parse_numeric_range_set
-    module: fixos.cli.cleanup_cmd
-    line: 693
-    cyclomatic_complexity: 5
-    calls_out: 10
-    calls_in: 3
-  fixos.utils.terminal._get_severity_style:
-    name: _get_severity_style
-    module: fixos.utils.terminal
-    line: 87
-    cyclomatic_complexity: 3
-    calls_out: 1
     calls_in: 1
   fixos.utils.web_search.search_github_issues:
     name: search_github_issues
@@ -1076,26 +887,341 @@ nodes:
     cyclomatic_complexity: 4
     calls_out: 12
     calls_in: 1
-  fixos.platform_utils.cancel_signal_timeout:
-    name: cancel_signal_timeout
-    module: fixos.platform_utils
-    line: 180
+  fixos.plugins.builtin.resources.Plugin._check_top_processes:
+    name: _check_top_processes
+    module: fixos.plugins.builtin.resources
+    line: 114
     cyclomatic_complexity: 2
     calls_out: 1
-    calls_in: 2
-  fixos.agent.session_io.print_session_summary:
-    name: print_session_summary
-    module: fixos.agent.session_io
-    line: 154
+    calls_in: 0
+  fixos.plugins.builtin.audio.Plugin._check_pipewire:
+    name: _check_pipewire
+    module: fixos.plugins.builtin.audio
+    line: 91
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 0
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages:
+    name: _initialize_messages
+    module: fixos.agent.autonomous_session
+    line: 151
+    cyclomatic_complexity: 2
+    calls_out: 3
+    calls_in: 0
+  fixos.utils.anonymizer.display_anonymized_preview:
+    name: display_anonymized_preview
+    module: fixos.utils.anonymizer
+    line: 119
+    cyclomatic_complexity: 5
+    calls_out: 18
+    calls_in: 0
+  fixos.cli.features_cmd.features_audit:
+    name: features_audit
+    module: fixos.cli.features_cmd
+    line: 29
+    cyclomatic_complexity: 4
+    calls_out: 18
+    calls_in: 0
+  fixos.llm_shell.execute_command:
+    name: execute_command
+    module: fixos.llm_shell
+    line: 66
+    cyclomatic_complexity: 10
+    calls_out: 14
+    calls_in: 1
+  fixos.cli.cleanup_cmd._select_cleanup_items_by_filter:
+    name: _select_cleanup_items_by_filter
+    module: fixos.cli.cleanup_cmd
+    line: 1052
+    cyclomatic_complexity: 16
+    calls_out: 18
+    calls_in: 1
+  fixos.utils.anonymizer._render_dict_list_value:
+    name: _render_dict_list_value
+    module: fixos.utils.anonymizer
+    line: 216
+    cyclomatic_complexity: 6
+    calls_out: 7
+    calls_in: 1
+  fixos.platform_utils.is_dangerous:
+    name: is_dangerous
+    module: fixos.platform_utils
+    line: 72
+    cyclomatic_complexity: 3
+    calls_out: 1
+    calls_in: 1
+  fixos.cli.cleanup_cmd._display_unsafe_services:
+    name: _display_unsafe_services
+    module: fixos.cli.cleanup_cmd
+    line: 208
+    cyclomatic_complexity: 4
+    calls_out: 10
+    calls_in: 1
+  fixos.cli.cleanup_cmd._cleanup_full_system:
+    name: _cleanup_full_system
+    module: fixos.cli.cleanup_cmd
+    line: 1128
+    cyclomatic_complexity: 18
+    calls_out: 30
+    calls_in: 1
+  fixos.cli.cleanup_cmd._display_home_items:
+    name: _display_home_items
+    module: fixos.cli.cleanup_cmd
+    line: 723
+    cyclomatic_complexity: 7
+    calls_out: 17
+    calls_in: 1
+  fixos.system_checks.get_fedora_specific:
+    name: get_fedora_specific
+    module: fixos.system_checks
+    line: 107
+    cyclomatic_complexity: 1
+    calls_out: 15
+    calls_in: 1
+  fixos.cli.cleanup_cmd._cleanup_flatpak_detailed:
+    name: _cleanup_flatpak_detailed
+    module: fixos.cli.cleanup_cmd
+    line: 259
+    cyclomatic_complexity: 12
+    calls_out: 111
+    calls_in: 1
+  fixos.system_checks.get_cpu_info:
+    name: get_cpu_info
+    module: fixos.system_checks
+    line: 32
+    cyclomatic_complexity: 2
+    calls_out: 8
+    calls_in: 1
+  fixos.plugins.builtin.hardware.Plugin._check_dmi:
+    name: _check_dmi
+    module: fixos.plugins.builtin.hardware
+    line: 121
     cyclomatic_complexity: 3
     calls_out: 4
     calls_in: 0
-  fixos.cli.ask_cmd._execute_heuristic_command:
-    name: _execute_heuristic_command
+  fixos.agent.session_io.fmt_time:
+    name: fmt_time
+    module: fixos.agent.session_io
+    line: 68
+    cyclomatic_complexity: 1
+    calls_out: 0
+    calls_in: 4
+  fixos.cli.fix_cmd._run_agent_session:
+    name: _run_agent_session
+    module: fixos.cli.fix_cmd
+    line: 49
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 1
+  fixos.cli.cleanup_cmd._snap_remove_packages:
+    name: _snap_remove_packages
+    module: fixos.cli.cleanup_cmd
+    line: 632
+    cyclomatic_complexity: 4
+    calls_out: 10
+    calls_in: 1
+  fixos.cli.main.main:
+    name: main
+    module: fixos.cli.main
+    line: 120
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 0
+  fixos.plugins.builtin.thumbnails.Plugin._check_ffmpegthumbnailer:
+    name: _check_ffmpegthumbnailer
+    module: fixos.plugins.builtin.thumbnails
+    line: 96
+    cyclomatic_complexity: 2
+    calls_out: 3
+    calls_in: 0
+  fixos.agent.hitl_session.HITLSession._clear_timeout:
+    name: _clear_timeout
+    module: fixos.agent.hitl_session
+    line: 63
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 0
+  fixos.utils.web_search.format_results_for_llm:
+    name: format_results_for_llm
+    module: fixos.utils.web_search
+    line: 245
+    cyclomatic_complexity: 3
+    calls_out: 5
+    calls_in: 5
+  fixos.agent.session_io.print_cmd_result:
+    name: print_cmd_result
+    module: fixos.agent.session_io
+    line: 132
+    cyclomatic_complexity: 8
+    calls_out: 13
+    calls_in: 0
+  fixos.cli.ask_cmd._build_output_dict:
+    name: _build_output_dict
     module: fixos.cli.ask_cmd
-    line: 107
+    line: 71
+    cyclomatic_complexity: 8
+    calls_out: 0
+    calls_in: 5
+  fixos.utils.web_search.search_arch_wiki:
+    name: search_arch_wiki
+    module: fixos.utils.web_search
+    line: 87
     cyclomatic_complexity: 9
+    calls_out: 11
+    calls_in: 1
+  fixos.utils.terminal._is_divider_line:
+    name: _is_divider_line
+    module: fixos.utils.terminal
+    line: 62
+    cyclomatic_complexity: 1
+    calls_out: 2
+    calls_in: 1
+  fixos.config.FixOsConfig.load:
+    name: load
+    module: fixos.config
+    line: 189
+    cyclomatic_complexity: 14
+    calls_out: 26
+    calls_in: 0
+  fixos.diagnostics.checks.system_core._collect_platform_details:
+    name: _collect_platform_details
+    module: fixos.diagnostics.checks.system_core
+    line: 34
+    cyclomatic_complexity: 3
+    calls_out: 14
+    calls_in: 1
+  fixos.platform_utils.install_package_cmd:
+    name: install_package_cmd
+    module: fixos.platform_utils
+    line: 141
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 0
+  fixos.system_checks.get_disk_info:
+    name: get_disk_info
+    module: fixos.system_checks
+    line: 60
+    cyclomatic_complexity: 3
+    calls_out: 5
+    calls_in: 1
+  fixos.plugins.builtin.audio.Plugin._check_alsa:
+    name: _check_alsa
+    module: fixos.plugins.builtin.audio
+    line: 84
+    cyclomatic_complexity: 6
+    calls_out: 5
+    calls_in: 0
+  fixos.plugins.builtin.security.Plugin._check_selinux:
+    name: _check_selinux
+    module: fixos.plugins.builtin.security
+    line: 124
+    cyclomatic_complexity: 3
+    calls_out: 4
+    calls_in: 0
+  fixos.cli.cleanup_cmd._filter_by_prefix_top:
+    name: _filter_by_prefix_top
+    module: fixos.cli.cleanup_cmd
+    line: 1009
+    cyclomatic_complexity: 3
+    calls_out: 7
+    calls_in: 1
+  fixos.agent.session_io.ask_execute_prompt:
+    name: ask_execute_prompt
+    module: fixos.agent.session_io
+    line: 231
+    cyclomatic_complexity: 1
+    calls_out: 4
+    calls_in: 0
+  fixos.agent.session_handlers.run_single_command:
+    name: run_single_command
+    module: fixos.agent.session_handlers
+    line: 155
+    cyclomatic_complexity: 3
     calls_out: 12
+    calls_in: 0
+  fixos.plugins.builtin.hardware.Plugin._check_battery:
+    name: _check_battery
+    module: fixos.plugins.builtin.hardware
+    line: 89
+    cyclomatic_complexity: 8
+    calls_out: 16
+    calls_in: 0
+  fixos.utils.web_search.search_serpapi:
+    name: search_serpapi
+    module: fixos.utils.web_search
+    line: 150
+    cyclomatic_complexity: 5
+    calls_out: 9
+    calls_in: 1
+  fixos.utils.anonymizer._apply_regex_replacements:
+    name: _apply_regex_replacements
+    module: fixos.utils.anonymizer
+    line: 67
+    cyclomatic_complexity: 3
+    calls_out: 4
+    calls_in: 1
+  fixos.agent.autonomous_session.AutonomousSession._handle_search:
+    name: _handle_search
+    module: fixos.agent.autonomous_session
+    line: 247
+    cyclomatic_complexity: 3
+    calls_out: 8
+    calls_in: 0
+  fixos.agent.hitl_session.HITLSession.remaining:
+    name: remaining
+    module: fixos.agent.hitl_session
+    line: 67
+    cyclomatic_complexity: 1
+    calls_out: 1
+    calls_in: 0
+  fixos.plugins.builtin.audio.Plugin._check_sof:
+    name: _check_sof
+    module: fixos.plugins.builtin.audio
+    line: 103
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 0
+  fixos.utils.terminal._get_severity_style:
+    name: _get_severity_style
+    module: fixos.utils.terminal
+    line: 87
+    cyclomatic_complexity: 3
+    calls_out: 1
+    calls_in: 1
+  fixos.cli.ask_cmd._validate_result_with_llm:
+    name: _validate_result_with_llm
+    module: fixos.cli.ask_cmd
+    line: 264
+    cyclomatic_complexity: 14
+    calls_out: 16
+    calls_in: 2
+  fixos.agent.hitl_session.HITLSession._handle_llm_error:
+    name: _handle_llm_error
+    module: fixos.agent.hitl_session
+    line: 104
+    cyclomatic_complexity: 4
+    calls_out: 4
+    calls_in: 0
+  fixos.agent.session_handlers.handle_describe_problem:
+    name: handle_describe_problem
+    module: fixos.agent.session_handlers
+    line: 35
+    cyclomatic_complexity: 2
+    calls_out: 2
+    calls_in: 1
+  fixos.diagnostics.checks.security.diagnose_security:
+    name: diagnose_security
+    module: fixos.diagnostics.checks.security
+    line: 10
+    cyclomatic_complexity: 4
+    calls_out: 36
+    calls_in: 0
+  docs.examples.quickstart.run_autonomous_session:
+    name: run_autonomous_session
+    module: docs.examples.quickstart
+    line: 8
+    cyclomatic_complexity: 1
+    calls_out: 0
     calls_in: 1
 edges:
 - caller: fixos.config.FixOsConfig.load
@@ -1130,9 +1256,6 @@ edges:
   call_type: resolved
 - caller: fixos.anonymizer.anonymize
   callee: fixos.anonymizer.get_sensitive_values
-  call_type: resolved
-- caller: fixos.llm_shell.run_llm_shell
-  callee: fixos.anonymizer.anonymize
   call_type: resolved
 - caller: fixos.config_interactive.interactive_provider_setup
   callee: fixos.config_interactive._print_provider_menu
@@ -1215,6 +1338,30 @@ edges:
 - caller: fixos.agent.session_handlers.parse_user_input
   callee: fixos.agent.session_handlers.handle_direct_command
   call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._initialize_messages
+  callee: fixos.anonymizer.anonymize
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._initialize_messages
+  callee: project.map.toon.display_anonymized_preview
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._get_remaining_time
+  callee: fixos.agent.get_remaining_time
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._handle_llm_error
+  callee: fixos.utils.web_search.search_all
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._handle_llm_error
+  callee: fixos.utils.web_search.format_results_for_llm
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._handle_search
+  callee: fixos.utils.web_search.search_all
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._handle_search
+  callee: fixos.utils.web_search.format_results_for_llm
+  call_type: resolved
+- caller: fixos.agent.autonomous_session.AutonomousSession._handle_exec
+  callee: fixos.anonymizer.anonymize
+  call_type: resolved
 - caller: fixos.agent.hitl_session.HITLSession.__init__
   callee: fixos.platform_utils.get_os_info
   call_type: resolved
@@ -1234,7 +1381,7 @@ edges:
   callee: fixos.anonymizer.anonymize
   call_type: resolved
 - caller: fixos.agent.hitl_session.HITLSession._initialize_messages
-  callee: fixos.utils.anonymizer.display_anonymized_preview
+  callee: project.map.toon.display_anonymized_preview
   call_type: resolved
 - caller: fixos.agent.hitl_session.HITLSession._handle_llm_error
   callee: fixos.utils.web_search.search_all
@@ -1299,8 +1446,44 @@ edges:
 - caller: fixos.cli.scan_cmd._run_disk_analysis
   callee: fixos.cli.scan_cmd._display_disk_scan_mode
   call_type: resolved
+- caller: fixos.cli.ask_cmd.ask
+  callee: fixos.cli.ask_cmd._handle_natural_command
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._execute_heuristic_command
+  callee: fixos.cli.ask_cmd._build_output_dict
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._execute_heuristic_command
+  callee: fixos.cli.ask_cmd._validate_result_with_llm
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._execute_with_llm
+  callee: fixos.cli.ask_cmd._build_output_dict
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._execute_with_llm
+  callee: fixos.cli.ask_cmd._validate_result_with_llm
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._handle_natural_command
+  callee: fixos.cli.ask_cmd._match_heuristic_command
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._handle_natural_command
+  callee: fixos.cli.ask_cmd._execute_with_llm
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._handle_natural_command
+  callee: fixos.cli.ask_cmd._format_command
+  call_type: resolved
+- caller: fixos.cli.ask_cmd._handle_natural_command
+  callee: fixos.cli.ask_cmd._execute_heuristic_command
+  call_type: resolved
+- caller: fixos.cli.main.cli
+  callee: fixos.cli.main._print_welcome
+  call_type: resolved
+- caller: fixos.cli.main.main
+  callee: fixos.cli.main.cli
+  call_type: resolved
 - caller: fixos.cli.token_cmd.token_set
   callee: fixos.config.detect_provider_from_key
+  call_type: resolved
+- caller: fixos.cli.features_cmd.features_audit
+  callee: fixos.cli.features_cmd._interactive_profile_select
   call_type: resolved
 - caller: fixos.plugins.builtin.resources.Plugin._check_cpu
   callee: fixos.platform_utils.run_command
@@ -1374,21 +1557,6 @@ edges:
 - caller: fixos.plugins.builtin.thumbnails.Plugin._check_gstreamer
   callee: fixos.platform_utils.run_command
   call_type: resolved
-- caller: fixos.utils.anonymizer.anonymize
-  callee: fixos.utils.anonymizer._get_sensitive
-  call_type: resolved
-- caller: fixos.utils.anonymizer.display_anonymized_preview
-  callee: fixos.utils.anonymizer._format_diagnostics_markdown
-  call_type: resolved
-- caller: fixos.utils.anonymizer._format_diagnostics_markdown
-  callee: fixos.utils.anonymizer._dict_to_markdown
-  call_type: resolved
-- caller: fixos.utils.anonymizer._dict_to_markdown
-  callee: fixos.utils.anonymizer._format_key_title
-  call_type: resolved
-- caller: fixos.utils.anonymizer._dict_to_markdown
-  callee: fixos.utils.anonymizer._render_dict_list_value
-  call_type: resolved
 - caller: fixos.utils.web_search.search_fedora_bugzilla
   callee: fixos.utils.web_search._http_get
   call_type: resolved
@@ -1449,41 +1617,11 @@ edges:
 - caller: scripts.pyqual-calibrate.main
   callee: scripts.pyqual-calibrate.calibrate
   call_type: resolved
-- caller: fixos.cli.main.cli
-  callee: fixos.cli.main._print_welcome
+- caller: fixos.llm_shell._handle_user_turn
+  callee: fixos.llm_shell.execute_command
   call_type: resolved
-- caller: fixos.cli.main.main
-  callee: fixos.cli.main.cli
-  call_type: resolved
-- caller: fixos.cli.features_cmd.features_audit
-  callee: fixos.cli.features_cmd._interactive_profile_select
-  call_type: resolved
-- caller: fixos.cli.ask_cmd.ask
-  callee: fixos.cli.ask_cmd._handle_natural_command
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._execute_heuristic_command
-  callee: fixos.cli.ask_cmd._build_output_dict
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._execute_heuristic_command
-  callee: fixos.cli.ask_cmd._validate_result_with_llm
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._execute_with_llm
-  callee: fixos.cli.ask_cmd._build_output_dict
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._execute_with_llm
-  callee: fixos.cli.ask_cmd._validate_result_with_llm
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._handle_natural_command
-  callee: fixos.cli.ask_cmd._match_heuristic_command
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._handle_natural_command
-  callee: fixos.cli.ask_cmd._execute_with_llm
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._handle_natural_command
-  callee: fixos.cli.ask_cmd._format_command
-  call_type: resolved
-- caller: fixos.cli.ask_cmd._handle_natural_command
-  callee: fixos.cli.ask_cmd._execute_heuristic_command
+- caller: fixos.llm_shell.run_llm_shell
+  callee: fixos.anonymizer.anonymize
   call_type: resolved
 - caller: fixos.cli.cleanup_cmd._display_unsafe_services
   callee: fixos.cli.cleanup_cmd._display_service_group
@@ -1492,10 +1630,43 @@ edges:
   callee: fixos.cli.cleanup_cmd._display_flatpak_status
   call_type: resolved
 - caller: fixos.cli.cleanup_cmd._handle_snap_management
+  callee: fixos.cli.cleanup_cmd._snap_fetch_packages
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._handle_snap_management
+  callee: fixos.cli.cleanup_cmd._parse_numeric_range_set
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._handle_snap_management
+  callee: fixos.cli.cleanup_cmd._snap_remove_packages
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._resolve_home_selection
   callee: fixos.cli.cleanup_cmd._parse_numeric_range_set
   call_type: resolved
 - caller: fixos.cli.cleanup_cmd._handle_home_analysis
-  callee: fixos.cli.cleanup_cmd._parse_numeric_range_set
+  callee: fixos.cli.cleanup_cmd._display_home_items
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._filter_by_age
+  callee: fixos.cli.cleanup_cmd._format_bytes
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._filter_by_prefix_top
+  callee: fixos.cli.cleanup_cmd._format_bytes
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._filter_by_prefix_category
+  callee: fixos.cli.cleanup_cmd._format_bytes
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._filter_by_prefix_type
+  callee: fixos.cli.cleanup_cmd._format_bytes
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._select_cleanup_items_by_filter
+  callee: fixos.cli.cleanup_cmd._filter_by_age
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._select_cleanup_items_by_filter
+  callee: fixos.cli.cleanup_cmd._filter_by_prefix_top
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._select_cleanup_items_by_filter
+  callee: fixos.cli.cleanup_cmd._filter_by_prefix_category
+  call_type: resolved
+- caller: fixos.cli.cleanup_cmd._select_cleanup_items_by_filter
+  callee: fixos.cli.cleanup_cmd._filter_by_prefix_type
   call_type: resolved
 - caller: fixos.cli.cleanup_cmd._cleanup_full_system
   callee: fixos.cli.cleanup_cmd._display_full_system_menu
@@ -1503,31 +1674,42 @@ edges:
 - caller: fixos.cli.cleanup_cmd._cleanup_full_system
   callee: fixos.cli.cleanup_cmd._build_dep_types
   call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._initialize_messages
+- caller: fixos.utils.anonymizer.anonymize
+  callee: fixos.utils.anonymizer._get_sensitive
+  call_type: resolved
+- caller: fixos.utils.anonymizer.anonymize
+  callee: fixos.utils.anonymizer._apply_regex_replacements
+  call_type: resolved
+- caller: fixos.utils.anonymizer.display_anonymized_preview
+  callee: fixos.utils.anonymizer._format_diagnostics_markdown
+  call_type: resolved
+- caller: fixos.utils.anonymizer._format_diagnostics_markdown
+  callee: fixos.utils.anonymizer._dict_to_markdown
+  call_type: resolved
+- caller: fixos.utils.anonymizer._dict_to_markdown
+  callee: fixos.utils.anonymizer._format_key_title
+  call_type: resolved
+- caller: fixos.utils.anonymizer._dict_to_markdown
+  callee: fixos.utils.anonymizer._render_dict_list_value
+  call_type: resolved
+- caller: fixos.cli.fix_cmd._collect_diagnostics
+  callee: fixos.system_checks.get_full_diagnostics
+  call_type: resolved
+- caller: fixos.cli.fix_cmd._collect_diagnostics
+  callee: fixos.cli.scan_cmd._run_disk_analysis
+  call_type: resolved
+- caller: fixos.cli.fix_cmd._collect_diagnostics
   callee: fixos.anonymizer.anonymize
   call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._initialize_messages
-  callee: fixos.utils.anonymizer.display_anonymized_preview
+- caller: fixos.cli.fix_cmd._run_agent_session
+  callee: docs.examples.quickstart.run_autonomous_session
   call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._get_remaining_time
-  callee: fixos.agent.get_remaining_time
-  call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._handle_llm_error
-  callee: fixos.utils.web_search.search_all
-  call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._handle_llm_error
-  callee: fixos.utils.web_search.format_results_for_llm
-  call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._handle_search
-  callee: fixos.utils.web_search.search_all
-  call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._handle_search
-  callee: fixos.utils.web_search.format_results_for_llm
-  call_type: resolved
-- caller: fixos.agent.autonomous_session.AutonomousSession._handle_exec
-  callee: fixos.anonymizer.anonymize
+- caller: fixos.cli.fix_cmd._run_agent_session
+  callee: fixos.agent.hitl.run_hitl_session
   call_type: resolved
 modules:
+  docs.examples.quickstart:
+  - docs.examples.quickstart.run_autonomous_session
   fixos.agent:
   - fixos.agent.get_remaining_time
   fixos.agent.autonomous_session:
@@ -1536,6 +1718,8 @@ modules:
   - fixos.agent.autonomous_session.AutonomousSession._handle_llm_error
   - fixos.agent.autonomous_session.AutonomousSession._handle_search
   - fixos.agent.autonomous_session.AutonomousSession._initialize_messages
+  fixos.agent.hitl:
+  - fixos.agent.hitl.run_hitl_session
   fixos.agent.hitl_session:
   - fixos.agent.hitl_session.HITLSession.__init__
   - fixos.agent.hitl_session.HITLSession._check_low_confidence
@@ -1587,14 +1771,27 @@ modules:
   - fixos.cli.cleanup_cmd._cleanup_full_system
   - fixos.cli.cleanup_cmd._display_flatpak_status
   - fixos.cli.cleanup_cmd._display_full_system_menu
+  - fixos.cli.cleanup_cmd._display_home_items
   - fixos.cli.cleanup_cmd._display_service_group
   - fixos.cli.cleanup_cmd._display_unsafe_services
+  - fixos.cli.cleanup_cmd._filter_by_age
+  - fixos.cli.cleanup_cmd._filter_by_prefix_category
+  - fixos.cli.cleanup_cmd._filter_by_prefix_top
+  - fixos.cli.cleanup_cmd._filter_by_prefix_type
+  - fixos.cli.cleanup_cmd._format_bytes
   - fixos.cli.cleanup_cmd._handle_home_analysis
   - fixos.cli.cleanup_cmd._handle_snap_management
   - fixos.cli.cleanup_cmd._parse_numeric_range_set
+  - fixos.cli.cleanup_cmd._resolve_home_selection
+  - fixos.cli.cleanup_cmd._select_cleanup_items_by_filter
+  - fixos.cli.cleanup_cmd._snap_fetch_packages
+  - fixos.cli.cleanup_cmd._snap_remove_packages
   fixos.cli.features_cmd:
   - fixos.cli.features_cmd._interactive_profile_select
   - fixos.cli.features_cmd.features_audit
+  fixos.cli.fix_cmd:
+  - fixos.cli.fix_cmd._collect_diagnostics
+  - fixos.cli.fix_cmd._run_agent_session
   fixos.cli.main:
   - fixos.cli.main._print_welcome
   - fixos.cli.main.cli
@@ -1633,6 +1830,8 @@ modules:
   fixos.diagnostics.checks.thumbnails:
   - fixos.diagnostics.checks.thumbnails.diagnose_thumbnails
   fixos.llm_shell:
+  - fixos.llm_shell._handle_user_turn
+  - fixos.llm_shell.execute_command
   - fixos.llm_shell.run_llm_shell
   fixos.orchestrator.orchestrator:
   - fixos.orchestrator.orchestrator.FixOrchestrator._default_confirm
@@ -1690,6 +1889,7 @@ modules:
   - fixos.system_checks.get_top_processes
   - fixos.system_checks.run_cmd
   fixos.utils.anonymizer:
+  - fixos.utils.anonymizer._apply_regex_replacements
   - fixos.utils.anonymizer._dict_to_markdown
   - fixos.utils.anonymizer._format_diagnostics_markdown
   - fixos.utils.anonymizer._format_key_title
@@ -1715,6 +1915,8 @@ modules:
   - fixos.utils.web_search.search_fedora_bugzilla
   - fixos.utils.web_search.search_github_issues
   - fixos.utils.web_search.search_serpapi
+  project.map.toon:
+  - project.map.toon.display_anonymized_preview
   scripts.pyqual-calibrate:
   - scripts.pyqual-calibrate.calibrate
   - scripts.pyqual-calibrate.extract_current_metrics
@@ -1786,6 +1988,10 @@ entry_points:
 - fixos.agent.session_io.print_timeout
 - fixos.cli.ask_cmd.ask
 - fixos.cli.cleanup_cmd._parse_size_to_gb
+- fixos.cli.cleanup_cmd._query_cmd
+- fixos.cli.cleanup_cmd._query_filter
+- fixos.cli.cleanup_cmd._query_info
+- fixos.cli.cleanup_cmd._query_path
 - fixos.cli.cleanup_cmd.cleanup_services
 - fixos.cli.config_cmd.config
 - fixos.cli.config_cmd.config_init
@@ -1948,6 +2154,7 @@ entry_points:
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._analyze_system_logs
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._analyze_user_cache
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._analyze_var_cache
+- fixos.diagnostics.storage_analyzer.StorageAnalyzer._detect_docker_section
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._find_large_files
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._find_large_home_dirs
 - fixos.diagnostics.storage_analyzer.StorageAnalyzer._get_dir_size
@@ -2014,6 +2221,10 @@ entry_points:
 - fixos.interactive.cleanup_planner.CleanupPlanner._generate_recommendations
 - fixos.interactive.cleanup_planner.CleanupPlanner._get_category_for_action
 - fixos.interactive.cleanup_planner.CleanupPlanner._priority_score
+- fixos.interactive.cleanup_planner.CleanupPlanner._rec_cache
+- fixos.interactive.cleanup_planner.CleanupPlanner._rec_logs
+- fixos.interactive.cleanup_planner.CleanupPlanner._rec_manual
+- fixos.interactive.cleanup_planner.CleanupPlanner._rec_safe_high_impact
 - fixos.interactive.cleanup_planner.CleanupPlanner.create_cleanup_plan
 - fixos.interactive.cleanup_planner.CleanupPlanner.group_by_category
 - fixos.interactive.cleanup_planner.CleanupPlanner.interactive_selection
@@ -2112,6 +2323,7 @@ entry_points:
 - fixos.profiles.Profile.to_dict
 - fixos.providers.llm.LLMClient.__init__
 - fixos.providers.llm.LLMClient._extract_json
+- fixos.providers.llm.LLMClient._handle_api_error
 - fixos.providers.llm.LLMClient.chat
 - fixos.providers.llm.LLMClient.chat_stream
 - fixos.providers.llm.LLMClient.chat_structured
@@ -2127,6 +2339,7 @@ entry_points:
 - fixos.utils.anonymizer.AnonymizationReport.add
 - fixos.utils.anonymizer.AnonymizationReport.summary
 - fixos.utils.anonymizer.anonymize
+- fixos.utils.anonymizer.display_anonymized_preview
 - fixos.utils.terminal._wrap
 - fixos.utils.terminal.colorize
 - fixos.utils.terminal.render_md
@@ -2239,7 +2452,6 @@ entry_points:
 - project.map.toon.diagnose_security
 - project.map.toon.diagnose_system
 - project.map.toon.diagnose_thumbnails
-- project.map.toon.display_anonymized_preview
 - project.map.toon.elevate_cmd
 - project.map.toon.ex
 - project.map.toon.ex_dry

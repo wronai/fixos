@@ -73,6 +73,14 @@ NEEDS_SUDO_PREFIXES = [
     "update-grub", "grub2-mkconfig",
 ]
 
+LONG_RUNNING_PATTERNS: list[tuple[str, int]] = [
+    (r"^(sudo\s+)?(dnf|yum)\s+(update|upgrade|dist-upgrade)\b", 600),
+    (r"^(sudo\s+)?(apt-get|apt)\s+(update|upgrade|dist-upgrade)\b", 600),
+    (r"^(sudo\s+)?(flatpak)\s+update\b", 300),
+    (r"^(sudo\s+)?(pip3?|pip)\s+install\b", 300),
+    (r"^(sudo\s+)?(cargo)\s+(install|build)\b", 600),
+]
+
 IDEMPOTENT_CHECK: dict[str, str] = {
     r"dnf install (.+)": "rpm -q {0} &>/dev/null",
     r"systemctl enable (.+)": "systemctl is-enabled {0} &>/dev/null",
@@ -145,6 +153,15 @@ class CommandExecutor:
                     pass
         return None
 
+    def _resolve_timeout(self, command: str, explicit_timeout: Optional[int]) -> int:
+        """Return timeout: explicit > long-running pattern > default."""
+        if explicit_timeout:
+            return explicit_timeout
+        for pattern, extended in LONG_RUNNING_PATTERNS:
+            if re.search(pattern, command.strip(), re.IGNORECASE):
+                return extended
+        return self.default_timeout
+
     def execute_sync(
         self,
         command: str,
@@ -153,7 +170,7 @@ class CommandExecutor:
         check_idempotent: bool = True,
     ) -> ExecutionResult:
         """Synchroniczne wykonanie komendy."""
-        timeout = timeout or self.default_timeout
+        timeout = self._resolve_timeout(command, timeout)
 
         # Sprawdź niebezpieczne wzorce
         dangerous, reason = self.is_dangerous(command)
@@ -223,7 +240,7 @@ class CommandExecutor:
         add_sudo: bool = True,
     ) -> ExecutionResult:
         """Asynchroniczne wykonanie komendy."""
-        timeout = timeout or self.default_timeout
+        timeout = self._resolve_timeout(command, timeout)
 
         dangerous, reason = self.is_dangerous(command)
         if dangerous:

@@ -1,12 +1,12 @@
-# redup/duplication | 5 groups | 91f 15858L | 2026-05-04
+# redup/duplication | 5 groups | 91f 15917L | 2026-05-04
 
 SUMMARY:
   files_scanned: 91
-  total_lines:   15858
+  total_lines:   15917
   dup_groups:    5
   dup_fragments: 15
   saved_lines:   41
-  scan_ms:       3339
+  scan_ms:       2954
 
 HOTSPOTS[7] (files with most duplication):
   fixos/utils/terminal.py  dup=28L  groups=2  frags=3  (0.2%)

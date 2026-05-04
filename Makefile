@@ -3,9 +3,9 @@
 #  Użycie: make <cel>
 # ══════════════════════════════════════════════════════════
 
-.PHONY: help install install-dev test test-unit test-e2e test-real \
-        lint format clean build docker-build docker-test \
-        docker-test-fedora docker-test-ubuntu docker-test-debian \
+.PHONY: help install install-dev test test-unit test-e2e test-real test-fast \
+        test-unit-fast test-unit-par test-quick lint format clean build docker-build \
+        docker-test docker-test-fedora docker-test-ubuntu docker-test-debian \
         docker-test-arch docker-test-alpine docker-test-all \
         config-init run-scan run-fix
 
@@ -20,7 +20,10 @@ help:
 	@echo ""
 	@echo "  Testy:"
 	@echo "    make test           wszystkie testy (unit + e2e mock)"
+	@echo "    make test-fast      testy z paralelizacją (4x szybciej)"
+	@echo "    make test-quick     szybkie testy bez docker/slow"
 	@echo "    make test-unit      tylko unit testy"
+	@echo "    make test-unit-par  unit testy z paralelizacją (4 procesy)"
 	@echo "    make test-e2e       e2e testy z mock LLM"
 	@echo "    make test-real      e2e testy z prawdziwym API (wymaga .env)"
 	@echo "    make test-cov       testy + raport pokrycia"
@@ -63,20 +66,37 @@ install-dev:
 # ── Testy ─────────────────────────────────────────────────
 test: test-unit test-e2e
 
+test-fast:
+	@echo "⚡ Testy z paralelizacją (4 procesy)..."
+	pytest tests/ -v --tb=short -n auto -m "not slow and not docker"
+
+test-quick:
+	@echo "⚡ Szybkie testy (bez slow/docker)..."
+	pytest tests/unit tests/e2e/test_anonymization_layers.py tests/e2e/test_executor.py -v --tb=short -m "not slow and not docker"
+
 test-unit:
 	@echo "🧪 Unit testy..."
 	pytest tests/unit/ -v --tb=short
 
+test-unit-fast:
+	@echo "🧪 Unit testy (paralelizacja - 4 procesy)..."
+	pytest tests/unit/ -v --tb=short -n 4
+
+test-unit-par:
+	@echo "🧪 Unit testy (paralelizacja - auto, = CPU count)..."
+	pytest tests/unit/ -v --tb=short -n auto
+
 test-e2e:
 	@echo "🧪 E2E testy (mock LLM)..."
-	pytest tests/e2e/ -v --tb=short -k "not real_llm"
+	pytest tests/e2e/ -v --tb=short -k "not real_llm" -m "not slow and not docker"
 
 test-real:
 	@echo "🧪 E2E testy (prawdziwe API – wymaga .env)..."
 	pytest tests/e2e/ -v --tb=short -k "real_llm"
 
 test-cov:
-	pytest tests/ -v --cov=fixos --cov-report=term-missing --cov-report=html:htmlcov
+	@echo "📊 Testy + raport pokrycia (z paralelizacją)..."
+	pytest tests/ -v --tb=short --cov=fixos --cov-report=term-missing --cov-report=html:htmlcov -n auto -m "not slow"
 	@echo "📊 Raport pokrycia: htmlcov/index.html"
 
 # ── Jakość kodu ───────────────────────────────────────────
@@ -139,17 +159,21 @@ run-fix:
 
 # ── Paczka ───────────────────────────────────────────────
 build: clean
-	.venv/bin/pip install build --quiet
-	.venv/bin/python -m build
+	@echo "🔨 Budowanie paczki (cache enabled)..."
+	.venv/bin/pip install --quiet --upgrade build
+	.venv/bin/python -m build --parallel -n auto
 	@echo "✅ Paczka gotowa w dist/"
 
 publish: build
-	.venv/bin/pip install twine --quiet
+	@echo "📦 Publikowanie na PyPI..."
+	.venv/bin/pip install --quiet --upgrade twine
 	.venv/bin/twine upload dist/*
 	@echo "✅ Opublikowano na PyPI"
 
 clean:
-	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ .coverage htmlcov/ __pycache__
+	@echo "🧹 Czyszczenie cache i artefaktów..."
+	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ .coverage htmlcov/ __pycache__ .mypy_cache/
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	find . -type f -name ".DS_Store" -delete 2>/dev/null || true
 	@echo "✅ Wyczyszczono"

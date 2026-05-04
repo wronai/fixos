@@ -3,6 +3,7 @@ UI/IO operations for HITL session.
 All terminal output and input handling.
 """
 
+from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
 from rich.panel import Panel
@@ -15,9 +16,42 @@ from ..utils.terminal import (
     print_cmd_block as _print_cmd_block_rich,
     print_stdout_box, print_stderr_box,
 )
+from ..platform_utils import cancel_signal_timeout, setup_signal_timeout
+from ..utils.timeout import SessionTimeout
 
 if TYPE_CHECKING:
     from .session_core import CmdResult
+
+
+# Global reference to timeout handler and session for reinstatement
+_timeout_handler = None
+_timeout_seconds = None
+_session_ref = None
+
+
+@contextmanager
+def _suspend_timeout():
+    """Context manager to temporarily suspend session timeout during user input."""
+    global _timeout_handler, _timeout_seconds, _session_ref
+    try:
+        # Cancel the active timeout
+        cancel_signal_timeout()
+        yield
+    finally:
+        # Reinstate timeout with remaining time
+        if _timeout_handler and _session_ref:
+            from . import get_remaining_time
+            remaining = get_remaining_time(_session_ref)
+            if remaining > 0:
+                setup_signal_timeout(remaining, _timeout_handler)
+
+
+def _setup_timeout_ref(session, seconds: int, handler) -> None:
+    """Store timeout handler, session, and seconds for later reinstatement."""
+    global _timeout_handler, _timeout_seconds, _session_ref
+    _timeout_handler = handler
+    _timeout_seconds = seconds
+    _session_ref = session
 
 
 def print_session_header(os_info: dict, pkg_manager: str, model: str, timeout: int, remaining_fn) -> None:
@@ -84,7 +118,8 @@ def ask_user_problem() -> str:
     console.print()
     console.print(Panel(body, title="[bold cyan]💬 OPISZ SWÓJ PROBLEM[/bold cyan]", border_style="cyan"))
     try:
-        return console.input("  [bold cyan]Twój problem:[/bold cyan] ").strip()
+        with _suspend_timeout():
+            return console.input("  [bold cyan]Twój problem:[/bold cyan] ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""
 
@@ -195,25 +230,29 @@ def print_searching() -> None:
 
 def ask_execute_prompt() -> str:
     """Ask user if they want to execute a command."""
-    return console.input("  [bold]Wykonać?[/bold] \\[Y/n]: ").strip().lower()
+    with _suspend_timeout():
+        return console.input("  [bold]Wykonać?[/bold] \\[Y/n]: ").strip().lower()
 
 
 def ask_low_confidence_search() -> bool:
     """Ask user if they want to search when LLM is uncertain."""
-    return console.input(
-        "\n  [dim]💡 LLM niepewny – szukać zewnętrznie? [y/N]:[/dim] "
-    ).strip().lower() in ("y", "yes", "tak")
+    with _suspend_timeout():
+        return console.input(
+            "\n  [dim]💡 LLM niepewny – szukać zewnętrznie? [y/N]:[/dim] "
+        ).strip().lower() in ("y", "yes", "tak")
 
 
 def ask_send_data() -> bool:
     """Ask user if they want to send data to LLM."""
-    ans = console.input("\n  Czy wysłać te dane do LLM? \\[Y/n]: ").strip().lower()
+    with _suspend_timeout():
+        ans = console.input("\n  Czy wysłać te dane do LLM? \\[Y/n]: ").strip().lower()
     return ans not in ("n", "no", "nie")
 
 
 def get_user_input(remaining: int) -> str:
     """Get user input with prompt."""
     try:
-        return console.input(f"\n  [bold cyan]fixos [{fmt_time(remaining)}] ❯[/bold cyan] ").strip()
+        with _suspend_timeout():
+            return console.input(f"\n  [bold cyan]fixos [{fmt_time(remaining)}] ❯[/bold cyan] ").strip()
     except (EOFError, KeyboardInterrupt):
         return ""

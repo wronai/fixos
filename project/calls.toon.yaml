@@ -1,0 +1,273 @@
+# code2llm call graph | /home/tom/github/wronai/fixOS
+# nodes: 139 | edges: 131 | modules: 35
+# CC̄=3.7
+
+HUBS[20]:
+  fixos.diagnostics.checks._shared._cmd
+    CC=7  in:142  out:3  total:145
+  fixos.cli.cleanup_cmd._cleanup_flatpak_detailed
+    CC=12  in:1  out:111  total:112
+  fixos.cli.cleanup_cmd._display_flatpak_status
+    CC=9  in:1  out:65  total:66
+  fixos.cli.main._print_welcome
+    CC=6  in:1  out:61  total:62
+  fixos.llm_shell.run_llm_shell
+    CC=15  in:0  out:53  total:53
+  fixos.diagnostics.checks.resources.diagnose_resources
+    CC=13  in:0  out:49  total:49
+  fixos.utils.anonymizer.anonymize
+    CC=15  in:0  out:48  total:48
+  fixos.diagnostics.checks.system_core.diagnose_system
+    CC=16  in:0  out:46  total:46
+  fixos.utils.anonymizer._dict_to_markdown
+    CC=18  in:2  out:43  total:45
+  fixos.platform_utils.run_command
+    CC=5  in:33  out:4  total:37
+  fixos.diagnostics.checks.security.diagnose_security
+    CC=4  in:0  out:36  total:36
+  fixos.cli.token_cmd.token_set
+    CC=7  in:0  out:29  total:29
+  fixos.anonymizer.anonymize
+    CC=5  in:14  out:14  total:28
+  scripts.pyqual-calibrate.calibrate
+    CC=14  in:1  out:26  total:27
+  fixos.orchestrator.orchestrator.FixOrchestrator.load_from_diagnostics
+    CC=5  in:0  out:26  total:26
+  fixos.config.FixOsConfig.load
+    CC=14  in:0  out:26  total:26
+  fixos.diagnostics.checks.audio.diagnose_audio
+    CC=1  in:0  out:25  total:25
+  fixos.orchestrator.orchestrator.FixOrchestrator._evaluate_and_rediagnose
+    CC=10  in:0  out:23  total:23
+  fixos.cli.features_cmd._interactive_profile_select
+    CC=11  in:1  out:22  total:23
+  fixos.cli.ask_cmd._execute_with_llm
+    CC=8  in:1  out:21  total:22
+
+MODULES:
+  fixos.agent  [1 funcs]
+    get_remaining_time  CC=2  out:4
+  fixos.agent.autonomous_session  [5 funcs]
+    _get_remaining_time  CC=1  out:1
+    _handle_exec  CC=4  out:16
+    _handle_llm_error  CC=4  out:3
+    _handle_search  CC=3  out:8
+    _initialize_messages  CC=2  out:3
+  fixos.agent.hitl_session  [8 funcs]
+    __init__  CC=2  out:5
+    _check_low_confidence  CC=7  out:8
+    _clear_timeout  CC=1  out:1
+    _handle_llm_error  CC=4  out:4
+    _initialize_messages  CC=3  out:5
+    _process_turn  CC=7  out:16
+    _setup_timeout  CC=1  out:3
+    remaining  CC=1  out:1
+  fixos.agent.session_core  [2 funcs]
+    extract_fixes  CC=10  out:19
+    extract_search_topic  CC=3  out:4
+  fixos.agent.session_handlers  [9 funcs]
+    handle_describe_problem  CC=2  out:2
+    handle_direct_command  CC=1  out:5
+    handle_execute_all  CC=4  out:9
+    handle_fix_by_number  CC=2  out:9
+    handle_quit  CC=1  out:1
+    handle_search  CC=2  out:6
+    handle_skip_all  CC=1  out:1
+    parse_user_input  CC=9  out:11
+    run_single_command  CC=3  out:12
+  fixos.agent.session_io  [10 funcs]
+    _suspend_timeout  CC=4  out:3
+    ask_execute_prompt  CC=1  out:4
+    ask_low_confidence_search  CC=1  out:4
+    ask_send_data  CC=1  out:4
+    ask_user_problem  CC=2  out:11
+    fmt_time  CC=1  out:0
+    get_user_input  CC=2  out:4
+    print_cmd_result  CC=8  out:13
+    print_session_header  CC=1  out:8
+    print_session_summary  CC=3  out:4
+  fixos.anonymizer  [2 funcs]
+    anonymize  CC=5  out:14
+    get_sensitive_values  CC=4  out:3
+  fixos.cli.ask_cmd  [8 funcs]
+    _build_output_dict  CC=8  out:0
+    _execute_heuristic_command  CC=9  out:12
+    _execute_with_llm  CC=8  out:21
+    _format_command  CC=3  out:3
+    _handle_natural_command  CC=3  out:9
+    _match_heuristic_command  CC=18  out:2
+    _validate_result_with_llm  CC=14  out:16
+    ask  CC=1  out:4
+  fixos.cli.cleanup_cmd  [2 funcs]
+    _cleanup_flatpak_detailed  CC=12  out:111
+    _display_flatpak_status  CC=9  out:65
+  fixos.cli.features_cmd  [2 funcs]
+    _interactive_profile_select  CC=11  out:22
+    features_audit  CC=4  out:18
+  fixos.cli.main  [3 funcs]
+    _print_welcome  CC=6  out:61
+    cli  CC=3  out:5
+    main  CC=1  out:1
+  fixos.cli.token_cmd  [1 funcs]
+    token_set  CC=7  out:29
+  fixos.config  [3 funcs]
+    load  CC=14  out:26
+    _load_env_files  CC=13  out:14
+    detect_provider_from_key  CC=3  out:1
+  fixos.config_interactive  [5 funcs]
+    _get_api_key  CC=4  out:9
+    _get_user_choice  CC=6  out:7
+    _print_provider_menu  CC=9  out:19
+    _save_to_env  CC=8  out:13
+    interactive_provider_setup  CC=5  out:10
+  fixos.diagnostics.checks._shared  [2 funcs]
+    _cmd  CC=7  out:3
+    _psutil_required  CC=1  out:0
+  fixos.diagnostics.checks.audio  [1 funcs]
+    diagnose_audio  CC=1  out:25
+  fixos.diagnostics.checks.hardware  [1 funcs]
+    diagnose_hardware  CC=1  out:18
+  fixos.diagnostics.checks.resources  [1 funcs]
+    diagnose_resources  CC=13  out:49
+  fixos.diagnostics.checks.security  [1 funcs]
+    diagnose_security  CC=4  out:36
+  fixos.diagnostics.checks.system_core  [1 funcs]
+    diagnose_system  CC=16  out:46
+  fixos.diagnostics.checks.thumbnails  [1 funcs]
+    diagnose_thumbnails  CC=1  out:21
+  fixos.llm_shell  [1 funcs]
+    run_llm_shell  CC=15  out:53
+  fixos.orchestrator.orchestrator  [4 funcs]
+    _default_confirm  CC=3  out:6
+    _default_progress  CC=8  out:8
+    _evaluate_and_rediagnose  CC=10  out:23
+    load_from_diagnostics  CC=5  out:26
+  fixos.platform_utils  [10 funcs]
+    _cmd_exists  CC=1  out:1
+    cancel_signal_timeout  CC=2  out:1
+    elevate_cmd  CC=3  out:2
+    get_os_info  CC=5  out:8
+    get_package_manager  CC=8  out:3
+    install_package_cmd  CC=2  out:2
+    is_dangerous  CC=3  out:1
+    needs_elevation  CC=5  out:7
+    run_command  CC=5  out:4
+    setup_signal_timeout  CC=2  out:2
+  fixos.plugins.builtin.audio  [4 funcs]
+    _check_alsa  CC=6  out:5
+    _check_pipewire  CC=2  out:2
+    _check_sof  CC=2  out:2
+    _check_wireplumber  CC=2  out:2
+  fixos.plugins.builtin.disk  [3 funcs]
+    _check_inodes  CC=6  out:8
+    _check_readonly  CC=5  out:5
+    _check_usage  CC=6  out:8
+  fixos.plugins.builtin.hardware  [5 funcs]
+    _check_battery  CC=8  out:16
+    _check_camera  CC=3  out:3
+    _check_dmi  CC=3  out:4
+    _check_gpu  CC=3  out:2
+    _check_touchpad  CC=2  out:2
+  fixos.plugins.builtin.resources  [3 funcs]
+    _check_cpu  CC=5  out:5
+    _check_top_processes  CC=2  out:1
+    _check_zombies  CC=3  out:5
+  fixos.plugins.builtin.security  [5 funcs]
+    _check_fail2ban  CC=4  out:4
+    _check_firewall  CC=8  out:8
+    _check_open_ports  CC=7  out:8
+    _check_selinux  CC=3  out:4
+    _check_ssh  CC=8  out:8
+  fixos.plugins.builtin.thumbnails  [4 funcs]
+    _check_cache  CC=5  out:11
+    _check_ffmpegthumbnailer  CC=2  out:3
+    _check_gstreamer  CC=4  out:4
+    _check_totem  CC=2  out:3
+  fixos.system_checks  [8 funcs]
+    get_cpu_info  CC=2  out:8
+    get_disk_info  CC=3  out:5
+    get_fedora_specific  CC=1  out:15
+    get_full_diagnostics  CC=1  out:16
+    get_memory_info  CC=1  out:7
+    get_network_info  CC=4  out:3
+    get_top_processes  CC=3  out:4
+    run_cmd  CC=6  out:3
+  fixos.utils.anonymizer  [6 funcs]
+    _dict_to_markdown  CC=18  out:43
+    _format_diagnostics_markdown  CC=3  out:5
+    _format_key_title  CC=1  out:3
+    _get_sensitive  CC=4  out:3
+    anonymize  CC=15  out:48
+    display_anonymized_preview  CC=5  out:18
+  fixos.utils.terminal  [4 funcs]
+    print_cmd_block  CC=4  out:6
+    print_problem_header  CC=3  out:10
+    print_stderr_box  CC=2  out:8
+    print_stdout_box  CC=2  out:8
+  fixos.utils.web_search  [9 funcs]
+    _http_get  CC=2  out:4
+    format_results_for_llm  CC=3  out:5
+    search_all  CC=5  out:15
+    search_arch_wiki  CC=9  out:11
+    search_ask_fedora  CC=4  out:11
+    search_ddg  CC=8  out:15
+    search_fedora_bugzilla  CC=4  out:8
+    search_github_issues  CC=4  out:12
+    search_serpapi  CC=5  out:9
+  scripts.pyqual-calibrate  [4 funcs]
+    calibrate  CC=14  out:26
+    extract_current_metrics  CC=4  out:9
+    main  CC=6  out:12
+    parse_pyqual_yaml  CC=1  out:1
+
+EDGES:
+  fixos.config.FixOsConfig.load → fixos.config._load_env_files
+  fixos.platform_utils.elevate_cmd → fixos.platform_utils.needs_elevation
+  fixos.platform_utils.get_package_manager → fixos.platform_utils._cmd_exists
+  fixos.platform_utils.install_package_cmd → fixos.platform_utils.get_package_manager
+  fixos.system_checks.get_fedora_specific → fixos.system_checks.run_cmd
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_cpu_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_memory_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_disk_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_network_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_top_processes
+  fixos.anonymizer.anonymize → fixos.anonymizer.get_sensitive_values
+  fixos.llm_shell.run_llm_shell → fixos.anonymizer.anonymize
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._print_provider_menu
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._get_user_choice
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._get_api_key
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._save_to_env
+  fixos.diagnostics.checks.resources.diagnose_resources → fixos.diagnostics.checks._shared._psutil_required
+  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._psutil_required
+  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.audio.diagnose_audio → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.security.diagnose_security → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.hardware.diagnose_hardware → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.thumbnails.diagnose_thumbnails → fixos.diagnostics.checks._shared._cmd
+  fixos.agent.session_handlers.handle_execute_all → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_fix_by_number → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_direct_command → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.search_all
+  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.elevate_cmd
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.is_dangerous
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.run_command
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_quit
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_describe_problem
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_skip_all
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_execute_all
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_fix_by_number
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_direct_command
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.anonymizer.anonymize
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.utils.anonymizer.display_anonymized_preview
+  fixos.agent.autonomous_session.AutonomousSession._get_remaining_time → fixos.agent.get_remaining_time
+  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.search_all
+  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.autonomous_session.AutonomousSession._handle_search → fixos.utils.web_search.search_all
+  fixos.agent.autonomous_session.AutonomousSession._handle_search → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.autonomous_session.AutonomousSession._handle_exec → fixos.anonymizer.anonymize
+  fixos.agent.hitl_session.HITLSession.__init__ → fixos.platform_utils.get_os_info
+  fixos.agent.hitl_session.HITLSession.__init__ → fixos.platform_utils.get_package_manager
+  fixos.agent.hitl_session.HITLSession._setup_timeout → fixos.platform_utils.setup_signal_timeout
+  fixos.agent.hitl_session.HITLSession._clear_timeout → fixos.platform_utils.cancel_signal_timeout
+  fixos.agent.hitl_session.HITLSession.remaining → fixos.agent.get_remaining_time

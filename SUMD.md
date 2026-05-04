@@ -1,3 +1,606 @@
+# fixOS v2.2.6 🔧🤖
+
+AI-powered Linux/Windows diagnostics and repair – audio, hardware, system issues
+
+## Contents
+
+- [Metadata](#metadata)
+- [Architecture](#architecture)
+- [Interfaces](#interfaces)
+- [Workflows](#workflows)
+- [Quality Pipeline (`pyqual.yaml`)](#quality-pipeline-pyqualyaml)
+- [Configuration](#configuration)
+- [Dependencies](#dependencies)
+- [Deployment](#deployment)
+- [Environment Variables (`.env.example`)](#environment-variables-envexample)
+- [Release Management (`goal.yaml`)](#release-management-goalyaml)
+- [Makefile Targets](#makefile-targets)
+- [Code Analysis](#code-analysis)
+- [Call Graph](#call-graph)
+- [Test Contracts](#test-contracts)
+- [Intent](#intent)
+
+## Metadata
+
+- **name**: `fixos`
+- **version**: `2.2.12`
+- **python_requires**: `>=3.10`
+- **license**: Apache-2.0
+- **ecosystem**: SUMD + DOQL + testql + taskfile
+- **generated_from**: pyproject.toml, requirements-dev.txt, requirements.txt, Makefile, testql(2), app.doql.less, pyqual.yaml, goal.yaml, .env.example, docker-compose.yml, project/(2 analysis files)
+
+## Architecture
+
+```
+SUMD (description) → DOQL/source (code) → taskfile (automation) → testql (verification)
+```
+
+### DOQL Application Declaration (`app.doql.less`)
+
+```less markpact:doql path=app.doql.less
+// LESS format — define @variables here as needed
+
+app {
+  name: fixos;
+  version: 2.2.12;
+}
+
+dependencies {
+  runtime: "openai>=1.35.0, prompt_toolkit>=3.0.43, psutil>=5.9.0, pyyaml>=6.0, click>=8.1.0, python-dotenv>=1.0.0, rich>=13.0";
+  dev: "pytest>=7.4.0, pytest-mock>=3.12.0, pytest-cov>=4.1.0, pytest-xdist>=3.5.0, pytest-timeout>=2.2.0, pytest-sugar>=0.9.7";
+}
+
+entity[name="FixSuggestion"] {
+  command: string!;
+  description: string!;
+  risk_level: RiskLevel!;
+  requires_sudo: bool!;
+  idempotent: bool!;
+  check_command: string;
+  rollback_command: string;
+}
+
+entity[name="NLPIntent"] {
+  intent_type: string!;
+  target: string;
+  parameters: json!;
+  confidence: float!;
+}
+
+entity[name="CommandValidation"] {
+  success: bool!;
+  interpretation: string!;
+  user_intent_met: bool!;
+  suggestion: string;
+}
+
+interface[type="cli"] {
+  framework: click;
+}
+interface[type="cli"] page[name="fixos"] {
+
+}
+
+workflow[name="install"] {
+  trigger: manual;
+  step-1: run cmd=pip install -e .;
+}
+
+workflow[name="install-dev"] {
+  trigger: manual;
+  step-1: run cmd=pip install -e ".[dev]";
+  step-2: run cmd=echo "✅ Zainstalowano z zależnościami dev";
+}
+
+workflow[name="test"] {
+  trigger: manual;
+  step-1: depend target=test-unit;
+  step-2: depend target=test-e2e;
+}
+
+workflow[name="test-fast"] {
+  trigger: manual;
+  step-1: run cmd=echo "⚡ Testy z paralelizacją (4 procesy)...";
+  step-2: run cmd=pytest tests/ -v --tb=short -n auto -m "not slow and not docker";
+}
+
+workflow[name="test-quick"] {
+  trigger: manual;
+  step-1: run cmd=echo "⚡ Szybkie testy (bez slow/docker)...";
+  step-2: run cmd=pytest tests/unit tests/e2e/test_anonymization_layers.py tests/e2e/test_executor.py -v --tb=short -m "not slow and not docker";
+}
+
+workflow[name="test-unit"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧪 Unit testy...";
+  step-2: run cmd=pytest tests/unit/ -v --tb=short;
+}
+
+workflow[name="test-unit-fast"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧪 Unit testy (paralelizacja - 4 procesy)...";
+  step-2: run cmd=pytest tests/unit/ -v --tb=short -n 4;
+}
+
+workflow[name="test-unit-par"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧪 Unit testy (paralelizacja - auto, = CPU count)...";
+  step-2: run cmd=pytest tests/unit/ -v --tb=short -n auto;
+}
+
+workflow[name="test-e2e"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧪 E2E testy (mock LLM)...";
+  step-2: run cmd=pytest tests/e2e/ -v --tb=short -k "not real_llm" -m "not slow and not docker";
+}
+
+workflow[name="test-real"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧪 E2E testy (prawdziwe API – wymaga .env)...";
+  step-2: run cmd=pytest tests/e2e/ -v --tb=short -k "real_llm";
+}
+
+workflow[name="test-cov"] {
+  trigger: manual;
+  step-1: run cmd=echo "📊 Testy + raport pokrycia (z paralelizacją)...";
+  step-2: run cmd=pytest tests/ -v --tb=short --cov=fixos --cov-report=term-missing --cov-report=html:htmlcov -n auto -m "not slow";
+  step-3: run cmd=echo "📊 Raport pokrycia: htmlcov/index.html";
+}
+
+workflow[name="lint"] {
+  trigger: manual;
+  step-1: run cmd=ruff check fixos/ tests/ || true;
+}
+
+workflow[name="format"] {
+  trigger: manual;
+  step-1: run cmd=black fixos/ tests/;
+}
+
+workflow[name="docker-build"] {
+  trigger: manual;
+  step-1: run cmd=docker compose -f docker/docker-compose.yml build;
+}
+
+workflow[name="docker-audio"] {
+  trigger: manual;
+  step-1: run cmd=docker compose -f docker/docker-compose.yml run --rm broken-audio;
+}
+
+workflow[name="docker-thumb"] {
+  trigger: manual;
+  step-1: run cmd=docker compose -f docker/docker-compose.yml run --rm broken-thumbnails;
+}
+
+workflow[name="docker-full"] {
+  trigger: manual;
+  step-1: run cmd=docker compose -f docker/docker-compose.yml run --rm broken-full;
+}
+
+workflow[name="docker-e2e"] {
+  trigger: manual;
+  step-1: run cmd=docker compose -f docker/docker-compose.yml run --rm e2e-tests;
+}
+
+workflow[name="docker-test-fedora"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on Fedora...";
+  step-2: run cmd=docker compose -f docker/docker-compose.multi-system.yml run --rm test-fedora;
+}
+
+workflow[name="docker-test-ubuntu"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on Ubuntu...";
+  step-2: run cmd=docker compose -f docker/docker-compose.multi-system.yml run --rm test-ubuntu;
+}
+
+workflow[name="docker-test-debian"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on Debian...";
+  step-2: run cmd=docker compose -f docker/docker-compose.multi-system.yml run --rm test-debian;
+}
+
+workflow[name="docker-test-arch"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on Arch Linux...";
+  step-2: run cmd=docker compose -f docker/docker-compose.multi-system.yml run --rm test-arch;
+}
+
+workflow[name="docker-test-alpine"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on Alpine...";
+  step-2: run cmd=docker compose -f docker/docker-compose.multi-system.yml run --rm test-alpine;
+}
+
+workflow[name="docker-test-all"] {
+  trigger: manual;
+  step-1: run cmd=echo "🐧 Testing on all systems...";
+  step-2: run cmd=./docker/test-multi-system.sh;
+}
+
+workflow[name="config-init"] {
+  trigger: manual;
+  step-1: run cmd=fixos config init;
+}
+
+workflow[name="run-scan"] {
+  trigger: manual;
+  step-1: run cmd=fixos scan;
+}
+
+workflow[name="run-fix"] {
+  trigger: manual;
+  step-1: run cmd=fixos fix;
+}
+
+workflow[name="build"] {
+  trigger: manual;
+  step-1: run cmd=echo "🔨 Budowanie paczki (cache enabled)...";
+  step-2: run cmd=.venv/bin/pip install --quiet --upgrade build;
+  step-3: run cmd=.venv/bin/python -m build --parallel -n auto;
+  step-4: run cmd=echo "✅ Paczka gotowa w dist/";
+}
+
+workflow[name="publish"] {
+  trigger: manual;
+  step-1: run cmd=echo "📦 Publikowanie na PyPI...";
+  step-2: run cmd=.venv/bin/pip install --quiet --upgrade twine;
+  step-3: run cmd=.venv/bin/twine upload dist/*;
+  step-4: run cmd=echo "✅ Opublikowano na PyPI";
+}
+
+workflow[name="clean"] {
+  trigger: manual;
+  step-1: run cmd=echo "🧹 Czyszczenie cache i artefaktów...";
+  step-2: run cmd=rm -rf build/ dist/ *.egg-info/ .pytest_cache/ .coverage htmlcov/ __pycache__ .mypy_cache/;
+  step-3: run cmd=find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true;
+  step-4: run cmd=find . -type f -name "*.pyc" -delete 2>/dev/null || true;
+  step-5: run cmd=find . -type f -name ".DS_Store" -delete 2>/dev/null || true;
+  step-6: run cmd=echo "✅ Wyczyszczono";
+}
+
+deploy {
+  target: docker-compose;
+  compose_file: docker/docker-compose.yml;
+}
+
+environment[name="local"] {
+  runtime: docker-compose;
+  env_file: .env;
+  python_version: >=3.10;
+}
+```
+
+## Interfaces
+
+### CLI Entry Points
+
+- `fixos`
+
+### testql Scenarios
+
+#### `testql-scenarios/generated-cli-tests.testql.toon.yaml`
+
+```toon markpact:testql path=testql-scenarios/generated-cli-tests.testql.toon.yaml
+# SCENARIO: CLI Command Tests
+# TYPE: cli
+# GENERATED: true
+
+CONFIG[2]{key, value}:
+  cli_command, python -m fixOS
+  timeout_ms, 10000
+
+# Test 1: CLI help command
+SHELL "python -m fixOS --help" 5000
+ASSERT_EXIT_CODE 0
+ASSERT_STDOUT_CONTAINS "usage"
+
+# Test 2: CLI version command
+SHELL "python -m fixOS --version" 5000
+ASSERT_EXIT_CODE 0
+
+# Test 3: CLI main workflow (dry-run)
+SHELL "python -m fixOS --help" 10000
+ASSERT_EXIT_CODE 0
+```
+
+#### `testql-scenarios/generated-from-pytests.testql.toon.yaml`
+
+```toon markpact:testql path=testql-scenarios/generated-from-pytests.testql.toon.yaml
+# SCENARIO: Auto-generated from Python Tests
+# TYPE: integration
+# GENERATED: true
+
+CONFIG[2]{key, value}:
+  base_url, ${api_url:-http://localhost:8101}
+  timeout_ms, 10000
+
+# Converted 4 assertions from pytest
+ASSERT[4]{field, operator, expected}:
+  result.exit_code, ==, 0
+  result.exit_code, ==, 0
+  result.exit_code, ==, 0
+  result.exit_code, ==, 0
+```
+
+## Workflows
+
+## Quality Pipeline (`pyqual.yaml`)
+
+```yaml markpact:pyqual path=pyqual.yaml
+pipeline:
+  name: quality-loop-with-llx
+
+  # Quality gates — pipeline iterates until ALL pass
+  metrics:
+    cc_max: 6           # cyclomatic complexity per function
+    vallm_pass_min: 65   # vallm validation pass rate (%)
+    coverage_min: 27      # test coverage (%)
+
+  # Custom tool definitions
+  custom_tools:
+    - name: code2llm_vallm
+      binary: code2llm
+      command: >-
+        code2llm {workdir} -f toon -o ./project --no-chunk
+        --exclude .git venv dist __pycache__ .pytest_cache .mypy_cache .ruff_cache
+        .code2llm_cache build *.egg-info
+      output: ""
+      allow_failure: false
+
+    - name: vallm_src
+      binary: vallm
+      command: >-
+        vallm batch {workdir}/fixos --recursive --format toon --output ./project
+        --exclude .git,venv,dist,__pycache__,.pytest_cache,.mypy_cache,.ruff_cache,
+        .code2llm_cache,build,*.egg-info
+      output: ""
+      allow_failure: false
+
+    - name: vallm_verify
+      binary: vallm
+      command: >-
+        vallm batch {workdir}/fixos --recursive --no-complexity --format toon --output ./project/verify
+        --exclude .git,venv,dist,__pycache__,.pytest_cache,.mypy_cache,.ruff_cache,
+        .code2llm_cache,build,*.egg-info
+      output: ""
+      allow_failure: false
+
+  # Pipeline stages
+  stages:
+    - name: setup
+      run: |
+        set -e
+        echo "=== pyqual dependency check ==="
+        for pkg in code2llm vallm prefact llx pytest-cov goal; do
+          if python -m pip show "$pkg" >/dev/null 2>&1; then
+            echo "  ✓ $pkg"
+          else
+            echo "  ✗ $pkg — installing…"
+            pip install -q "$pkg" || echo "  ⚠ $pkg install failed (optional)"
+          fi
+        done
+        if command -v claude >/dev/null 2>&1; then
+          echo "  ✓ claude $(claude --version 2>/dev/null)"
+        else
+          echo "  ✗ claude — not installed"
+        fi
+        echo "=== setup done ==="
+      when: first_iteration
+      timeout: 300
+
+    - name: lint
+      tool: ruff
+      optional: true
+
+    - name: test
+      run: .venv/bin/python -m pytest -q --tb=short --cov=fixos --cov-report=term-missing --cov-report=json:.pyqual/coverage.json
+      when: always
+
+    - name: prefact
+      tool: prefact
+      optional: true
+      when: metrics_fail
+      timeout: 900
+
+    - name: fix
+      tool: llx-fix
+      optional: true
+      when: metrics_fail
+      timeout: 1800
+
+    - name: verify
+      tool: vallm_verify
+      optional: true
+      when: after_fix
+      timeout: 300
+
+    - name: push
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git add -A
+          git commit -m "chore: pyqual auto-commit [skip ci]" 2>/dev/null || true
+          git push origin HEAD
+        else
+          echo "No changes to push"
+        fi
+      when: metrics_pass
+      optional: true
+      timeout: 120
+
+    - name: publish
+      run: make publish
+      when: metrics_pass
+      timeout: 300
+
+    - name: markdown_report
+      run: python3 -m pyqual.report_generator
+      when: always
+      optional: true
+      timeout: 30
+
+  # Loop behavior
+  loop:
+    max_iterations: 3
+    on_fail: report
+
+  # Environment
+  env:
+    LLM_MODEL: openrouter/x-ai/grok-code-fast-1
+    LLX_DEFAULT_TIER: balanced
+    LLX_VERBOSE: true
+```
+
+## Configuration
+
+```yaml
+project:
+  name: fixos
+  version: 2.2.12
+  env: local
+```
+
+## Dependencies
+
+### Runtime
+
+```text markpact:deps python
+openai>=1.35.0
+prompt_toolkit>=3.0.43
+psutil>=5.9.0
+pyyaml>=6.0
+click>=8.1.0
+python-dotenv>=1.0.0
+rich>=13.0
+```
+
+### Development
+
+```text markpact:deps python scope=dev
+pytest>=7.4.0
+pytest-mock>=3.12.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.5.0
+pytest-timeout>=2.2.0
+pytest-sugar>=0.9.7
+```
+
+## Deployment
+
+```bash markpact:run
+pip install fixos
+
+# development install
+pip install -e .[dev]
+```
+
+### Requirements Files
+
+#### `requirements-dev.txt`
+
+- `pytest>=7.4.0`
+- `pytest-mock>=3.12.0`
+- `pytest-cov>=4.1.0`
+- `ruff>=0.4.0`
+- `black>=24.0.0`
+
+#### `requirements.txt`
+
+- `openai>=1.35.0`
+- `prompt_toolkit>=3.0.43`
+- `psutil>=5.9.0`
+- `pyyaml>=6.0`
+- `click>=8.1.0`
+- `python-dotenv>=1.0.0`
+- `rich>=13.0`
+- `pydantic>=2.0`
+
+### Docker Compose (`docker-compose.yml`)
+
+- **base** image=`fixos-base:latest`
+- **broken-audio** image=`fixos-broken-audio:latest`
+- **broken-thumbnails** image=`fixos-broken-thumbnails:latest`
+- **broken-network** image=`fixos-broken-network:latest`
+- **broken-full** image=`fixos-broken-full:latest`
+- **e2e-tests** image=`{'context': '..', 'dockerfile': 'docker/base/Dockerfile'}`
+- **unit-tests** image=`{'context': '..', 'dockerfile': 'docker/base/Dockerfile'}`
+- **cli-tests** image=`{'context': '..', 'dockerfile': 'docker/base/Dockerfile'}`
+
+## Environment Variables (`.env.example`)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LLM_PROVIDER` | `gemini` | Dostępne: gemini, openai, xai, openrouter, ollama |
+| `GEMINI_API_KEY` | `AIzaSy_TWOJ_KLUCZ_GEMINI` | Utwórz klucz: https://aistudio.google.com/apikey |
+| `GEMINI_MODEL` | `gemini-2.5-flash-preview-04-17` |  |
+| `GEMINI_BASE_URL` | `https://generativelanguage.googleapis.com/v1beta/openai/` |  |
+| `OPENAI_API_KEY` | `sk-TWOJ_KLUCZ_OPENAI` | ── OpenAI (opcjonalny) ─────────────────────────────────── |
+| `OPENAI_MODEL` | `gpt-4o-mini` |  |
+| `OPENAI_BASE_URL` | `https://api.openai.com/v1` |  |
+| `XAI_API_KEY` | `xai-TWOJ_KLUCZ_XAI` | ── xAI Grok (opcjonalny) ───────────────────────────────── |
+| `XAI_MODEL` | `grok-beta` |  |
+| `XAI_BASE_URL` | `https://api.x.ai/v1` |  |
+| `OPENROUTER_API_KEY` | `sk-or-TWOJ_KLUCZ` | ── OpenRouter (opcjonalny, daje dostęp do wielu modeli) ── |
+| `OPENROUTER_MODEL` | `google/gemini-2.0-flash-exp:free` |  |
+| `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` |  |
+| `OLLAMA_BASE_URL` | `http://localhost:11434/v1` | ── Ollama (lokalny, bez klucza) ────────────────────────── |
+| `OLLAMA_MODEL` | `llama3.2` |  |
+| `AGENT_MODE` | `hitl` | autonomous = autonomiczny (wykonuje automatycznie) |
+| `SESSION_TIMEOUT` | `3600` | ── Timeout sesji (sekundy) ─────────────────────────────── |
+| `ENABLE_WEB_SEARCH` | `true` | Używane gdy LLM nie znajdzie rozwiązania |
+| `SERPAPI_KEY` | `*(not set)*` | SerpAPI (opcjonalny, lepsza jakość) |
+| `SHOW_ANONYMIZED_DATA` | `true` | Pokaż zanonimizowane dane użytkownikowi przed wysłaniem do LLM |
+| `SAVE_REPORTS` | `false` | Zapisuj raporty diagnostyczne |
+| `REPORTS_DIR` | `/tmp/fixos-reports` |  |
+| `TEST_DOCKER_COMPOSE` | `docker/docker-compose.yml` | Używane przez testy e2e |
+
+## Release Management (`goal.yaml`)
+
+- **versioning**: `semver`
+- **commits**: `conventional` scope=`fixfedora`
+- **changelog**: `keep-a-changelog`
+- **build strategies**: `python`, `nodejs`, `rust`
+- **version files**: `VERSION`, `pyproject.toml:version`, `setup.py:version`, `fixos/__init__.py:__version__`
+
+## Makefile Targets
+
+- `help` — ── Domyślna komenda ──────────────────────────────────────
+- `install` — ── Instalacja ────────────────────────────────────────────
+- `install-dev`
+- `test` — ── Testy ─────────────────────────────────────────────────
+- `test-fast`
+- `test-quick`
+- `test-unit`
+- `test-unit-fast`
+- `test-unit-par`
+- `test-e2e`
+- `test-real`
+- `test-cov`
+- `lint` — ── Jakość kodu ───────────────────────────────────────────
+- `format`
+- `docker-build` — ── Docker ───────────────────────────────────────────────
+- `docker-audio`
+- `docker-thumb`
+- `docker-full`
+- `docker-e2e`
+- `docker-test-fedora` — ── Multi-System Docker Tests ────────────────────────────
+- `docker-test-ubuntu`
+- `docker-test-debian`
+- `docker-test-arch`
+- `docker-test-alpine`
+- `docker-test-all`
+- `config-init` — ── Uruchomienie ──────────────────────────────────────────
+- `run-scan`
+- `run-fix`
+- `build` — ── Paczka ───────────────────────────────────────────────
+- `publish`
+- `clean`
+
+## Code Analysis
+
+### `project/map.toon.yaml`
+
+```toon markpact:analysis path=project/map.toon.yaml
 # fixOS | 113f 19723L | python:110,shell:2,less:1 | 2026-05-04
 # stats: 213 func | 123 cls | 113 mod | CC̄=5.2 | critical:27 | cycles:0
 # alerts[5]: CC _cleanup_full_system=172; CC _match_heuristic_command=18; CC _display_unsafe_services=18; CC fix=18; CC _run_disk_analysis=18
@@ -658,3 +1261,313 @@ D:
   tests/unit/test_service_scanner.py:
     e: TestChromeSafetyClassification
     TestChromeSafetyClassification: test_chrome_profile_is_marked_for_review(1),test_chrome_cache_path_is_marked_safe(1)
+```
+
+## Call Graph
+
+*139 nodes · 131 edges · 35 modules · CC̄=3.7*
+
+### Hubs (by degree)
+
+| Function | CC | in | out | total |
+|----------|----|----|-----|-------|
+| `_cmd` *(in fixos.diagnostics.checks._shared)* | 7 | 142 | 3 | **145** |
+| `_cleanup_flatpak_detailed` *(in fixos.cli.cleanup_cmd)* | 12 ⚠ | 1 | 111 | **112** |
+| `_display_flatpak_status` *(in fixos.cli.cleanup_cmd)* | 9 | 1 | 65 | **66** |
+| `_print_welcome` *(in fixos.cli.main)* | 6 | 1 | 61 | **62** |
+| `run_llm_shell` *(in fixos.llm_shell)* | 15 ⚠ | 0 | 53 | **53** |
+| `diagnose_resources` *(in fixos.diagnostics.checks.resources)* | 13 ⚠ | 0 | 49 | **49** |
+| `anonymize` *(in fixos.utils.anonymizer)* | 15 ⚠ | 0 | 48 | **48** |
+| `diagnose_system` *(in fixos.diagnostics.checks.system_core)* | 16 ⚠ | 0 | 46 | **46** |
+
+```toon markpact:analysis path=project/calls.toon.yaml
+# code2llm call graph | /home/tom/github/wronai/fixOS
+# nodes: 139 | edges: 131 | modules: 35
+# CC̄=3.7
+
+HUBS[20]:
+  fixos.diagnostics.checks._shared._cmd
+    CC=7  in:142  out:3  total:145
+  fixos.cli.cleanup_cmd._cleanup_flatpak_detailed
+    CC=12  in:1  out:111  total:112
+  fixos.cli.cleanup_cmd._display_flatpak_status
+    CC=9  in:1  out:65  total:66
+  fixos.cli.main._print_welcome
+    CC=6  in:1  out:61  total:62
+  fixos.llm_shell.run_llm_shell
+    CC=15  in:0  out:53  total:53
+  fixos.diagnostics.checks.resources.diagnose_resources
+    CC=13  in:0  out:49  total:49
+  fixos.utils.anonymizer.anonymize
+    CC=15  in:0  out:48  total:48
+  fixos.diagnostics.checks.system_core.diagnose_system
+    CC=16  in:0  out:46  total:46
+  fixos.utils.anonymizer._dict_to_markdown
+    CC=18  in:2  out:43  total:45
+  fixos.platform_utils.run_command
+    CC=5  in:33  out:4  total:37
+  fixos.diagnostics.checks.security.diagnose_security
+    CC=4  in:0  out:36  total:36
+  fixos.cli.token_cmd.token_set
+    CC=7  in:0  out:29  total:29
+  fixos.anonymizer.anonymize
+    CC=5  in:14  out:14  total:28
+  scripts.pyqual-calibrate.calibrate
+    CC=14  in:1  out:26  total:27
+  fixos.orchestrator.orchestrator.FixOrchestrator.load_from_diagnostics
+    CC=5  in:0  out:26  total:26
+  fixos.config.FixOsConfig.load
+    CC=14  in:0  out:26  total:26
+  fixos.diagnostics.checks.audio.diagnose_audio
+    CC=1  in:0  out:25  total:25
+  fixos.orchestrator.orchestrator.FixOrchestrator._evaluate_and_rediagnose
+    CC=10  in:0  out:23  total:23
+  fixos.cli.features_cmd._interactive_profile_select
+    CC=11  in:1  out:22  total:23
+  fixos.cli.ask_cmd._execute_with_llm
+    CC=8  in:1  out:21  total:22
+
+MODULES:
+  fixos.agent  [1 funcs]
+    get_remaining_time  CC=2  out:4
+  fixos.agent.autonomous_session  [5 funcs]
+    _get_remaining_time  CC=1  out:1
+    _handle_exec  CC=4  out:16
+    _handle_llm_error  CC=4  out:3
+    _handle_search  CC=3  out:8
+    _initialize_messages  CC=2  out:3
+  fixos.agent.hitl_session  [8 funcs]
+    __init__  CC=2  out:5
+    _check_low_confidence  CC=7  out:8
+    _clear_timeout  CC=1  out:1
+    _handle_llm_error  CC=4  out:4
+    _initialize_messages  CC=3  out:5
+    _process_turn  CC=7  out:16
+    _setup_timeout  CC=1  out:3
+    remaining  CC=1  out:1
+  fixos.agent.session_core  [2 funcs]
+    extract_fixes  CC=10  out:19
+    extract_search_topic  CC=3  out:4
+  fixos.agent.session_handlers  [9 funcs]
+    handle_describe_problem  CC=2  out:2
+    handle_direct_command  CC=1  out:5
+    handle_execute_all  CC=4  out:9
+    handle_fix_by_number  CC=2  out:9
+    handle_quit  CC=1  out:1
+    handle_search  CC=2  out:6
+    handle_skip_all  CC=1  out:1
+    parse_user_input  CC=9  out:11
+    run_single_command  CC=3  out:12
+  fixos.agent.session_io  [10 funcs]
+    _suspend_timeout  CC=4  out:3
+    ask_execute_prompt  CC=1  out:4
+    ask_low_confidence_search  CC=1  out:4
+    ask_send_data  CC=1  out:4
+    ask_user_problem  CC=2  out:11
+    fmt_time  CC=1  out:0
+    get_user_input  CC=2  out:4
+    print_cmd_result  CC=8  out:13
+    print_session_header  CC=1  out:8
+    print_session_summary  CC=3  out:4
+  fixos.anonymizer  [2 funcs]
+    anonymize  CC=5  out:14
+    get_sensitive_values  CC=4  out:3
+  fixos.cli.ask_cmd  [8 funcs]
+    _build_output_dict  CC=8  out:0
+    _execute_heuristic_command  CC=9  out:12
+    _execute_with_llm  CC=8  out:21
+    _format_command  CC=3  out:3
+    _handle_natural_command  CC=3  out:9
+    _match_heuristic_command  CC=18  out:2
+    _validate_result_with_llm  CC=14  out:16
+    ask  CC=1  out:4
+  fixos.cli.cleanup_cmd  [2 funcs]
+    _cleanup_flatpak_detailed  CC=12  out:111
+    _display_flatpak_status  CC=9  out:65
+  fixos.cli.features_cmd  [2 funcs]
+    _interactive_profile_select  CC=11  out:22
+    features_audit  CC=4  out:18
+  fixos.cli.main  [3 funcs]
+    _print_welcome  CC=6  out:61
+    cli  CC=3  out:5
+    main  CC=1  out:1
+  fixos.cli.token_cmd  [1 funcs]
+    token_set  CC=7  out:29
+  fixos.config  [3 funcs]
+    load  CC=14  out:26
+    _load_env_files  CC=13  out:14
+    detect_provider_from_key  CC=3  out:1
+  fixos.config_interactive  [5 funcs]
+    _get_api_key  CC=4  out:9
+    _get_user_choice  CC=6  out:7
+    _print_provider_menu  CC=9  out:19
+    _save_to_env  CC=8  out:13
+    interactive_provider_setup  CC=5  out:10
+  fixos.diagnostics.checks._shared  [2 funcs]
+    _cmd  CC=7  out:3
+    _psutil_required  CC=1  out:0
+  fixos.diagnostics.checks.audio  [1 funcs]
+    diagnose_audio  CC=1  out:25
+  fixos.diagnostics.checks.hardware  [1 funcs]
+    diagnose_hardware  CC=1  out:18
+  fixos.diagnostics.checks.resources  [1 funcs]
+    diagnose_resources  CC=13  out:49
+  fixos.diagnostics.checks.security  [1 funcs]
+    diagnose_security  CC=4  out:36
+  fixos.diagnostics.checks.system_core  [1 funcs]
+    diagnose_system  CC=16  out:46
+  fixos.diagnostics.checks.thumbnails  [1 funcs]
+    diagnose_thumbnails  CC=1  out:21
+  fixos.llm_shell  [1 funcs]
+    run_llm_shell  CC=15  out:53
+  fixos.orchestrator.orchestrator  [4 funcs]
+    _default_confirm  CC=3  out:6
+    _default_progress  CC=8  out:8
+    _evaluate_and_rediagnose  CC=10  out:23
+    load_from_diagnostics  CC=5  out:26
+  fixos.platform_utils  [10 funcs]
+    _cmd_exists  CC=1  out:1
+    cancel_signal_timeout  CC=2  out:1
+    elevate_cmd  CC=3  out:2
+    get_os_info  CC=5  out:8
+    get_package_manager  CC=8  out:3
+    install_package_cmd  CC=2  out:2
+    is_dangerous  CC=3  out:1
+    needs_elevation  CC=5  out:7
+    run_command  CC=5  out:4
+    setup_signal_timeout  CC=2  out:2
+  fixos.plugins.builtin.audio  [4 funcs]
+    _check_alsa  CC=6  out:5
+    _check_pipewire  CC=2  out:2
+    _check_sof  CC=2  out:2
+    _check_wireplumber  CC=2  out:2
+  fixos.plugins.builtin.disk  [3 funcs]
+    _check_inodes  CC=6  out:8
+    _check_readonly  CC=5  out:5
+    _check_usage  CC=6  out:8
+  fixos.plugins.builtin.hardware  [5 funcs]
+    _check_battery  CC=8  out:16
+    _check_camera  CC=3  out:3
+    _check_dmi  CC=3  out:4
+    _check_gpu  CC=3  out:2
+    _check_touchpad  CC=2  out:2
+  fixos.plugins.builtin.resources  [3 funcs]
+    _check_cpu  CC=5  out:5
+    _check_top_processes  CC=2  out:1
+    _check_zombies  CC=3  out:5
+  fixos.plugins.builtin.security  [5 funcs]
+    _check_fail2ban  CC=4  out:4
+    _check_firewall  CC=8  out:8
+    _check_open_ports  CC=7  out:8
+    _check_selinux  CC=3  out:4
+    _check_ssh  CC=8  out:8
+  fixos.plugins.builtin.thumbnails  [4 funcs]
+    _check_cache  CC=5  out:11
+    _check_ffmpegthumbnailer  CC=2  out:3
+    _check_gstreamer  CC=4  out:4
+    _check_totem  CC=2  out:3
+  fixos.system_checks  [8 funcs]
+    get_cpu_info  CC=2  out:8
+    get_disk_info  CC=3  out:5
+    get_fedora_specific  CC=1  out:15
+    get_full_diagnostics  CC=1  out:16
+    get_memory_info  CC=1  out:7
+    get_network_info  CC=4  out:3
+    get_top_processes  CC=3  out:4
+    run_cmd  CC=6  out:3
+  fixos.utils.anonymizer  [6 funcs]
+    _dict_to_markdown  CC=18  out:43
+    _format_diagnostics_markdown  CC=3  out:5
+    _format_key_title  CC=1  out:3
+    _get_sensitive  CC=4  out:3
+    anonymize  CC=15  out:48
+    display_anonymized_preview  CC=5  out:18
+  fixos.utils.terminal  [4 funcs]
+    print_cmd_block  CC=4  out:6
+    print_problem_header  CC=3  out:10
+    print_stderr_box  CC=2  out:8
+    print_stdout_box  CC=2  out:8
+  fixos.utils.web_search  [9 funcs]
+    _http_get  CC=2  out:4
+    format_results_for_llm  CC=3  out:5
+    search_all  CC=5  out:15
+    search_arch_wiki  CC=9  out:11
+    search_ask_fedora  CC=4  out:11
+    search_ddg  CC=8  out:15
+    search_fedora_bugzilla  CC=4  out:8
+    search_github_issues  CC=4  out:12
+    search_serpapi  CC=5  out:9
+  scripts.pyqual-calibrate  [4 funcs]
+    calibrate  CC=14  out:26
+    extract_current_metrics  CC=4  out:9
+    main  CC=6  out:12
+    parse_pyqual_yaml  CC=1  out:1
+
+EDGES:
+  fixos.config.FixOsConfig.load → fixos.config._load_env_files
+  fixos.platform_utils.elevate_cmd → fixos.platform_utils.needs_elevation
+  fixos.platform_utils.get_package_manager → fixos.platform_utils._cmd_exists
+  fixos.platform_utils.install_package_cmd → fixos.platform_utils.get_package_manager
+  fixos.system_checks.get_fedora_specific → fixos.system_checks.run_cmd
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_cpu_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_memory_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_disk_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_network_info
+  fixos.system_checks.get_full_diagnostics → fixos.system_checks.get_top_processes
+  fixos.anonymizer.anonymize → fixos.anonymizer.get_sensitive_values
+  fixos.llm_shell.run_llm_shell → fixos.anonymizer.anonymize
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._print_provider_menu
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._get_user_choice
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._get_api_key
+  fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._save_to_env
+  fixos.diagnostics.checks.resources.diagnose_resources → fixos.diagnostics.checks._shared._psutil_required
+  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._psutil_required
+  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.audio.diagnose_audio → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.security.diagnose_security → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.hardware.diagnose_hardware → fixos.diagnostics.checks._shared._cmd
+  fixos.diagnostics.checks.thumbnails.diagnose_thumbnails → fixos.diagnostics.checks._shared._cmd
+  fixos.agent.session_handlers.handle_execute_all → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_fix_by_number → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_direct_command → fixos.anonymizer.anonymize
+  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.search_all
+  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.elevate_cmd
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.is_dangerous
+  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.run_command
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_quit
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_describe_problem
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_skip_all
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_execute_all
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_fix_by_number
+  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_direct_command
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.anonymizer.anonymize
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.utils.anonymizer.display_anonymized_preview
+  fixos.agent.autonomous_session.AutonomousSession._get_remaining_time → fixos.agent.get_remaining_time
+  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.search_all
+  fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.autonomous_session.AutonomousSession._handle_search → fixos.utils.web_search.search_all
+  fixos.agent.autonomous_session.AutonomousSession._handle_search → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.autonomous_session.AutonomousSession._handle_exec → fixos.anonymizer.anonymize
+  fixos.agent.hitl_session.HITLSession.__init__ → fixos.platform_utils.get_os_info
+  fixos.agent.hitl_session.HITLSession.__init__ → fixos.platform_utils.get_package_manager
+  fixos.agent.hitl_session.HITLSession._setup_timeout → fixos.platform_utils.setup_signal_timeout
+  fixos.agent.hitl_session.HITLSession._clear_timeout → fixos.platform_utils.cancel_signal_timeout
+  fixos.agent.hitl_session.HITLSession.remaining → fixos.agent.get_remaining_time
+```
+
+## Test Contracts
+
+*Scenarios as contract signatures — what the system guarantees.*
+
+### Cli (1)
+
+**`CLI Command Tests`**
+
+### Integration (1)
+
+**`Auto-generated from Python Tests`**
+
+## Intent
+
+AI-powered Linux/Windows diagnostics and repair – audio, hardware, system issues

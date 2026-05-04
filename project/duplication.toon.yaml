@@ -1,21 +1,30 @@
-# redup/duplication | 3 groups | 90f 15843L | 2026-04-09
+# redup/duplication | 3 groups | 90f 15885L | 2026-05-04
 
 SUMMARY:
   files_scanned: 90
-  total_lines:   15843
+  total_lines:   15885
   dup_groups:    3
   dup_fragments: 13
   saved_lines:   38
-  scan_ms:       4198
+  scan_ms:       5342
+
+HOTSPOTS[7] (files with most duplication):
+  fixos/utils/terminal.py  dup=22L  groups=1  frags=2  (0.1%)
+  fixos/agent/session_io.py  dup=18L  groups=1  frags=6  (0.1%)
+  fixos/cli/config_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
+  fixos/cli/features_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
+  fixos/cli/profile_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
+  fixos/cli/rollback_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
+  fixos/cli/token_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
 
 DUPLICATES[3] (ranked by impact):
   [8967cd01b62426bf]   STRU  print_timeout  L=3 N=6 saved=15 sim=1.00
-      fixos/agent/session_io.py:156-158  (print_timeout)
-      fixos/agent/session_io.py:161-163  (print_session_ended)
-      fixos/agent/session_io.py:166-168  (print_session_interrupted)
-      fixos/agent/session_io.py:176-178  (print_no_commands)
-      fixos/agent/session_io.py:186-188  (print_no_results)
-      fixos/agent/session_io.py:191-193  (print_searching)
+      fixos/agent/session_io.py:191-193  (print_timeout)
+      fixos/agent/session_io.py:196-198  (print_session_ended)
+      fixos/agent/session_io.py:201-203  (print_session_interrupted)
+      fixos/agent/session_io.py:211-213  (print_no_commands)
+      fixos/agent/session_io.py:221-223  (print_no_results)
+      fixos/agent/session_io.py:226-228  (print_searching)
   [aaae754bdb04529d]   STRU  config  L=3 N=5 saved=12 sim=1.00
       fixos/cli/config_cmd.py:8-10  (config)
       fixos/cli/features_cmd.py:21-23  (features)
@@ -36,6 +45,19 @@ REFACTOR[3] (ranked by priority):
   [3] ○ extract_function   → fixos/utils/utils/print_stdout_box.py
       WHY: 2 occurrences of 11-line block across 1 files — saves 11 lines
       FILES: fixos/utils/terminal.py
+
+QUICK_WINS[3] (low risk, high savings — do first):
+  [1] extract_function   saved=15L  → fixos/agent/utils/print_timeout.py
+      FILES: session_io.py
+  [2] extract_function   saved=12L  → fixos/cli/utils/config.py
+      FILES: config_cmd.py, features_cmd.py, profile_cmd.py +2
+  [3] extract_function   saved=11L  → fixos/utils/utils/print_stdout_box.py
+      FILES: terminal.py
+
+EFFORT_ESTIMATE (total ≈ 1.3h):
+  medium print_timeout                       saved=15L  ~30min
+  easy   config                              saved=12L  ~24min
+  easy   print_stdout_box                    saved=11L  ~22min
 
 METRICS-TARGET:
   dup_groups:  3 → 0

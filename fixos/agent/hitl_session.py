@@ -47,8 +47,11 @@ class HITLSession:
 
     def _setup_timeout(self):
         """Setup session timeout handler."""
+        from . import session_io
         def _timeout(signum, frame):
             raise SessionTimeout()
+        # Store reference in session_io for reinstatement during user input
+        session_io._setup_timeout_ref(self, self.config.session_timeout, _timeout)
         setup_signal_timeout(self.config.session_timeout, _timeout)
 
     def _clear_timeout(self):

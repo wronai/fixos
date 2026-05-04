@@ -1,0 +1,663 @@
+flowchart TD
+    subgraph docker__test_multi_system
+        docker__test_multi_system__test_system["test_system"]
+    end
+    subgraph docs__examples
+        docs__examples__quickstart__run_autonomous_session["run_autonomous_session"]
+    end
+    subgraph fixos__agent
+        fixos__agent__hitl__run_hitl_session["run_hitl_session"]
+        fixos__agent__autonomous__run_autonomous_session["run_autonomous_session"]
+        fixos__agent__get_remaining_time["get_remaining_time"]
+        fixos__agent__session_handlers__handle_quit["handle_quit"]
+        fixos__agent__session_handlers__handle_skip_all["handle_skip_all"]
+        fixos__agent__session_handlers__handle_describe_problem["handle_describe_problem"]
+        fixos__agent__session_handlers__handle_execute_all["handle_execute_all"]
+        fixos__agent__session_handlers__handle_fix_by_number["handle_fix_by_number"]
+        fixos__agent__session_handlers__handle_direct_command["handle_direct_command"]
+        fixos__agent__session_handlers__handle_search["handle_search"]
+        fixos__agent__session_handlers__handle_free_text["handle_free_text"]
+        fixos__agent__session_handlers__run_single_command["run_single_command"]
+        fixos__agent__session_handlers__parse_user_input("parse_user_input CC=9")
+        fixos__agent__autonomous_session__AgentReport__summary["summary"]
+        fixos__agent__autonomous_session__AutonomousSession____init__["__init__"]
+        fixos__agent__autonomous_session__AutonomousSession___setup_timeout["_setup_timeout"]
+        fixos__agent__autonomous_session__AutonomousSession___clear_timeout["_clear_timeout"]
+        fixos__agent__autonomous_session__AutonomousSession___confirm_start["_confirm_start"]
+        fixos__agent__autonomous_session__AutonomousSession___initialize_messages["_initialize_messages"]
+        fixos__agent__autonomous_session__AutonomousSession___get_remaining_time["_get_remaining_time"]
+        fixos__agent__autonomous_session__AutonomousSession___check_timeout["_check_timeout"]
+        fixos__agent__autonomous_session__AutonomousSession___query_llm["_query_llm"]
+        fixos__agent__autonomous_session__AutonomousSession___handle_llm_error["_handle_llm_error"]
+        fixos__agent__autonomous_session__AutonomousSession___parse_action["_parse_action"]
+        fixos__agent__autonomous_session__AutonomousSession___is_forbidden["_is_forbidden"]
+        fixos__agent__autonomous_session__AutonomousSession___add_sudo["_add_sudo"]
+        fixos__agent__autonomous_session__AutonomousSession___execute_command["_execute_command"]
+        fixos__agent__autonomous_session__AutonomousSession___handle_search["_handle_search"]
+        fixos__agent__autonomous_session__AutonomousSession___handle_exec["_handle_exec"]
+        fixos__agent__autonomous_session__AutonomousSession___handle_skip["_handle_skip"]
+        fixos__agent__autonomous_session__AutonomousSession___handle_done["_handle_done"]
+        fixos__agent__autonomous_session__AutonomousSession___process_turn("_process_turn CC=8")
+        fixos__agent__autonomous_session__AutonomousSession__run["run"]
+        fixos__agent__autonomous_session__AutonomousSession___print_report["_print_report"]
+        fixos__agent__autonomous_session__run_autonomous_session["run_autonomous_session"]
+        fixos__agent__session_core__extract_fixes("extract_fixes CC=10")
+        fixos__agent__session_core__extract_search_topic["extract_search_topic"]
+        fixos__agent__hitl_session__HITLSession____init__["__init__"]
+        fixos__agent__hitl_session__HITLSession___setup_timeout["_setup_timeout"]
+        fixos__agent__hitl_session__HITLSession___clear_timeout["_clear_timeout"]
+        fixos__agent__hitl_session__HITLSession__remaining["remaining"]
+        fixos__agent__hitl_session__HITLSession___initialize_messages["_initialize_messages"]
+        fixos__agent__hitl_session__HITLSession___print_header["_print_header"]
+        fixos__agent__hitl_session__HITLSession___handle_llm_error["_handle_llm_error"]
+        fixos__agent__hitl_session__HITLSession___check_low_confidence["_check_low_confidence"]
+        fixos__agent__hitl_session__HITLSession___process_turn["_process_turn"]
+        fixos__agent__hitl_session__HITLSession__run["run"]
+        fixos__agent__hitl_session__HITLSession___print_summary["_print_summary"]
+        fixos__agent__hitl_session__run_hitl_session["run_hitl_session"]
+        fixos__agent__session_io___suspend_timeout["_suspend_timeout"]
+        fixos__agent__session_io___setup_timeout_ref["_setup_timeout_ref"]
+        fixos__agent__session_io__print_session_header["print_session_header"]
+        fixos__agent__session_io__fmt_time["fmt_time"]
+        fixos__agent__session_io__print_action_menu["print_action_menu"]
+        fixos__agent__session_io__ask_user_problem["ask_user_problem"]
+        fixos__agent__session_io__print_cmd_preview["print_cmd_preview"]
+        fixos__agent__session_io__print_cmd_result("print_cmd_result CC=8")
+        fixos__agent__session_io__print_session_summary["print_session_summary"]
+        fixos__agent__session_io__print_thinking["print_thinking"]
+        fixos__agent__session_io__clear_thinking["clear_thinking"]
+    end
+    subgraph fixos__anonymizer
+        fixos__anonymizer__get_sensitive_values["get_sensitive_values"]
+        fixos__anonymizer__anonymize["anonymize"]
+    end
+    subgraph fixos__cli
+        fixos__cli__profile_cmd__profile["profile"]
+        fixos__cli__profile_cmd__profile_list["profile_list"]
+        fixos__cli__profile_cmd__profile_show["profile_show"]
+        fixos__cli__scan_cmd__scan("scan CC=12")
+        fixos__cli__scan_cmd___run_disk_analysis{{_run_disk_analysis CC=18}}
+        fixos__cli__scan_cmd___print_quick_issues("_print_quick_issues CC=14")
+        fixos__cli__quickfix_cmd__quickfix("quickfix CC=12")
+        fixos__cli__orchestrate_cmd__orchestrate("orchestrate CC=13")
+        fixos__cli__report_cmd__report{{report CC=16}}
+        fixos__cli__provider_cmd__llm_providers["llm_providers"]
+        fixos__cli__provider_cmd__providers["providers"]
+        fixos__cli__provider_cmd__test_llm("test_llm CC=9")
+        fixos__cli__rollback_cmd__rollback["rollback"]
+        fixos__cli__rollback_cmd__rollback_list["rollback_list"]
+        fixos__cli__rollback_cmd__rollback_show["rollback_show"]
+        fixos__cli__rollback_cmd__rollback_undo["rollback_undo"]
+        fixos__cli__ask_cmd__ask["ask"]
+        fixos__cli__ask_cmd___match_heuristic_command{{_match_heuristic_command CC=18}}
+        fixos__cli__ask_cmd___format_command["_format_command"]
+        fixos__cli__ask_cmd___build_output_dict("_build_output_dict CC=8")
+        fixos__cli__ask_cmd___execute_heuristic_command("_execute_heuristic_command CC=9")
+        fixos__cli__ask_cmd___execute_with_llm("_execute_with_llm CC=8")
+        fixos__cli__ask_cmd___handle_natural_command["_handle_natural_command"]
+        fixos__cli__ask_cmd___validate_result_with_llm("_validate_result_with_llm CC=14")
+        fixos__cli__fix_cmd__fix{{fix CC=18}}
+        fixos__cli__fix_cmd__handle_disk_cleanup_mode("handle_disk_cleanup_mode CC=13")
+        fixos__cli__fix_cmd__execute_cleanup_actions["execute_cleanup_actions"]
+        fixos__cli__fix_cmd__try_llm_fallback_for_failures["try_llm_fallback_for_failures"]
+        fixos__cli__cleanup_cmd__cleanup_services{{cleanup_services CC=16}}
+        fixos__cli__cleanup_cmd___display_cleanup_summary["_display_cleanup_summary"]
+        fixos__cli__cleanup_cmd___display_service_item("_display_service_item CC=11")
+        fixos__cli__cleanup_cmd___execute_safe_cleanup["_execute_safe_cleanup"]
+        fixos__cli__cleanup_cmd___display_unsafe_services{{_display_unsafe_services CC=18}}
+        fixos__cli__cleanup_cmd___cleanup_single_service["_cleanup_single_service"]
+        fixos__cli__cleanup_cmd___cleanup_flatpak_detailed("_cleanup_flatpak_detailed CC=12")
+        fixos__cli__cleanup_cmd___display_flatpak_status("_display_flatpak_status CC=9")
+        fixos__cli__cleanup_cmd___display_detailed_recommendations["_display_detailed_recommendations"]
+        fixos__cli__cleanup_cmd___parse_selection("_parse_selection CC=9")
+        fixos__cli__cleanup_cmd___parse_size_to_bytes["_parse_size_to_bytes"]
+        fixos__cli__cleanup_cmd___format_bytes["_format_bytes"]
+        fixos__cli__cleanup_cmd___cleanup_full_system{{_cleanup_full_system CC=172}}
+        fixos__cli__cleanup_cmd___parse_size_to_gb["_parse_size_to_gb"]
+        fixos__cli__history_cmd__history["history"]
+        fixos__cli__shared__add_common_options["add_common_options"]
+        fixos__cli__shared__add_shared_options["add_shared_options"]
+        fixos__cli__shared__NaturalLanguageGroup__resolve_command["resolve_command"]
+        fixos__cli__watch_cmd__watch["watch"]
+        fixos__cli__main__cli["cli"]
+        fixos__cli__main___print_welcome["_print_welcome"]
+        fixos__cli__main__main["main"]
+        fixos__cli__token_cmd__token["token"]
+        fixos__cli__token_cmd__token_set["token_set"]
+        fixos__cli__token_cmd__token_show["token_show"]
+        fixos__cli__token_cmd__token_clear["token_clear"]
+        fixos__cli__features_cmd__features["features"]
+        fixos__cli__features_cmd__features_audit["features_audit"]
+        fixos__cli__features_cmd__features_install{{features_install CC=15}}
+        fixos__cli__features_cmd__features_profiles["features_profiles"]
+        fixos__cli__features_cmd__features_system["features_system"]
+        fixos__cli__features_cmd___interactive_profile_select("_interactive_profile_select CC=11")
+    end
+    subgraph fixos__config
+        fixos__config___load_env_files("_load_env_files CC=13")
+        fixos__config__FixOsConfig__load("load CC=14")
+        fixos__config__FixOsConfig__validate["validate"]
+        fixos__config__FixOsConfig__summary["summary"]
+        fixos__config__detect_provider_from_key["detect_provider_from_key"]
+        fixos__config__interactive_provider_setup["interactive_provider_setup"]
+        fixos__config__get_providers_list["get_providers_list"]
+    end
+    subgraph fixos__config_interactive
+        fixos__config_interactive___print_provider_menu("_print_provider_menu CC=9")
+        fixos__config_interactive___get_user_choice["_get_user_choice"]
+        fixos__config_interactive___get_api_key["_get_api_key"]
+        fixos__config_interactive___save_to_env("_save_to_env CC=8")
+        fixos__config_interactive__interactive_provider_setup["interactive_provider_setup"]
+    end
+    subgraph fixos__diagnostics
+        fixos__diagnostics__system_checks__get_full_diagnostics["get_full_diagnostics"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakItemInfo__to_dict["to_dict"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer____init__["__init__"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__analyze("analyze CC=10")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___run_flatpak_command["_run_flatpak_command"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___parse_size["_parse_size"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___format_size["_format_size"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___load_installed_refs["_load_installed_refs"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_unused_runtimes("_find_unused_runtimes CC=14")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_leftover_data{{_find_leftover_data CC=15}}
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_orphaned_apps["_find_orphaned_apps"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_duplicate_apps("_find_duplicate_apps CC=10")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___analyze_repo_size{{_analyze_repo_size CC=15}}
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___get_flatpak_size_note["_get_flatpak_size_note"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__get_largest_apps["get_largest_apps"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__get_cleanup_summary("get_cleanup_summary CC=8")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__get_cleanup_recommendations{{get_cleanup_recommendations CC=27}}
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__ask_user_and_cleanup("ask_user_and_cleanup CC=9")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_cleanup_action("_execute_cleanup_action CC=10")
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_flatpak_uninstall_unused["_execute_flatpak_uninstall_unused"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_flatpak_repair["_execute_flatpak_repair"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_flatpak_vacuum["_execute_flatpak_vacuum"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_flatpak_uninstall_all["_execute_flatpak_uninstall_all"]
+        fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_leftover_data_cleanup("_execute_leftover_data_cleanup CC=9")
+        fixos__diagnostics__flatpak_analyzer__analyze_flatpak_for_cleanup["analyze_flatpak_for_cleanup"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner____init__["__init__"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner__scan_all_services["scan_all_services"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner__scan_service["scan_service"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner___analyze_service_path["_analyze_service_path"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner___get_path_size_mb["_get_path_size_mb"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner__get_cleanup_plan["get_cleanup_plan"]
+        fixos__diagnostics__service_scanner__ServiceDataScanner__cleanup_service["cleanup_service"]
+        fixos__diagnostics__service_scanner__main["main"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer____init__["__init__"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__analyze_disk_usage["analyze_disk_usage"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___get_disk_status["_get_disk_status"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_large_files["get_large_files"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_cache_dirs("get_cache_dirs CC=10")
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_log_dirs("get_log_dirs CC=9")
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_temp_dirs("get_temp_dirs CC=9")
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer__suggest_cleanup_actions("suggest_cleanup_actions CC=13")
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___get_dir_size_mb["_get_dir_size_mb"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___categorize_file("_categorize_file CC=9")
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___identify_cache_type{{_identify_cache_type CC=17}}
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___identify_temp_type["_identify_temp_type"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___get_oldest_file_date["_get_oldest_file_date"]
+        fixos__diagnostics__disk_analyzer__DiskAnalyzer___get_newest_file_date["_get_newest_file_date"]
+        fixos__diagnostics__disk_analyzer__main["main"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner____init__["__init__"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__get_cleanup_plan("get_cleanup_plan CC=14")
+        fixos__diagnostics__service_cleanup__ServiceCleaner__cleanup_service["cleanup_service"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner___service_to_dict["_service_to_dict"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__is_safe_cleanup["is_safe_cleanup"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__get_cleanup_hints["get_cleanup_hints"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__get_service_description["get_service_description"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__get_cleanup_command["get_cleanup_command"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner___chrome_cleanup_command["_chrome_cleanup_command"]
+        fixos__diagnostics__service_cleanup__ServiceCleaner__get_preview_command["get_preview_command"]
+        fixos__diagnostics__dev_project_analyzer__ProjectDependency__to_dict["to_dict"]
+        fixos__diagnostics__dev_project_analyzer__ProjectDependency___format_size["_format_size"]
+    end
+    subgraph fixos__features
+        fixos__features__catalog__PackageInfo__get_distro_name["get_distro_name"]
+        fixos__features__catalog__PackageInfo__is_available_on["is_available_on"]
+        fixos__features__catalog__PackageCatalog____init__["__init__"]
+        fixos__features__catalog__PackageCatalog__load["load"]
+        fixos__features__catalog__PackageCatalog__get_package["get_package"]
+        fixos__features__catalog__PackageCatalog__get_packages_by_category["get_packages_by_category"]
+        fixos__features__catalog__PackageCatalog__list_categories["list_categories"]
+        fixos__features__SystemDetector__detect["detect"]
+        fixos__features__SystemDetector___detect_os_family["_detect_os_family"]
+        fixos__features__SystemDetector___detect_distro["_detect_distro"]
+        fixos__features__SystemDetector___detect_distro_version["_detect_distro_version"]
+        fixos__features__SystemDetector___detect_id_like["_detect_id_like"]
+        fixos__features__SystemDetector___detect_de{{_detect_de CC=15}}
+        fixos__features__SystemDetector___detect_display_server["_detect_display_server"]
+        fixos__features__SystemDetector___detect_gpu_vendor("_detect_gpu_vendor CC=13")
+        fixos__features__SystemDetector___detect_gpu_model["_detect_gpu_model"]
+        fixos__features__SystemDetector___detect_pkg_manager["_detect_pkg_manager"]
+        fixos__features__SystemDetector___get_installed_packages["_get_installed_packages"]
+        fixos__features__SystemDetector___get_installed_flatpaks["_get_installed_flatpaks"]
+        fixos__features__renderer__FeatureRenderer__render_audit("render_audit CC=8")
+        fixos__features__renderer__FeatureRenderer___get_source_info["_get_source_info"]
+        fixos__features__renderer__FeatureRenderer__render_package_list["render_package_list"]
+        fixos__features__renderer__FeatureRenderer__render_system_info["render_system_info"]
+        fixos__features__profiles__UserProfile__load["load"]
+        fixos__features__profiles__UserProfile__list_available["list_available"]
+        fixos__features__profiles__UserProfile__resolve_packages("resolve_packages CC=8")
+        fixos__features__profiles__UserProfile__to_dict["to_dict"]
+        fixos__features__auditor__AuditResult__to_dict["to_dict"]
+        fixos__features__auditor__FeatureAuditor____init__["__init__"]
+        fixos__features__auditor__FeatureAuditor__audit["audit"]
+        fixos__features__auditor__FeatureAuditor___check_conditions["_check_conditions"]
+        fixos__features__auditor__FeatureAuditor___is_installed("_is_installed CC=10")
+        fixos__features__installer__FeatureInstaller____init__["__init__"]
+        fixos__features__installer__FeatureInstaller__install["install"]
+        fixos__features__installer__FeatureInstaller___install_package{{_install_package CC=27}}
+        fixos__features__installer__FeatureInstaller___install_repo["_install_repo"]
+        fixos__features__installer__FeatureInstaller___install_native["_install_native"]
+        fixos__features__installer__FeatureInstaller___install_flatpak["_install_flatpak"]
+        fixos__features__installer__FeatureInstaller___install_pip["_install_pip"]
+        fixos__features__installer__FeatureInstaller___install_cargo["_install_cargo"]
+        fixos__features__installer__FeatureInstaller___install_npm["_install_npm"]
+        fixos__features__installer__FeatureInstaller___run_script["_run_script"]
+        fixos__features__installer__FeatureInstaller__get_rollback_commands["get_rollback_commands"]
+    end
+    subgraph fixos__interactive
+        fixos__interactive__cleanup_planner__CleanupAction____post_init__["__post_init__"]
+        fixos__interactive__cleanup_planner__CleanupPlanner____init__["__init__"]
+        fixos__interactive__cleanup_planner__CleanupPlanner__group_by_category["group_by_category"]
+        fixos__interactive__cleanup_planner__CleanupPlanner__prioritize_actions("prioritize_actions CC=11")
+        fixos__interactive__cleanup_planner__CleanupPlanner__create_cleanup_plan("create_cleanup_plan CC=12")
+        fixos__interactive__cleanup_planner__CleanupPlanner__interactive_selection["interactive_selection"]
+        fixos__interactive__cleanup_planner__CleanupPlanner___dict_to_action["_dict_to_action"]
+        fixos__interactive__cleanup_planner__CleanupPlanner___action_to_dict["_action_to_dict"]
+        fixos__interactive__cleanup_planner__CleanupPlanner___get_category_for_action("_get_category_for_action CC=11")
+        fixos__interactive__cleanup_planner__CleanupPlanner___priority_score["_priority_score"]
+        fixos__interactive__cleanup_planner__CleanupPlanner___generate_recommendations{{_generate_recommendations CC=18}}
+        fixos__interactive__cleanup_planner__main["main"]
+    end
+    subgraph fixos__llm_shell
+        fixos__llm_shell___timeout_handler["_timeout_handler"]
+        fixos__llm_shell__format_time["format_time"]
+        fixos__llm_shell__execute_command("execute_command CC=10")
+        fixos__llm_shell__run_llm_shell{{run_llm_shell CC=15}}
+    end
+    subgraph fixos__orchestrator
+        fixos__orchestrator__graph__Problem__is_actionable["is_actionable"]
+        fixos__orchestrator__graph__Problem__to_summary["to_summary"]
+        fixos__orchestrator__graph__ProblemGraph____init__["__init__"]
+        fixos__orchestrator__graph__ProblemGraph__add["add"]
+        fixos__orchestrator__graph__ProblemGraph__get["get"]
+        fixos__orchestrator__graph__ProblemGraph__next_actionable["next_actionable"]
+        fixos__orchestrator__graph__ProblemGraph__all_done["all_done"]
+        fixos__orchestrator__graph__ProblemGraph__pending_count["pending_count"]
+        fixos__orchestrator__graph__ProblemGraph__summary["summary"]
+        fixos__orchestrator__graph__ProblemGraph__render_tree["render_tree"]
+        fixos__orchestrator__graph__ProblemGraph___recalculate_order("_recalculate_order CC=13")
+        fixos__orchestrator__executor__DangerousCommandError____init__["__init__"]
+        fixos__orchestrator__executor__CommandTimeoutError____init__["__init__"]
+        fixos__orchestrator__executor__ExecutionResult__to_context["to_context"]
+        fixos__orchestrator__executor__CommandExecutor____init__["__init__"]
+        fixos__orchestrator__executor__CommandExecutor__is_dangerous["is_dangerous"]
+        fixos__orchestrator__executor__CommandExecutor__needs_sudo["needs_sudo"]
+        fixos__orchestrator__executor__CommandExecutor__add_sudo["add_sudo"]
+        fixos__orchestrator__executor__CommandExecutor___make_noninteractive["_make_noninteractive"]
+        fixos__orchestrator__executor__CommandExecutor__check_idempotent["check_idempotent"]
+        fixos__orchestrator__executor__CommandExecutor__execute_sync("execute_sync CC=11")
+        fixos__orchestrator__executor__CommandExecutor__execute("execute CC=9")
+        fixos__orchestrator__orchestrator__FixOrchestrator____init__["__init__"]
+        fixos__orchestrator__orchestrator__FixOrchestrator__load_from_diagnostics["load_from_diagnostics"]
+        fixos__orchestrator__orchestrator__FixOrchestrator__load_from_dict["load_from_dict"]
+        fixos__orchestrator__orchestrator__FixOrchestrator__run_sync{{run_sync CC=17}}
+        fixos__orchestrator__orchestrator__FixOrchestrator__run_async["run_async"]
+        fixos__orchestrator__orchestrator__FixOrchestrator___evaluate_and_rediagnose("_evaluate_and_rediagnose CC=10")
+        fixos__orchestrator__orchestrator__FixOrchestrator___parse_json["_parse_json"]
+        fixos__orchestrator__orchestrator__FixOrchestrator___log["_log"]
+        fixos__orchestrator__orchestrator__FixOrchestrator___session_summary["_session_summary"]
+        fixos__orchestrator__orchestrator__FixOrchestrator___default_confirm["_default_confirm"]
+        fixos__orchestrator__orchestrator__FixOrchestrator___default_progress("_default_progress CC=8")
+        fixos__orchestrator__rollback__RollbackSession__record["record"]
+        fixos__orchestrator__rollback__RollbackSession__get_rollback_commands["get_rollback_commands"]
+        fixos__orchestrator__rollback__RollbackSession__rollback_last["rollback_last"]
+        fixos__orchestrator__rollback__RollbackSession___save["_save"]
+        fixos__orchestrator__rollback__RollbackSession__load["load"]
+        fixos__orchestrator__rollback__RollbackSession__list_sessions["list_sessions"]
+    end
+    subgraph fixos__platform_utils
+        fixos__platform_utils__get_os_info["get_os_info"]
+        fixos__platform_utils__needs_elevation["needs_elevation"]
+        fixos__platform_utils__elevate_cmd["elevate_cmd"]
+        fixos__platform_utils__is_dangerous["is_dangerous"]
+        fixos__platform_utils__run_command["run_command"]
+        fixos__platform_utils__get_package_manager("get_package_manager CC=8")
+        fixos__platform_utils__install_package_cmd["install_package_cmd"]
+        fixos__platform_utils___cmd_exists["_cmd_exists"]
+        fixos__platform_utils__setup_signal_timeout["setup_signal_timeout"]
+        fixos__platform_utils__cancel_signal_timeout["cancel_signal_timeout"]
+    end
+    subgraph fixos__plugins
+        fixos__plugins__base__DiagnosticResult__to_dict["to_dict"]
+        fixos__plugins__base__DiagnosticPlugin__diagnose["diagnose"]
+        fixos__plugins__base__DiagnosticPlugin__can_run["can_run"]
+        fixos__plugins__base__DiagnosticPlugin__get_metadata["get_metadata"]
+        fixos__plugins__registry__PluginRegistry____init__["__init__"]
+        fixos__plugins__registry__PluginRegistry__discover["discover"]
+        fixos__plugins__registry__PluginRegistry___register_builtins["_register_builtins"]
+        fixos__plugins__registry__PluginRegistry___register_external["_register_external"]
+        fixos__plugins__registry__PluginRegistry__register["register"]
+        fixos__plugins__registry__PluginRegistry__list_plugins["list_plugins"]
+        fixos__plugins__registry__PluginRegistry__get_plugin["get_plugin"]
+        fixos__plugins__registry__PluginRegistry__run["run"]
+        fixos__plugins__builtin__resources__Plugin__diagnose("diagnose CC=14")
+        fixos__plugins__builtin__resources__Plugin___check_cpu["_check_cpu"]
+        fixos__plugins__builtin__resources__Plugin___check_ram["_check_ram"]
+        fixos__plugins__builtin__resources__Plugin___check_top_processes["_check_top_processes"]
+        fixos__plugins__builtin__resources__Plugin___check_zombies["_check_zombies"]
+        fixos__plugins__builtin__resources__Plugin___check_swap["_check_swap"]
+        fixos__plugins__builtin__audio__Plugin__diagnose("diagnose CC=10")
+        fixos__plugins__builtin__audio__Plugin___check_alsa["_check_alsa"]
+        fixos__plugins__builtin__audio__Plugin___check_pipewire["_check_pipewire"]
+        fixos__plugins__builtin__audio__Plugin___check_wireplumber["_check_wireplumber"]
+        fixos__plugins__builtin__audio__Plugin___check_sof["_check_sof"]
+        fixos__plugins__builtin__security__Plugin__diagnose{{diagnose CC=16}}
+        fixos__plugins__builtin__security__Plugin___check_firewall("_check_firewall CC=8")
+        fixos__plugins__builtin__security__Plugin___check_selinux["_check_selinux"]
+        fixos__plugins__builtin__security__Plugin___check_open_ports["_check_open_ports"]
+        fixos__plugins__builtin__security__Plugin___check_ssh("_check_ssh CC=8")
+        fixos__plugins__builtin__security__Plugin___check_fail2ban["_check_fail2ban"]
+        fixos__plugins__builtin__hardware__Plugin__diagnose("diagnose CC=12")
+        fixos__plugins__builtin__hardware__Plugin___check_gpu["_check_gpu"]
+        fixos__plugins__builtin__hardware__Plugin___check_battery("_check_battery CC=8")
+        fixos__plugins__builtin__hardware__Plugin___check_touchpad["_check_touchpad"]
+        fixos__plugins__builtin__hardware__Plugin___check_camera["_check_camera"]
+        fixos__plugins__builtin__hardware__Plugin___check_dmi["_check_dmi"]
+        fixos__plugins__builtin__disk__Plugin__diagnose("diagnose CC=12")
+        fixos__plugins__builtin__disk__Plugin___check_usage["_check_usage"]
+        fixos__plugins__builtin__disk__Plugin___check_inodes["_check_inodes"]
+        fixos__plugins__builtin__disk__Plugin___check_readonly["_check_readonly"]
+        fixos__plugins__builtin__thumbnails__Plugin__diagnose("diagnose CC=10")
+        fixos__plugins__builtin__thumbnails__Plugin___check_cache["_check_cache"]
+        fixos__plugins__builtin__thumbnails__Plugin___check_ffmpegthumbnailer["_check_ffmpegthumbnailer"]
+        fixos__plugins__builtin__thumbnails__Plugin___check_totem["_check_totem"]
+        fixos__plugins__builtin__thumbnails__Plugin___check_gstreamer["_check_gstreamer"]
+    end
+    subgraph fixos__profiles
+        fixos__profiles__Profile__load["load"]
+        fixos__profiles__Profile__list_available["list_available"]
+        fixos__profiles__Profile__to_dict["to_dict"]
+    end
+    subgraph fixos__providers
+        fixos__providers__llm__LLMClient____init__["__init__"]
+        fixos__providers__llm__LLMClient__chat{{chat CC=15}}
+        fixos__providers__llm__LLMClient__chat_stream["chat_stream"]
+        fixos__providers__llm__LLMClient__chat_structured["chat_structured"]
+        fixos__providers__llm__LLMClient___extract_json["_extract_json"]
+        fixos__providers__llm__LLMClient__ping["ping"]
+        fixos__providers__llm_analyzer__LLMAnalyzer____init__["__init__"]
+        fixos__providers__llm_analyzer__LLMAnalyzer__analyze_disk_issues["analyze_disk_issues"]
+        fixos__providers__llm_analyzer__LLMAnalyzer__analyze_failed_action["analyze_failed_action"]
+        fixos__providers__llm_analyzer__LLMAnalyzer__analyze_complex_pattern["analyze_complex_pattern"]
+        fixos__providers__llm_analyzer__LLMAnalyzer___sanitize_suggestion("_sanitize_suggestion CC=12")
+        fixos__providers__llm_analyzer__LLMAnalyzer___create_fallback_analysis["_create_fallback_analysis"]
+        fixos__providers__llm_analyzer__LLMAnalyzer__enhance_heuristics_with_llm("enhance_heuristics_with_llm CC=13")
+        fixos__providers__llm_analyzer__main["main"]
+    end
+    subgraph fixos__system_checks
+        fixos__system_checks__run_cmd["run_cmd"]
+        fixos__system_checks__get_cpu_info["get_cpu_info"]
+        fixos__system_checks__get_memory_info["get_memory_info"]
+        fixos__system_checks__get_disk_info["get_disk_info"]
+        fixos__system_checks__get_network_info["get_network_info"]
+        fixos__system_checks__get_top_processes["get_top_processes"]
+        fixos__system_checks__get_fedora_specific["get_fedora_specific"]
+        fixos__system_checks__get_full_diagnostics["get_full_diagnostics"]
+    end
+    subgraph fixos__utils
+        fixos__utils__anonymizer__AnonymizationReport__add["add"]
+        fixos__utils__anonymizer__AnonymizationReport__summary["summary"]
+        fixos__utils__anonymizer___get_sensitive["_get_sensitive"]
+        fixos__utils__anonymizer__anonymize{{anonymize CC=15}}
+        fixos__utils__anonymizer__display_anonymized_preview["display_anonymized_preview"]
+        fixos__utils__anonymizer___colorize_md_line("_colorize_md_line CC=9")
+        fixos__utils__anonymizer___format_diagnostics_markdown["_format_diagnostics_markdown"]
+        fixos__utils__anonymizer___dict_to_markdown{{_dict_to_markdown CC=18}}
+        fixos__utils__anonymizer___format_key_title["_format_key_title"]
+        fixos__utils__timeout__timeout_handler["timeout_handler"]
+        fixos__utils__web_search___http_get["_http_get"]
+        fixos__utils__web_search__search_fedora_bugzilla["search_fedora_bugzilla"]
+        fixos__utils__web_search__search_ask_fedora["search_ask_fedora"]
+        fixos__utils__web_search__search_arch_wiki("search_arch_wiki CC=9")
+        fixos__utils__web_search__search_github_issues["search_github_issues"]
+        fixos__utils__web_search__search_serpapi["search_serpapi"]
+        fixos__utils__web_search__search_ddg("search_ddg CC=8")
+        fixos__utils__web_search__search_all["search_all"]
+        fixos__utils__web_search__format_results_for_llm["format_results_for_llm"]
+        fixos__utils__terminal__colorize["colorize"]
+        fixos__utils__terminal__render_md{{render_md CC=16}}
+        fixos__utils__terminal__print_cmd_block["print_cmd_block"]
+        fixos__utils__terminal__print_stdout_box["print_stdout_box"]
+        fixos__utils__terminal__print_stderr_box["print_stderr_box"]
+        fixos__utils__terminal__print_problem_header["print_problem_header"]
+        fixos__utils__terminal__render_tree_colored("render_tree_colored CC=8")
+        fixos__utils__terminal___wrap["_wrap"]
+    end
+    subgraph fixos__watch
+        fixos__watch__WatchDaemon____init__["__init__"]
+        fixos__watch__WatchDaemon__run("run CC=12")
+        fixos__watch__WatchDaemon__stop["stop"]
+        fixos__watch__WatchDaemon___check_for_new_issues["_check_for_new_issues"]
+        fixos__watch__WatchDaemon___notify["_notify"]
+    end
+    subgraph project__map
+        project__map__toon__run_autonomous_session["run_autonomous_session"]
+        project__map__toon__get_remaining_time["get_remaining_time"]
+        project__map__toon__run_hitl_session["run_hitl_session"]
+        project__map__toon__extract_fixes["extract_fixes"]
+        project__map__toon__extract_search_topic["extract_search_topic"]
+        project__map__toon__handle_quit["handle_quit"]
+        project__map__toon__handle_skip_all["handle_skip_all"]
+        project__map__toon__handle_describe_problem["handle_describe_problem"]
+        project__map__toon__handle_execute_all["handle_execute_all"]
+        project__map__toon__handle_fix_by_number["handle_fix_by_number"]
+        project__map__toon__handle_direct_command["handle_direct_command"]
+        project__map__toon__handle_search["handle_search"]
+        project__map__toon__handle_free_text["handle_free_text"]
+        project__map__toon__run_single_command["run_single_command"]
+        project__map__toon__parse_user_input["parse_user_input"]
+        project__map__toon___suspend_timeout["_suspend_timeout"]
+        project__map__toon___setup_timeout_ref["_setup_timeout_ref"]
+        project__map__toon__print_session_header["print_session_header"]
+        project__map__toon__fmt_time["fmt_time"]
+        project__map__toon__print_action_menu["print_action_menu"]
+        project__map__toon__ask_user_problem["ask_user_problem"]
+        project__map__toon__print_cmd_preview["print_cmd_preview"]
+        project__map__toon__print_cmd_result["print_cmd_result"]
+        project__map__toon__print_session_summary["print_session_summary"]
+        project__map__toon__print_thinking["print_thinking"]
+        project__map__toon__clear_thinking["clear_thinking"]
+        project__map__toon__print_llm_reply["print_llm_reply"]
+        project__map__toon__print_llm_error["print_llm_error"]
+        project__map__toon__print_blocked_command["print_blocked_command"]
+        project__map__toon__print_timeout["print_timeout"]
+        project__map__toon__print_session_ended["print_session_ended"]
+        project__map__toon__print_session_interrupted["print_session_interrupted"]
+        project__map__toon__print_executing_all["print_executing_all"]
+        project__map__toon__print_no_commands["print_no_commands"]
+        project__map__toon__print_invalid_option["print_invalid_option"]
+        project__map__toon__print_no_results["print_no_results"]
+        project__map__toon__print_searching["print_searching"]
+        project__map__toon__ask_execute_prompt["ask_execute_prompt"]
+        project__map__toon__ask_low_confidence_search["ask_low_confidence_search"]
+        project__map__toon__ask_send_data["ask_send_data"]
+        project__map__toon__get_user_input["get_user_input"]
+        project__map__toon__get_sensitive_values["get_sensitive_values"]
+        project__map__toon__anonymize["anonymize"]
+        project__map__toon__ask["ask"]
+        project__map__toon___match_heuristic_command["_match_heuristic_command"]
+        project__map__toon___format_command["_format_command"]
+        project__map__toon___build_output_dict["_build_output_dict"]
+        project__map__toon___execute_heuristic_command["_execute_heuristic_command"]
+        project__map__toon___execute_with_llm["_execute_with_llm"]
+        project__map__toon___handle_natural_command["_handle_natural_command"]
+        project__map__toon___validate_result_with_llm["_validate_result_with_llm"]
+        project__map__toon__cleanup_services["cleanup_services"]
+        project__map__toon___display_cleanup_summary["_display_cleanup_summary"]
+        project__map__toon___display_service_item["_display_service_item"]
+        project__map__toon___execute_safe_cleanup["_execute_safe_cleanup"]
+        project__map__toon___display_unsafe_services["_display_unsafe_services"]
+        project__map__toon___cleanup_single_service["_cleanup_single_service"]
+        project__map__toon___cleanup_flatpak_detailed["_cleanup_flatpak_detailed"]
+        project__map__toon___display_flatpak_status["_display_flatpak_status"]
+        project__map__toon___display_detailed_recommendations["_display_detailed_recommendations"]
+    end
+    subgraph scripts__pyqual_calibrate
+        scripts__pyqual_calibrate__read_last_metrics_from_db["read_last_metrics_from_db"]
+        scripts__pyqual_calibrate__parse_pyqual_yaml["parse_pyqual_yaml"]
+        scripts__pyqual_calibrate__update_metric["update_metric"]
+        scripts__pyqual_calibrate__calculate_new_threshold["calculate_new_threshold"]
+        scripts__pyqual_calibrate__extract_current_metrics["extract_current_metrics"]
+        scripts__pyqual_calibrate__calibrate("calibrate CC=14")
+        scripts__pyqual_calibrate__main["main"]
+    end
+    fixos__config__FixOsConfig__load --> fixos__config___load_env_files
+    fixos__platform_utils__elevate_cmd --> fixos__platform_utils__needs_elevation
+    fixos__platform_utils__get_package_manager --> fixos__platform_utils___cmd_exists
+    fixos__platform_utils__install_package_cmd --> fixos__platform_utils__get_package_manager
+    fixos__system_checks__get_fedora_specific --> fixos__system_checks__run_cmd
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_cpu_info
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_memory_info
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_disk_info
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_network_info
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_top_processes
+    fixos__system_checks__get_full_diagnostics --> fixos__system_checks__get_fedora_specific
+    fixos__anonymizer__anonymize --> fixos__anonymizer__get_sensitive_values
+    fixos__llm_shell__run_llm_shell --> fixos__anonymizer__anonymize
+    fixos__config_interactive__interactive_provider_setup --> fixos__config_interactive___print_provider_menu
+    fixos__config_interactive__interactive_provider_setup --> fixos__config_interactive___get_user_choice
+    fixos__config_interactive__interactive_provider_setup --> fixos__config_interactive___get_api_key
+    fixos__config_interactive__interactive_provider_setup --> fixos__config_interactive___save_to_env
+    fixos__diagnostics__checks__resources__diagnose_resources --> fixos__diagnostics__checks___shared___psutil_required
+    fixos__diagnostics__checks__system_core__diagnose_system --> fixos__diagnostics__checks___shared___psutil_required
+    fixos__diagnostics__checks__system_core__diagnose_system --> fixos__diagnostics__checks___shared___cmd
+    fixos__diagnostics__checks__audio__diagnose_audio --> fixos__diagnostics__checks___shared___cmd
+    fixos__diagnostics__checks__security__diagnose_security --> fixos__diagnostics__checks___shared___cmd
+    fixos__diagnostics__checks__hardware__diagnose_hardware --> fixos__diagnostics__checks___shared___cmd
+    fixos__diagnostics__checks__thumbnails__diagnose_thumbnails --> fixos__diagnostics__checks___shared___cmd
+    fixos__agent__session_handlers__handle_execute_all --> fixos__anonymizer__anonymize
+    fixos__agent__session_handlers__handle_fix_by_number --> fixos__anonymizer__anonymize
+    fixos__agent__session_handlers__handle_direct_command --> fixos__anonymizer__anonymize
+    fixos__agent__session_handlers__handle_search --> fixos__utils__web_search__search_all
+    fixos__agent__session_handlers__handle_search --> fixos__utils__web_search__format_results_for_llm
+    fixos__agent__session_handlers__run_single_command --> fixos__platform_utils__elevate_cmd
+    fixos__agent__session_handlers__run_single_command --> fixos__platform_utils__is_dangerous
+    fixos__agent__session_handlers__run_single_command --> fixos__platform_utils__run_command
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_quit
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_describe_problem
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_skip_all
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_execute_all
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_fix_by_number
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_direct_command
+    fixos__agent__session_handlers__parse_user_input --> fixos__agent__session_handlers__handle_search
+    fixos__agent__autonomous_session__AutonomousSession___initialize_messages --> fixos__anonymizer__anonymize
+    fixos__agent__autonomous_session__AutonomousSession___initialize_messages --> fixos__utils__anonymizer__display_anonymized_preview
+    fixos__agent__autonomous_session__AutonomousSession___get_remaining_time --> fixos__agent__get_remaining_time
+    fixos__agent__autonomous_session__AutonomousSession___handle_llm_error --> fixos__utils__web_search__search_all
+    fixos__agent__autonomous_session__AutonomousSession___handle_llm_error --> fixos__utils__web_search__format_results_for_llm
+    fixos__agent__autonomous_session__AutonomousSession___handle_search --> fixos__utils__web_search__search_all
+    fixos__agent__autonomous_session__AutonomousSession___handle_search --> fixos__utils__web_search__format_results_for_llm
+    fixos__agent__autonomous_session__AutonomousSession___handle_exec --> fixos__anonymizer__anonymize
+    fixos__agent__hitl_session__HITLSession____init__ --> fixos__platform_utils__get_os_info
+    fixos__agent__hitl_session__HITLSession____init__ --> fixos__platform_utils__get_package_manager
+    fixos__agent__hitl_session__HITLSession___setup_timeout --> fixos__platform_utils__setup_signal_timeout
+    fixos__agent__hitl_session__HITLSession___clear_timeout --> fixos__platform_utils__cancel_signal_timeout
+    fixos__agent__hitl_session__HITLSession__remaining --> fixos__agent__get_remaining_time
+    fixos__agent__hitl_session__HITLSession___initialize_messages --> fixos__anonymizer__anonymize
+    fixos__agent__hitl_session__HITLSession___initialize_messages --> fixos__utils__anonymizer__display_anonymized_preview
+    fixos__agent__hitl_session__HITLSession___handle_llm_error --> fixos__utils__web_search__search_all
+    fixos__agent__hitl_session__HITLSession___handle_llm_error --> fixos__utils__web_search__format_results_for_llm
+    fixos__agent__hitl_session__HITLSession___check_low_confidence --> fixos__agent__session_core__extract_search_topic
+    fixos__agent__hitl_session__HITLSession___check_low_confidence --> fixos__utils__web_search__search_all
+    fixos__agent__hitl_session__HITLSession___check_low_confidence --> fixos__utils__web_search__format_results_for_llm
+    fixos__agent__hitl_session__HITLSession___process_turn --> fixos__agent__session_core__extract_fixes
+    fixos__agent__session_io___suspend_timeout --> fixos__platform_utils__cancel_signal_timeout
+    fixos__agent__session_io___suspend_timeout --> fixos__agent__get_remaining_time
+    fixos__agent__session_io___suspend_timeout --> fixos__platform_utils__setup_signal_timeout
+    fixos__agent__session_io__print_session_header --> fixos__agent__session_io__fmt_time
+    fixos__agent__session_io__ask_user_problem --> fixos__agent__session_io___suspend_timeout
+    fixos__agent__session_io__print_cmd_result --> fixos__utils__terminal__print_stdout_box
+    fixos__agent__session_io__print_cmd_result --> fixos__utils__terminal__print_stderr_box
+    fixos__agent__session_io__print_session_summary --> fixos__agent__session_io__fmt_time
+    fixos__agent__session_io__ask_execute_prompt --> fixos__agent__session_io___suspend_timeout
+    fixos__agent__session_io__ask_low_confidence_search --> fixos__agent__session_io___suspend_timeout
+    fixos__agent__session_io__ask_send_data --> fixos__agent__session_io___suspend_timeout
+    fixos__agent__session_io__get_user_input --> fixos__agent__session_io___suspend_timeout
+    fixos__agent__session_io__get_user_input --> fixos__agent__session_io__fmt_time
+    fixos__cli__scan_cmd__scan --> fixos__system_checks__get_full_diagnostics
+    fixos__cli__scan_cmd__scan --> fixos__cli__scan_cmd___run_disk_analysis
+    fixos__cli__ask_cmd__ask --> fixos__cli__ask_cmd___handle_natural_command
+    fixos__cli__ask_cmd___execute_heuristic_command --> fixos__cli__ask_cmd___build_output_dict
+    fixos__cli__ask_cmd___execute_heuristic_command --> fixos__cli__ask_cmd___validate_result_with_llm
+    fixos__cli__ask_cmd___execute_with_llm --> fixos__cli__ask_cmd___build_output_dict
+    fixos__cli__ask_cmd___execute_with_llm --> fixos__cli__ask_cmd___validate_result_with_llm
+    fixos__cli__ask_cmd___handle_natural_command --> fixos__cli__ask_cmd___match_heuristic_command
+    fixos__cli__ask_cmd___handle_natural_command --> fixos__cli__ask_cmd___execute_with_llm
+    fixos__cli__ask_cmd___handle_natural_command --> fixos__cli__ask_cmd___format_command
+    fixos__cli__ask_cmd___handle_natural_command --> fixos__cli__ask_cmd___execute_heuristic_command
+    fixos__cli__fix_cmd__fix --> fixos__config__interactive_provider_setup
+    fixos__cli__fix_cmd__execute_cleanup_actions --> fixos__cli__fix_cmd__try_llm_fallback_for_failures
+    fixos__cli__cleanup_cmd__cleanup_services --> fixos__cli__cleanup_cmd___display_cleanup_summary
+    fixos__cli__cleanup_cmd__cleanup_services --> fixos__cli__cleanup_cmd___cleanup_full_system
+    fixos__cli__cleanup_cmd__cleanup_services --> fixos__cli__cleanup_cmd___cleanup_single_service
+    fixos__cli__cleanup_cmd___cleanup_flatpak_detailed --> fixos__cli__cleanup_cmd___display_flatpak_status
+    fixos__cli__main__cli --> fixos__cli__main___print_welcome
+    fixos__cli__main__main --> fixos__cli__main__cli
+    fixos__cli__token_cmd__token_set --> fixos__config__detect_provider_from_key
+    fixos__cli__features_cmd__features_audit --> fixos__cli__features_cmd___interactive_profile_select
+    fixos__plugins__builtin__resources__Plugin___check_cpu --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__resources__Plugin___check_top_processes --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__resources__Plugin___check_zombies --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__audio__Plugin___check_alsa --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__audio__Plugin___check_pipewire --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__audio__Plugin___check_wireplumber --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__audio__Plugin___check_sof --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__security__Plugin___check_firewall --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__security__Plugin___check_selinux --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__security__Plugin___check_open_ports --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__security__Plugin___check_ssh --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__security__Plugin___check_fail2ban --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__hardware__Plugin___check_gpu --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__hardware__Plugin___check_battery --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__hardware__Plugin___check_touchpad --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__hardware__Plugin___check_camera --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__hardware__Plugin___check_dmi --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__disk__Plugin___check_usage --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__disk__Plugin___check_inodes --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__disk__Plugin___check_readonly --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__thumbnails__Plugin___check_cache --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__thumbnails__Plugin___check_ffmpegthumbnailer --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__thumbnails__Plugin___check_totem --> fixos__platform_utils__run_command
+    fixos__plugins__builtin__thumbnails__Plugin___check_gstreamer --> fixos__platform_utils__run_command
+    fixos__utils__anonymizer__anonymize --> fixos__utils__anonymizer___get_sensitive
+    fixos__utils__anonymizer__display_anonymized_preview --> fixos__utils__anonymizer___format_diagnostics_markdown
+    fixos__utils__anonymizer__display_anonymized_preview --> fixos__utils__anonymizer___colorize_md_line
+    fixos__utils__anonymizer___format_diagnostics_markdown --> fixos__utils__anonymizer___dict_to_markdown
+    fixos__utils__anonymizer___dict_to_markdown --> fixos__utils__anonymizer___format_key_title
+    fixos__utils__web_search__search_fedora_bugzilla --> fixos__utils__web_search___http_get
+    fixos__utils__web_search__search_ask_fedora --> fixos__utils__web_search___http_get
+    fixos__utils__web_search__search_arch_wiki --> fixos__utils__web_search___http_get
+    fixos__utils__web_search__search_serpapi --> fixos__utils__web_search___http_get
+    fixos__utils__web_search__search_ddg --> fixos__utils__web_search___http_get
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_fedora_bugzilla
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_ask_fedora
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_arch_wiki
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_github_issues
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_serpapi
+    fixos__utils__web_search__search_all --> fixos__utils__web_search__search_ddg
+    fixos__orchestrator__orchestrator__FixOrchestrator__load_from_diagnostics --> fixos__anonymizer__anonymize
+    fixos__orchestrator__orchestrator__FixOrchestrator___evaluate_and_rediagnose --> fixos__anonymizer__anonymize
+    fixos__orchestrator__orchestrator__FixOrchestrator___default_confirm --> fixos__utils__terminal__print_problem_header
+    fixos__orchestrator__orchestrator__FixOrchestrator___default_confirm --> fixos__utils__terminal__print_cmd_block
+    fixos__orchestrator__orchestrator__FixOrchestrator___default_progress --> fixos__utils__terminal__print_stdout_box
+    fixos__orchestrator__orchestrator__FixOrchestrator___default_progress --> fixos__utils__terminal__print_stderr_box
+    scripts__pyqual_calibrate__calibrate --> scripts__pyqual_calibrate__parse_pyqual_yaml
+    scripts__pyqual_calibrate__calibrate --> scripts__pyqual_calibrate__extract_current_metrics
+    scripts__pyqual_calibrate__main --> scripts__pyqual_calibrate__calibrate
+
+    classDef highCC fill:#ff6b6b,stroke:#c92a2a,color:#fff
+    classDef medCC fill:#ffd43b,stroke:#f08c00,color:#000
+    class fixos__llm_shell__run_llm_shell,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_leftover_data,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___analyze_repo_size,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__get_cleanup_recommendations,fixos__diagnostics__disk_analyzer__DiskAnalyzer___identify_cache_type,fixos__diagnostics__service_details__ServiceDetailsProvider___docker,fixos__diagnostics__storage_analyzer__StorageAnalyzer___analyze_docker,fixos__diagnostics__storage_analyzer__StorageAnalyzer___analyze_snap,fixos__diagnostics__checks__system_core__diagnose_system,fixos__features__SystemDetector___detect_de,fixos__features__installer__FeatureInstaller___install_package,fixos__cli__scan_cmd___run_disk_analysis,fixos__cli__report_cmd__report,fixos__cli__ask_cmd___match_heuristic_command,fixos__cli__fix_cmd__fix,fixos__cli__cleanup_cmd__cleanup_services,fixos__cli__cleanup_cmd___display_unsafe_services,fixos__cli__cleanup_cmd___cleanup_full_system,fixos__cli__features_cmd__features_install,fixos__plugins__builtin__security__Plugin__diagnose,fixos__providers__llm__LLMClient__chat,fixos__utils__anonymizer__anonymize,fixos__utils__anonymizer___dict_to_markdown,fixos__utils__terminal__render_md,fixos__orchestrator__orchestrator__FixOrchestrator__run_sync,fixos__interactive__cleanup_planner__CleanupPlanner___generate_recommendations highCC
+    class fixos__config___load_env_files,fixos__config__FixOsConfig__load,fixos__watch__WatchDaemon__run,fixos__platform_utils__get_package_manager,fixos__llm_shell__execute_command,fixos__config_interactive___print_provider_menu,fixos__config_interactive___save_to_env,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__analyze,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_unused_runtimes,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___find_duplicate_apps,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__get_cleanup_summary,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer__ask_user_and_cleanup,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_cleanup_action,fixos__diagnostics__flatpak_analyzer__FlatpakAnalyzer___execute_leftover_data_cleanup,fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_cache_dirs,fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_log_dirs,fixos__diagnostics__disk_analyzer__DiskAnalyzer__get_temp_dirs,fixos__diagnostics__disk_analyzer__DiskAnalyzer__suggest_cleanup_actions,fixos__diagnostics__disk_analyzer__DiskAnalyzer___categorize_file,fixos__diagnostics__service_cleanup__ServiceCleaner__get_cleanup_plan,fixos__diagnostics__dev_project_analyzer__DevProjectAnalyzer__analyze,fixos__diagnostics__dev_project_analyzer__DevProjectAnalyzer___scan_directory,fixos__diagnostics__dev_project_analyzer__DevProjectAnalyzer__get_summary,fixos__diagnostics__storage_analyzer__StorageAnalyzer___analyze_flatpak_user_data,fixos__diagnostics__storage_analyzer__StorageAnalyzer___find_large_files,fixos__diagnostics__storage_analyzer__StorageAnalyzer___find_large_home_dirs,fixos__diagnostics__storage_analyzer__StorageAnalyzer__get_large_directories,fixos__diagnostics__storage_analyzer__StorageAnalyzer___get_recommendations,fixos__diagnostics__storage_analyzer__StorageAnalyzer__get_summary,fixos__diagnostics__checks__resources__diagnose_resources medCC

@@ -16,6 +16,21 @@ AI-powered OS Diagnostics
 [![Platforms](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)](https://github.com/wronai/fixos)
 [![Tests](https://img.shields.io/badge/tests-274%20passing-brightgreen)](https://github.com/wronai/fixos/actions)
 
+
+## AI Cost Tracking
+
+![PyPI](https://img.shields.io/badge/pypi-costs-blue) ![Version](https://img.shields.io/badge/version-2.2.13-blue) ![Python](https://img.shields.io/badge/python-3.9+-blue) ![License](https://img.shields.io/badge/license-Apache--2.0-green)
+![AI Cost](https://img.shields.io/badge/AI%20Cost-$7.50-orange) ![Human Time](https://img.shields.io/badge/Human%20Time-19.5h-blue) ![Model](https://img.shields.io/badge/Model-openrouter%2Fqwen%2Fqwen3--coder--next-lightgrey)
+
+- 🤖 **LLM usage:** $7.5000 (110 commits)
+- 👤 **Human dev:** ~$1947 (19.5h @ $100/h, 30min dedup)
+
+Generated on 2026-05-04 using [openrouter/qwen/qwen3-coder-next](https://openrouter.ai/qwen/qwen3-coder-next)
+
+---
+
+
+
 **AI diagnostyka i naprawa systemów** – Linux, Windows, macOS  
 z anonimizacją danych, trybem HITL/Autonomous, grafem problemów i 12 providerami LLM.
 
@@ -463,8 +478,7 @@ Apache License 2.0 – see [LICENSE](LICENSE) for details.
 
 ## License
 
-Apache License 2.0 - see [LICENSE](LICENSE) for details.
-
+Licensed under Apache-2.0.
 ## Author
 
-Created by **Tom Sapletta** - [tom@sapletta.com](mailto:tom@sapletta.com)
+Tom Sapletta

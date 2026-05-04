@@ -1,4 +1,4 @@
-# code2llm/evolution | 477 func | 73f | 2026-04-09
+# code2llm/evolution | 678 func | 75f | 2026-05-04
 
 NEXT[10] (ranked by impact):
   [1] !! SPLIT           fixos/cli/cleanup_cmd.py
@@ -48,7 +48,7 @@ RISKS[3]:
   ⚠ Splitting fixos/diagnostics/flatpak_analyzer.py may break 24 import paths
 
 METRICS-TARGET:
-  CC̄:          5.3 → ≤3.7
+  CC̄:          3.7 → ≤2.6
   max-CC:      172 → ≤20
   god-modules: 3 → 0
   high-CC(≥15): 26 → ≤13
@@ -79,4 +79,4 @@ PATTERNS (language parser shared logic):
     - Standardized FunctionInfo/ClassInfo models
 
 HISTORY:
-  prev CC̄=5.6 → now CC̄=5.3
+  prev CC̄=3.7 → now CC̄=3.7

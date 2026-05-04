@@ -4,28 +4,32 @@
 
 - **Project**: /home/tom/github/wronai/fixOS
 - **Primary Language**: python
-- **Languages**: python: 89, shell: 1
+- **Languages**: python: 89, yaml: 24, txt: 3, yml: 3, shell: 2
 - **Analysis Mode**: static
-- **Total Functions**: 485
+- **Total Functions**: 686
 - **Total Classes**: 70
-- **Modules**: 90
-- **Entry Points**: 391
+- **Modules**: 134
+- **Entry Points**: 591
 
 ## Architecture by Module
+
+### project.map.toon
+- **Functions**: 213
+- **File**: `map.toon.yaml`
 
 ### fixos.diagnostics.storage_analyzer
 - **Functions**: 32
 - **Classes**: 2
 - **File**: `storage_analyzer.py`
 
+### fixos.agent.session_io
+- **Functions**: 26
+- **File**: `session_io.py`
+
 ### fixos.diagnostics.flatpak_analyzer
 - **Functions**: 24
 - **Classes**: 3
 - **File**: `flatpak_analyzer.py`
-
-### fixos.agent.session_io
-- **Functions**: 24
-- **File**: `session_io.py`
 
 ### fixos.agent.autonomous_session
 - **Functions**: 22
@@ -104,10 +108,6 @@
 - **Classes**: 1
 - **File**: `web_search.py`
 
-### fixos.system_checks
-- **Functions**: 8
-- **File**: `system_checks.py`
-
 ## Key Entry Points
 
 Main execution flows into the system:
@@ -159,13 +159,13 @@ Returns:
     Tuple (zanonimizowany_string, raport)
 - **Calls**: AnonymizationReport, fixos.utils.anonymizer._get_sensitive, sensitive.get, sensitive.get, len, sensitive.get, len, len
 
-### fixos.diagnostics.checks.system_core.diagnose_system
-> System metrics – cross-platform: CPU, RAM, disks, processes.
-- **Calls**: psutil.virtual_memory, psutil.swap_memory, psutil.disk_partitions, psutil.process_iter, procs.sort, fixos.diagnostics.checks._shared._psutil_required, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd
-
 ### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.get_cleanup_recommendations
 > Get list of cleanup recommendations with explanations
 - **Calls**: sum, self.get_largest_apps, sum, self.repo_bloat.get, self.repo_bloat.get, self.repo_bloat.get, self.repo_bloat.get, sum
+
+### fixos.diagnostics.checks.system_core.diagnose_system
+> System metrics – cross-platform: CPU, RAM, disks, processes.
+- **Calls**: psutil.virtual_memory, psutil.swap_memory, psutil.disk_partitions, psutil.process_iter, procs.sort, fixos.diagnostics.checks._shared._psutil_required, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd
 
 ### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.ask_user_and_cleanup
 > Pytaj użytkownika o zgodę i wykonaj czyszczenie.
@@ -214,6 +214,16 @@ Przykłady:
   f
 - **Calls**: click.command, click.option, click.option, click.option, click.option, FixOsConfig.load, click.echo, click.echo
 
+### fixos.cli.scan_cmd.scan
+> Przeprowadza diagnostykę systemu.
+
+
+Nowe opcje:
+  --disc          – Analiza zajętości dysku
+  --dry-run       – Symulacja (dla kompatybilności)
+  --i
+- **Calls**: click.command, click.option, click.option, click.option, click.option, click.option, click.option, click.option
+
 ### fixos.cli.quickfix_cmd.quickfix
 > Natychmiastowe naprawy bez API — baza znanych bugów.
 
@@ -224,16 +234,6 @@ do naprawy typowych problemów.
 
 Pr
 - **Calls**: click.command, click.option, click.option, PluginRegistry, registry.discover, click.echo, registry.run, click.echo
-
-### fixos.cli.scan_cmd.scan
-> Przeprowadza diagnostykę systemu.
-
-
-Nowe opcje:
-  --disc          – Analiza zajętości dysku
-  --dry-run       – Symulacja (dla kompatybilności)
-  --i
-- **Calls**: click.command, click.option, click.option, click.option, click.option, click.option, click.option, click.option
 
 ### fixos.diagnostics.storage_analyzer.StorageAnalyzer._analyze_docker
 > Analyze Docker storage - images, containers, volumes, build cache
@@ -283,20 +283,20 @@ gradle, cargo, go, flutter, and
 > Parsuje dane diagnostyczne przez LLM i buduje graf problemów.
 - **Calls**: fixos.anonymizer.anonymize, None.get, fixos.anonymizer.anonymize, DIAGNOSE_PROMPT.format, str, p.to_summary, self.llm.chat, self._parse_json
 
+### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.get_cleanup_summary
+> Get human-readable summary of cleanup opportunities
+- **Calls**: self.analyze, lines.append, None.join, lines.append, sorted, lines.append, lines.append, lines.append
+
+### fixos.diagnostics.storage_analyzer.StorageAnalyzer.analyze_full
+> Run full system storage analysis
+- **Calls**: self._analyze_dnf_cache, self._analyze_old_kernels, self._analyze_journal_logs, self._analyze_orphaned_packages, self._analyze_docker, self._analyze_podman, self._analyze_user_cache, self._analyze_browser_cache
+
 ### fixos.diagnostics.checks.audio.diagnose_audio
 > Diagnostyka dźwięku (ALSA/PipeWire/PulseAudio/SOF).
 Typowe problemy po aktualizacji system:
 - SOF (Sound Open Firmware) - brak karty dźwiękowej
 - Pipe
 - **Calls**: fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd, fixos.diagnostics.checks._shared._cmd
-
-### fixos.diagnostics.storage_analyzer.StorageAnalyzer.analyze_full
-> Run full system storage analysis
-- **Calls**: self._analyze_dnf_cache, self._analyze_old_kernels, self._analyze_journal_logs, self._analyze_orphaned_packages, self._analyze_docker, self._analyze_podman, self._analyze_user_cache, self._analyze_browser_cache
-
-### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.get_cleanup_summary
-> Get human-readable summary of cleanup opportunities
-- **Calls**: self.analyze, lines.append, None.join, lines.append, sorted, lines.append, lines.append, lines.append
 
 ### fixos.features.catalog.PackageCatalog.load
 > Load package catalog from YAML files.
@@ -340,14 +340,14 @@ anonymize [fixos.utils.anonymizer]
   └─> _get_sensitive
 ```
 
-### Flow 7: diagnose_system
-```
-diagnose_system [fixos.diagnostics.checks.system_core]
-```
-
-### Flow 8: get_cleanup_recommendations
+### Flow 7: get_cleanup_recommendations
 ```
 get_cleanup_recommendations [fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer]
+```
+
+### Flow 8: diagnose_system
+```
+diagnose_system [fixos.diagnostics.checks.system_core]
 ```
 
 ### Flow 9: ask_user_and_cleanup
@@ -445,15 +445,15 @@ Problemy bez nierozwi
 - **Methods**: 8
 - **Key Methods**: fixos.orchestrator.executor.CommandExecutor.__init__, fixos.orchestrator.executor.CommandExecutor.is_dangerous, fixos.orchestrator.executor.CommandExecutor.needs_sudo, fixos.orchestrator.executor.CommandExecutor.add_sudo, fixos.orchestrator.executor.CommandExecutor._make_noninteractive, fixos.orchestrator.executor.CommandExecutor.check_idempotent, fixos.orchestrator.executor.CommandExecutor.execute_sync, fixos.orchestrator.executor.CommandExecutor.execute
 
-### fixos.diagnostics.service_details.ServiceDetailsProvider
-> Provides detailed information about service data.
-- **Methods**: 7
-- **Key Methods**: fixos.diagnostics.service_details.ServiceDetailsProvider.get_details, fixos.diagnostics.service_details.ServiceDetailsProvider._docker, fixos.diagnostics.service_details.ServiceDetailsProvider._ollama, fixos.diagnostics.service_details.ServiceDetailsProvider._conda, fixos.diagnostics.service_details.ServiceDetailsProvider._package_cache, fixos.diagnostics.service_details.ServiceDetailsProvider._flatpak, fixos.diagnostics.service_details.ServiceDetailsProvider._parse_size_bytes
-
 ### fixos.diagnostics.service_scanner.ServiceDataScanner
 > Scans for large service data directories and allows cleanup.
 - **Methods**: 7
 - **Key Methods**: fixos.diagnostics.service_scanner.ServiceDataScanner.__init__, fixos.diagnostics.service_scanner.ServiceDataScanner.scan_all_services, fixos.diagnostics.service_scanner.ServiceDataScanner.scan_service, fixos.diagnostics.service_scanner.ServiceDataScanner._analyze_service_path, fixos.diagnostics.service_scanner.ServiceDataScanner._get_path_size_mb, fixos.diagnostics.service_scanner.ServiceDataScanner.get_cleanup_plan, fixos.diagnostics.service_scanner.ServiceDataScanner.cleanup_service
+
+### fixos.diagnostics.service_details.ServiceDetailsProvider
+> Provides detailed information about service data.
+- **Methods**: 7
+- **Key Methods**: fixos.diagnostics.service_details.ServiceDetailsProvider.get_details, fixos.diagnostics.service_details.ServiceDetailsProvider._docker, fixos.diagnostics.service_details.ServiceDetailsProvider._ollama, fixos.diagnostics.service_details.ServiceDetailsProvider._conda, fixos.diagnostics.service_details.ServiceDetailsProvider._package_cache, fixos.diagnostics.service_details.ServiceDetailsProvider._flatpak, fixos.diagnostics.service_details.ServiceDetailsProvider._parse_size_bytes
 
 ### fixos.providers.llm.LLMClient
 > Wrapper nad openai.OpenAI kompatybilny z wieloma providerami.
@@ -471,43 +471,24 @@ Obsługuje retry, streaming i zbieranie
 - **Key Methods**: fixos.plugins.builtin.resources.Plugin.diagnose, fixos.plugins.builtin.resources.Plugin._check_cpu, fixos.plugins.builtin.resources.Plugin._check_ram, fixos.plugins.builtin.resources.Plugin._check_top_processes, fixos.plugins.builtin.resources.Plugin._check_zombies, fixos.plugins.builtin.resources.Plugin._check_swap
 - **Inherits**: DiagnosticPlugin
 
-### fixos.plugins.builtin.hardware.Plugin
+### fixos.plugins.builtin.security.Plugin
 - **Methods**: 6
-- **Key Methods**: fixos.plugins.builtin.hardware.Plugin.diagnose, fixos.plugins.builtin.hardware.Plugin._check_gpu, fixos.plugins.builtin.hardware.Plugin._check_battery, fixos.plugins.builtin.hardware.Plugin._check_touchpad, fixos.plugins.builtin.hardware.Plugin._check_camera, fixos.plugins.builtin.hardware.Plugin._check_dmi
+- **Key Methods**: fixos.plugins.builtin.security.Plugin.diagnose, fixos.plugins.builtin.security.Plugin._check_firewall, fixos.plugins.builtin.security.Plugin._check_selinux, fixos.plugins.builtin.security.Plugin._check_open_ports, fixos.plugins.builtin.security.Plugin._check_ssh, fixos.plugins.builtin.security.Plugin._check_fail2ban
 - **Inherits**: DiagnosticPlugin
 
 ## Data Transformation Functions
 
 Key functions that process and transform data:
 
+### fixos.config.FixOsConfig.validate
+> Zwraca listę błędów walidacji (pusta = OK).
+- **Output to**: errors.append, errors.append, None.get
+
 ### fixos.system_checks.get_top_processes
 > Lista TOP N procesów według zużycia CPU.
 - **Output to**: psutil.process_iter, processes.sort, processes.append, x.get
 
 ### fixos.llm_shell.format_time
-
-### fixos.config.FixOsConfig.validate
-> Zwraca listę błędów walidacji (pusta = OK).
-- **Output to**: errors.append, errors.append, None.get
-
-### fixos.diagnostics.service_details.ServiceDetailsProvider._parse_size_bytes
-> Parse human-readable size to bytes.
-- **Output to**: None.upper, sorted, multipliers.items, size_str.endswith, int
-
-### fixos.diagnostics.dev_project_analyzer.ProjectDependency._format_size
-
-### fixos.agent.session_handlers.parse_user_input
-> Parse user input and execute appropriate handler.
-
-Returns:
-    Tuple of (should_continue, was_handl
-- **Output to**: user_in.lower, user_in.isdigit, user_in.startswith, lo.startswith, fixos.agent.session_handlers.handle_quit
-
-### fixos.diagnostics.storage_analyzer.StorageItem._format_size
-
-### fixos.diagnostics.storage_analyzer.StorageAnalyzer._parse_size
-> Parse size string like '1.2G' to bytes
-- **Output to**: None.upper, multipliers.items, size_str.endswith, int, size_str.strip
 
 ### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer._parse_size
 > Parse human-readable size to bytes
@@ -516,9 +497,24 @@ Returns:
 ### fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer._format_size
 > Format bytes to human-readable string
 
-### fixos.agent.hitl_session.HITLSession._process_turn
-> Process one turn of the HITL session.
-- **Output to**: self.remaining, io.print_thinking, io.clear_thinking, io.print_llm_reply, fixos.agent.session_core.extract_fixes
+### fixos.diagnostics.dev_project_analyzer.ProjectDependency._format_size
+
+### fixos.diagnostics.service_details.ServiceDetailsProvider._parse_size_bytes
+> Parse human-readable size to bytes.
+- **Output to**: None.upper, sorted, multipliers.items, size_str.endswith, int
+
+### fixos.diagnostics.storage_analyzer.StorageItem._format_size
+
+### fixos.diagnostics.storage_analyzer.StorageAnalyzer._parse_size
+> Parse size string like '1.2G' to bytes
+- **Output to**: None.upper, multipliers.items, size_str.endswith, int, size_str.strip
+
+### fixos.agent.session_handlers.parse_user_input
+> Parse user input and execute appropriate handler.
+
+Returns:
+    Tuple of (should_continue, was_handl
+- **Output to**: user_in.lower, user_in.isdigit, user_in.startswith, lo.startswith, fixos.agent.session_handlers.handle_quit
 
 ### fixos.agent.autonomous_session.AutonomousSession._parse_action
 > Parse JSON action from LLM reply.
@@ -529,6 +525,10 @@ Returns:
 
 Returns False if session should end, True to continue.
 - **Output to**: self._check_timeout, self._get_remaining_time, print, self._query_llm, self.messages.append
+
+### fixos.agent.hitl_session.HITLSession._process_turn
+> Process one turn of the HITL session.
+- **Output to**: self.remaining, io.print_thinking, io.clear_thinking, io.print_llm_reply, fixos.agent.session_core.extract_fixes
 
 ### fixos.cli.ask_cmd._format_command
 > Convert matched command to string format.
@@ -593,8 +593,8 @@ Functions exposed as public API (no underscore prefix):
 - `fixos.diagnostics.checks.resources.diagnose_resources` - 49 calls
 - `fixos.cli.fix_cmd.fix` - 49 calls
 - `fixos.utils.anonymizer.anonymize` - 48 calls
-- `fixos.diagnostics.checks.system_core.diagnose_system` - 46 calls
 - `fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.get_cleanup_recommendations` - 46 calls
+- `fixos.diagnostics.checks.system_core.diagnose_system` - 46 calls
 - `fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.ask_user_and_cleanup` - 44 calls
 - `fixos.cli.fix_cmd.handle_disk_cleanup_mode` - 41 calls
 - `fixos.cli.report_cmd.report` - 39 calls
@@ -602,8 +602,8 @@ Functions exposed as public API (no underscore prefix):
 - `fixos.diagnostics.checks.security.diagnose_security` - 36 calls
 - `fixos.plugins.builtin.security.Plugin.diagnose` - 36 calls
 - `fixos.cli.provider_cmd.test_llm` - 34 calls
-- `fixos.cli.quickfix_cmd.quickfix` - 31 calls
 - `fixos.cli.scan_cmd.scan` - 31 calls
+- `fixos.cli.quickfix_cmd.quickfix` - 31 calls
 - `fixos.cli.provider_cmd.llm_providers` - 29 calls
 - `fixos.cli.token_cmd.token_set` - 29 calls
 - `fixos.plugins.builtin.resources.Plugin.diagnose` - 29 calls
@@ -612,9 +612,9 @@ Functions exposed as public API (no underscore prefix):
 - `fixos.cli.cleanup_cmd.cleanup_services` - 26 calls
 - `fixos.orchestrator.orchestrator.FixOrchestrator.load_from_diagnostics` - 26 calls
 - `scripts.pyqual-calibrate.calibrate` - 26 calls
-- `fixos.diagnostics.checks.audio.diagnose_audio` - 25 calls
-- `fixos.diagnostics.storage_analyzer.StorageAnalyzer.analyze_full` - 25 calls
 - `fixos.diagnostics.flatpak_analyzer.FlatpakAnalyzer.get_cleanup_summary` - 25 calls
+- `fixos.diagnostics.storage_analyzer.StorageAnalyzer.analyze_full` - 25 calls
+- `fixos.diagnostics.checks.audio.diagnose_audio` - 25 calls
 - `fixos.features.catalog.PackageCatalog.load` - 24 calls
 - `fixos.cli.provider_cmd.providers` - 24 calls
 - `fixos.agent.session_io.print_action_menu` - 23 calls
@@ -656,14 +656,14 @@ graph TD
     anonymize --> _get_sensitive
     anonymize --> get
     anonymize --> len
+    get_cleanup_recommen --> sum
+    get_cleanup_recommen --> get_largest_apps
+    get_cleanup_recommen --> get
     diagnose_system --> virtual_memory
     diagnose_system --> swap_memory
     diagnose_system --> disk_partitions
     diagnose_system --> process_iter
     diagnose_system --> sort
-    get_cleanup_recommen --> sum
-    get_cleanup_recommen --> get_largest_apps
-    get_cleanup_recommen --> get
 ```
 
 ## Reverse Engineering Guidelines

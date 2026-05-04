@@ -1,34 +1,24 @@
 flowchart TD
     docs__examples["docs.examples<br/>1 funcs"]
-    fixos__agent["fixos.agent<br/>73 funcs"]
+    fixos__agent["fixos.agent<br/>75 funcs"]
     fixos__anonymizer["fixos.anonymizer<br/>2 funcs"]
     fixos__cli["fixos.cli<br/>64 funcs"]
     fixos__config["fixos.config<br/>7 funcs"]
-    fixos__config_interactive["fixos.config_interactive<br/>5 funcs"]
-    fixos__diagnostics["fixos.diagnostics<br/>117 funcs"]
-    fixos__features["fixos.features<br/>43 funcs"]
     fixos__llm_shell["fixos.llm_shell<br/>4 funcs"]
     fixos__orchestrator["fixos.orchestrator<br/>39 funcs"]
     fixos__platform_utils["fixos.platform_utils<br/>10 funcs"]
     fixos__plugins["fixos.plugins<br/>44 funcs"]
-    fixos__profiles["fixos.profiles<br/>3 funcs"]
     fixos__system_checks["fixos.system_checks<br/>8 funcs"]
     fixos__utils["fixos.utils<br/>27 funcs"]
     fixos__plugins ==>|32| fixos__platform_utils
     fixos__agent ==>|14| fixos__utils
-    fixos__cli ==>|12| fixos__config
-    fixos__cli ==>|12| fixos__features
+    fixos__agent ==>|9| fixos__platform_utils
     fixos__agent ==>|8| fixos__anonymizer
-    fixos__agent ==>|7| fixos__platform_utils
-    fixos__cli ==>|4| fixos__profiles
-    fixos__cli ==>|4| fixos__orchestrator
     fixos__orchestrator ==>|4| fixos__anonymizer
     fixos__orchestrator ==>|4| fixos__utils
-    fixos__config_interactive -->|2| fixos__config
     fixos__cli -->|2| fixos__system_checks
+    fixos__cli -->|2| fixos__config
     fixos__llm_shell -->|1| fixos__anonymizer
-    fixos__cli -->|1| fixos__config_interactive
     fixos__cli -->|1| fixos__anonymizer
     fixos__cli -->|1| docs__examples
     fixos__cli -->|1| fixos__agent
-    fixos__cli -->|1| fixos__diagnostics

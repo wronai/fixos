@@ -150,6 +150,22 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.2.27] - 2026-05-04
+
+### Docs
+- Update README.md
+
+### Other
+- Update docker/docker-compose.yml
+- Update docker/test-scenarios.sh
+- Update docker/validate-scenario.py
+- Update fixos/cli/fix_cmd.py
+- Update fixos/cli/output_formatter.py
+- Update fixos/cli/report_cmd.py
+- Update fixos/cli/scan_cmd.py
+- Update fixos/cli/shared.py
+- Update uv.lock
+
 ## [2.2.26] - 2026-05-04
 
 ### Docs

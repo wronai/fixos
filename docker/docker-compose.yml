@@ -49,9 +49,9 @@ services:
       - FIXOS_TEST_MODE=1
     command: >
       sh -c "
-        echo '=== Scenariusz: broken-audio ===' &&
-        verify-scenario.sh &&
-        python3 -m fixos.diagnostics.system_checks
+        echo '=== Scenariusz: broken-audio ===' >&2 &&
+        verify-scenario.sh >&2 &&
+        python3 -m fixos.cli.main scan --yaml -M audio --no-banner
       "
 
   # ── Uszkodzone thumbnails ──────────────────────────────
@@ -83,9 +83,9 @@ services:
       - FIXOS_TEST_MODE=1
     command: >
       sh -c "
-        echo '=== Scenariusz: broken-network ===' &&
-        verify-scenario.sh &&
-        python3 /usr/local/bin/simulate-network-diag.py
+        echo '=== Scenariusz: broken-network ===' >&2 &&
+        verify-scenario.sh >&2 &&
+        python3 -m fixos.cli.main scan --yaml -M system --no-banner
       "
 
   # ── Pełne uszkodzenie ─────────────────────────────────
@@ -151,6 +151,23 @@ services:
       sh -c "
         pip install pytest pytest-mock --quiet &&
         python -m pytest tests/e2e/test_cli.py tests/e2e/test_executor.py -v --tb=short
+      "
+
+  # ── Testy scenariuszy (YAML validation) ────────────────
+  scenario-tests:
+    <<: *common
+    build:
+      context: ..
+      dockerfile: docker/base/Dockerfile
+    container_name: fixos-scenario-tests
+    environment:
+      - FIXOS_TEST_MODE=1
+    command: >
+      sh -c "
+        echo 'Running scenario validation...' &&
+        python3 -m fixos.cli.main scan --yaml -M audio --no-banner |
+          python3 docker/validate-scenario.py broken-audio &&
+        echo 'All scenario tests passed!'
       "
 
 networks:

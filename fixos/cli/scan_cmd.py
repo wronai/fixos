@@ -5,6 +5,7 @@ import click
 import json
 from pathlib import Path
 from fixos.cli.shared import add_shared_options, BANNER
+from fixos.cli.output_formatter import OutputFormatter
 
 
 @click.command()
@@ -17,63 +18,72 @@ from fixos.cli.shared import add_shared_options, BANNER
 @click.option("--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos")
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
-def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool, dry_run: bool, interactive: bool, json_output: bool, llm_fallback: bool, profile: str) -> None:
+@click.option("--modules-list", "-M", "modules_csv", default=None,
+              help="Moduły diagnostyki (CSV): audio,thumbnails,hardware,system,security,resources")
+def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
+         dry_run: bool, interactive: bool, json_output: bool, yaml_output: bool,
+         llm_fallback: bool, profile: str, modules_csv: str) -> None:
     """
     Przeprowadza diagnostykę systemu.
 
-    \b
-    Nowe opcje:
-      --disc          – Analiza zajętości dysku
-      --dry-run       – Symulacja (dla kompatybilności)
-      --interactive   – Tryb interaktywny (dla kompatybilności)
-      --json          – Wyjście w formacie JSON
-      --llm-fallback  – Użyj LLM gdy heurystyki nie wystarczą
-      --profile       – Profil diagnostyczny (nadpisuje --modules)
+    \\b
+    Formaty wyjścia:
+      (domyślny)    – Human-readable z kolorami
+      --json        – Wyjście w formacie JSON
+      --yaml        – Wyjście w formacie YAML (pipe-safe)
 
-    \b
+    \\b
+    Tryb pipeline (synchroniczny):
+      fixos scan --yaml                         # pełna diagnostyka → YAML
+      fixos scan --yaml -M audio                # tylko audio → YAML
+      fixos scan --yaml | yq .diagnostics.audio # pipe do yq
+
+    \\b
     Przykłady:
       fixos scan                    # pełna diagnostyka
-      fixos scan --disc              # z analizą dysku
+      fixos scan --disc             # z analizą dysku
       fixos scan --disc --json      # analiza dysku w JSON
-      fixos scan --audio             # tylko diagnostyka dźwięku
-      fixos scan --profile server    # profil serwera
+      fixos scan --audio            # tylko diagnostyka dźwięku
+      fixos scan --profile server   # profil serwera
+      fixos scan --yaml -o scan.yml # YAML do pliku
     """
     from fixos.diagnostics import get_full_diagnostics, DIAGNOSTIC_MODULES
 
+    fmt = OutputFormatter.from_flags(yaml_output=yaml_output, json_output=json_output)
+
     if not no_banner:
-        click.echo(click.style(BANNER, fg="cyan"))
+        fmt.banner(BANNER)
 
-    selected_modules = [modules] if modules and modules != "all" else None
+    # Resolve modules selection
+    selected_modules = _resolve_modules(modules, modules_csv, profile, fmt)
 
-    # Profile overrides module selection
-    if profile:
-        from fixos.profiles import Profile as DiagProfile
-        try:
-            prof = DiagProfile.load(profile)
-            selected_modules = prof.modules
-            click.echo(click.style(f"  Profil: {prof.name} — {prof.description}", fg="cyan"))
-        except FileNotFoundError as e:
-            click.echo(click.style(str(e), fg="red"))
-            return
-    
-    if disc and modules == "all":
-        # Skip heavy system diagnostics if only disk is requested implicitly
+    if disc and modules == "all" and not modules_csv:
         data = {}
     else:
-        click.echo(click.style("Zbieranie diagnostyki...", fg="yellow"))
-        def progress(name, desc) -> None:
-            click.echo(f"  → {desc}...")
-        data = get_full_diagnostics(selected_modules, progress_callback=progress)
-    
-    if disc:
-        _run_disk_analysis(data, json_output=json_output, is_fix_mode=False)
+        fmt.status("Zbieranie diagnostyki...", fg="yellow")
+        data = get_full_diagnostics(selected_modules, progress_callback=fmt.progress)
 
+    if disc:
+        _run_disk_analysis(data, fmt=fmt, is_fix_mode=False)
+
+    # ── Machine-parseable output (YAML / JSON) ───────────────
+    if fmt.is_machine:
+        content = fmt.format_diagnostics(
+            data,
+            modules=selected_modules,
+        )
+        click.echo(content)
+        if output:
+            Path(output).write_text(content + "\n", encoding="utf-8")
+            fmt.status(f"Zapisano: {output}", fg="green")
+        return
+
+    # ── Human-readable output ─────────────────────────────────
     if show_raw:
         click.echo(json.dumps(data, indent=2, default=str))
     else:
-        # Display regular diagnostic summary
         click.echo(click.style("Diagnostyka zakończona.", fg="green"))
-        
+
     if output:
         try:
             Path(output).write_text(
@@ -83,6 +93,33 @@ def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
             click.echo(click.style(f"Zapisano: {output}", fg="green"))
         except Exception as e:
             click.echo(f"Błąd zapisu: {e}")
+
+
+def _resolve_modules(modules: str, modules_csv: str | None,
+                     profile: str | None, fmt: OutputFormatter) -> list[str] | None:
+    """Resolve module selection from flags, CSV, or profile."""
+    # CSV override (e.g. -M audio,security)
+    if modules_csv:
+        selected = [m.strip() for m in modules_csv.split(",") if m.strip()]
+        fmt.status(f"  Moduły: {', '.join(selected)}", fg="cyan")
+        return selected
+
+    # Profile override
+    if profile:
+        from fixos.profiles import Profile as DiagProfile
+        try:
+            prof = DiagProfile.load(profile)
+            fmt.status(f"  Profil: {prof.name} — {prof.description}", fg="cyan")
+            return prof.modules
+        except FileNotFoundError as e:
+            fmt.status(str(e), fg="red")
+            return None
+
+    # Single module flag (--audio, --system, etc.)
+    if modules and modules != "all":
+        return [modules]
+
+    return None
 
 
 def _display_disk_fix_mode(disk_analysis: dict) -> None:
@@ -124,9 +161,26 @@ def _display_disk_scan_mode(disk_analysis: dict) -> None:
             click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
 
 
-def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False) -> None:
+def _run_disk_analysis(data: dict, fmt: OutputFormatter | None = None,
+                       json_output: bool = False, is_fix_mode: bool = False) -> None:
     """Helper for disk analysis logic to avoid duplication between scan and fix"""
     indent = "  " if is_fix_mode else ""
+
+    # In machine mode, just add data to the dict (caller emits)
+    if fmt and fmt.is_machine:
+        fmt.status("Analizowanie zajętości dysku...", fg="blue")
+        try:
+            from fixos.diagnostics.disk_analyzer import DiskAnalyzer
+            analyzer = DiskAnalyzer()
+            disk_analysis = analyzer.analyze_disk_usage()
+            if "error" not in disk_analysis:
+                data["disk_analysis"] = disk_analysis
+            else:
+                fmt.status(f"{indent}Błąd analizy dysku: {disk_analysis['error']}", fg="red")
+        except Exception as e:
+            fmt.status(f"{indent}Błąd podczas analizy dysku: {e}", fg="red")
+        return
+
     click.echo(click.style("Analizowanie zajętości dysku...", fg="blue"))
     try:
         from fixos.diagnostics.disk_analyzer import DiskAnalyzer

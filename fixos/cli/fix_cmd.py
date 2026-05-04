@@ -9,6 +9,7 @@ from typing import Dict, Any, List
 import click
 
 from fixos.cli.shared import add_common_options, add_shared_options, BANNER
+from fixos.cli.output_formatter import OutputFormatter
 from fixos.config import FixOsConfig, interactive_provider_setup
 from fixos.agent.hitl import run_hitl_session
 from fixos.agent.autonomous import run_autonomous_session
@@ -19,22 +20,20 @@ from fixos.constants import (
 )
 
 
-def _collect_diagnostics(modules: str, disc: bool, json_output: bool, output: str) -> dict:
+def _collect_diagnostics(modules: str, disc: bool, fmt: OutputFormatter, output: str) -> dict:
     """Run diagnostics collection and optionally disk analysis. Returns data dict."""
     selected_modules = modules.split(",") if modules else None
 
     if disc and not modules:
         data: dict = {}
     else:
-        click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
-        def progress(name, desc) -> None:
-            click.echo(f"  → {desc}...")
+        fmt.status("\nZbieranie diagnostyki...", fg="yellow")
         from fixos.diagnostics import get_full_diagnostics
-        data = get_full_diagnostics(selected_modules, progress_callback=progress)
+        data = get_full_diagnostics(selected_modules, progress_callback=fmt.progress)
 
     if disc:
         from fixos.cli.scan_cmd import _run_disk_analysis
-        _run_disk_analysis(data, json_output=json_output, is_fix_mode=True)
+        _run_disk_analysis(data, fmt=fmt, is_fix_mode=True)
 
     if output:
         from fixos.utils.anonymizer import anonymize
@@ -44,9 +43,9 @@ def _collect_diagnostics(modules: str, disc: bool, json_output: bool, output: st
                 json.dumps({"anonymized": anon_str, "raw": data}, ensure_ascii=False, indent=2, default=str),
                 encoding="utf-8"
             )
-            click.echo(click.style(f"Raport: {output}", fg="green"))
+            fmt.status(f"Raport: {output}", fg="green")
         except Exception as e:
-            click.echo(f"Błąd zapisu: {e}")
+            fmt.status(f"Błąd zapisu: {e}")
 
     return data
 
@@ -83,7 +82,7 @@ def _run_agent_session(cfg, data: dict, max_fixes: int) -> None:
               help="Maksymalna liczba napraw w sesji")
 @add_shared_options
 def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes,
-        disc, dry_run, interactive, json_output, llm_fallback, show_raw) -> None:
+        disc, dry_run, interactive, json_output, yaml_output, llm_fallback, show_raw) -> None:
     """
     Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 
@@ -93,11 +92,16 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
       autonomous  – Agent sam wykonuje komendy (UWAGA: wymaga potwierdzenia)
 
     \b
+    Pipeline (synchroniczny, bez interakcji):
+      fixos fix --yaml --no-interactive       # diagnostyka → YAML
+      fixos fix --yaml --no-interactive --disc # diagnostyka + dysk → YAML
+
+    \b
     Opcje dyskowe:
       --disc      – Analiza zajętości dysku + grupowanie przyczyn
       --dry-run   – Symulacja bez wykonywania akcji
-      --interactive – Tryb interaktywny (domyślnie włączony)
       --json      – Wyjście w formacie JSON
+      --yaml      – Wyjście w formacie YAML (pipe-safe)
       --llm-fallback – Użyj LLM gdy heurystyki nie wystarczą
 
     \b
@@ -107,11 +111,24 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
       fixos fix --disc --dry-run             # analiza dysku bez wykonywania
       fixos fix --mode autonomous            # tryb autonomiczny
       fixos fix --modules audio,thumbnails   # tylko audio i thumbnails
+      fixos fix --yaml --no-interactive      # pipeline mode → YAML
       fixos fix --provider openai --token sk-...
     """
-    if not no_banner:
-        click.echo(click.style(BANNER, fg="cyan"))
+    fmt = OutputFormatter.from_flags(yaml_output=yaml_output, json_output=json_output)
 
+    if not no_banner:
+        fmt.banner(BANNER)
+
+    # ── Pipeline mode: --yaml/--json + --no-interactive ──────
+    if fmt.is_machine and not interactive:
+        fmt.status("Pipeline mode: diagnostyka → structured output", fg="cyan")
+        data = _collect_diagnostics(modules, disc, fmt, output)
+        fmt.status("Diagnostyka gotowa.", fg="green")
+        content = fmt.format_diagnostics(data)
+        click.echo(content)
+        return
+
+    # ── Interactive / LLM mode ────────────────────────────────
     cfg = FixOsConfig.load(
         provider=provider,
         api_key=token,
@@ -138,15 +155,15 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
                 click.echo(click.style(f"{err}", fg="red"))
             sys.exit(1)
 
-    click.echo(click.style("\nKonfiguracja:", fg="cyan"))
+    fmt.status("\nKonfiguracja:", fg="cyan")
     click.echo(cfg.summary())
     if dry_run:
-        click.echo(click.style("  Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
+        fmt.status("  Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow")
     if disc:
-        click.echo(click.style("  Analiza dysku: Włączona", fg="blue"))
+        fmt.status("  Analiza dysku: Włączona", fg="blue")
 
-    data = _collect_diagnostics(modules, disc, json_output, output)
-    click.echo(click.style("Diagnostyka gotowa.\n", fg="green"))
+    data = _collect_diagnostics(modules, disc, fmt, output)
+    fmt.status("Diagnostyka gotowa.\n", fg="green")
 
     if disc and "disk_analysis" in data:
         return handle_disk_cleanup_mode(data["disk_analysis"], cfg, dry_run, interactive, json_output, llm_fallback)

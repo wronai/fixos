@@ -44,6 +44,8 @@ def add_shared_options(func) -> object:
                        help="Tryb interaktywny (pytaj przed każdą akcją)")(func)
     func = click.option("--json", "json_output", is_flag=True, default=False,
                        help="Wyjście w formacie JSON")(func)
+    func = click.option("--yaml", "yaml_output", is_flag=True, default=False,
+                       help="Wyjście w formacie YAML (pipe-safe: logi na stderr)")(func)
     func = click.option("--llm-fallback/--no-llm-fallback", default=True,
                        help="Użyj LLM gdy heurystyki nie wystarczą")(func)
     return func

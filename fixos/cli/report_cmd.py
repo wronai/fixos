@@ -5,6 +5,8 @@ import click
 import json
 from pathlib import Path
 
+import yaml
+
 
 def _render_report_json(results: list, timestamp: str) -> str:
     """Render diagnostic results as a JSON string."""
@@ -64,8 +66,17 @@ code {{ background: #e9ecef; padding: 2px 6px; border-radius: 3px; }}
 </body></html>"""
 
 
+def _render_report_yaml(results: list, timestamp: str) -> str:
+    """Render diagnostic results as a YAML string."""
+    data = {
+        "timestamp": timestamp,
+        "results": [r.to_dict() for r in results],
+    }
+    return yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False)
+
+
 @click.command("report")
-@click.option("--format", "output_format", type=click.Choice(["html", "markdown", "json"]),
+@click.option("--format", "output_format", type=click.Choice(["html", "markdown", "json", "yaml"]),
               default="html", show_default=True, help="Format raportu")
 @click.option("--output", "-o", default=None, help="Ścieżka pliku wyjściowego")
 @click.option("--modules", "-m", default=None, help="Moduły diagnostyki")
@@ -107,6 +118,7 @@ def report(output_format, output, modules, profile) -> None:
     renderers = {
         "json": _render_report_json,
         "markdown": _render_report_markdown,
+        "yaml": _render_report_yaml,
     }
     renderer = renderers.get(output_format, _render_report_html)
     content = renderer(results, timestamp)

@@ -1,53 +1,47 @@
-# code2llm | 135f 24080L | python:90,yaml:24,txt:3,yml:3,shell:2,ini:1,toml:1 | 2026-05-04
-# CC̄=3.3 | critical:8/781 | dups:0 | cycles:0
+# code2llm | 135f 24742L | python:90,yaml:24,txt:3,yml:3,shell:2,ini:1,toml:1 | 2026-05-04
+# CC̄=3.2 | critical:1/823 | dups:0 | cycles:0
 
-HEALTH[8]:
-  🟡 CC    _install_package CC=27 (limit:15)
-  🟡 CC    _match_heuristic_command CC=18 (limit:15)
-  🟡 CC    features_install CC=15 (limit:15)
-  🟡 CC    diagnose CC=16 (limit:15)
-  🟡 CC    cleanup_services CC=16 (limit:15)
-  🟡 CC    _handle_snap_management CC=18 (limit:15)
-  🟡 CC    _select_cleanup_items_by_filter CC=16 (limit:15)
-  🟡 CC    _cleanup_full_system CC=18 (limit:15)
+HEALTH[1]:
+  🟡 CC    config_provider CC=18 (limit:15)
 
 REFACTOR[1]:
-  1. split 8 high-CC methods  (CC>15)
+  1. split 1 high-CC methods  (CC>15)
 
-PIPELINES[393]:
-  [1] Src [load]: load → _load_env_files
+PIPELINES[406]:
+  [1] Src [__init__]: __init__
       PURITY: 100% pure
-  [2] Src [validate]: validate
+  [2] Src [run]: run
       PURITY: 100% pure
-  [3] Src [summary]: summary
+  [3] Src [_check_for_new_issues]: _check_for_new_issues
       PURITY: 100% pure
-  [4] Src [get_providers_list]: get_providers_list
+  [4] Src [_notify]: _notify
       PURITY: 100% pure
-  [5] Src [__init__]: __init__
+  [5] Src [_timeout_handler]: _timeout_handler
       PURITY: 100% pure
 
 LAYERS:
   scripts/                        CC̄=5.4    ←in:0  →out:0
   │ pyqual-calibrate           299L  0C    7m  CC=14     ←0
   │
-  fixos/                          CC̄=4.6    ←in:76  →out:0
-  │ !! cleanup_cmd               1208L  0C   39m  CC=18     ←0
+  fixos/                          CC̄=4.5    ←in:78  →out:1
+  │ !! cleanup_cmd               1237L  0C   46m  CC=14     ←0
   │ !! storage_analyzer          1086L  2C   39m  CC=13     ←0
   │ !! flatpak_analyzer           940L  3C   34m  CC=14     ←0
   │ service_cleanup            473L  1C   10m  CC=14     ←2
   │ autonomous_session         433L  3C   22m  CC=8      ←0
   │ disk_analyzer              430L  1C   15m  CC=13     ←0
+  │ config                     425L  1C    7m  CC=14     ←8
   │ cleanup_planner            413L  4C   16m  CC=12     ←0
   │ dev_project_analyzer       403L  2C   13m  CC=11     ←0
   │ orchestrator               395L  2C   13m  CC=10     ←0
-  │ !! ask_cmd                    354L  0C    8m  CC=18     ←0
-  │ config                     345L  1C    7m  CC=14     ←8
+  │ ask_cmd                    359L  0C    9m  CC=14     ←0
   │ llm_analyzer               333L  2C    8m  CC=13     ←0
   │ terminal                   326L  1C   11m  CC=9      ←2
   │ packages.yaml              316L  0C    0m  CC=0.0    ←0
-  │ anonymizer                 288L  1C   13m  CC=9      ←0
+  │ session_handlers           311L  0C   12m  CC=9      ←0
+  │ anonymizer                 288L  1C   13m  CC=9      ←2
+  │ executor                   288L  4C   12m  CC=10     ←0
   │ fix_cmd                    284L  0C    6m  CC=13     ←0
-  │ executor                   271L  4C   11m  CC=11     ←0
   │ __init__                   260L  2C   12m  CC=13     ←0
   │ session_io                 258L  0C   26m  CC=8      ←1
   │ web_search                 254L  1C    9m  CC=9      ←3
@@ -55,19 +49,20 @@ LAYERS:
   │ service_scanner            249L  3C    8m  CC=7      ←0
   │ llm_shell                  236L  0C    6m  CC=10     ←0
   │ service_details            230L  1C    9m  CC=9      ←0
-  │ session_handlers           228L  0C   10m  CC=9      ←0
+  │ !! config_cmd                 221L  0C    8m  CC=18     ←0
   │ hitl_session               220L  1C   12m  CC=7      ←0
   │ llm                        211L  2C    7m  CC=10     ←0
-  │ !! installer                  196L  1C   11m  CC=27     ←0
-  │ scan_cmd                   194L  0C    5m  CC=14     ←1
-  │ platform_utils             184L  0C   10m  CC=8      ←9
-  │ !! features_cmd               176L  0C    6m  CC=15     ←0
-  │ !! security                   171L  1C    6m  CC=16     ←0
+  │ platform_utils             202L  0C   11m  CC=8      ←9
+  │ scan_cmd                   195L  0C    5m  CC=14     ←0
+  │ security                   184L  1C    9m  CC=8      ←0
+  │ features_cmd               183L  0C    8m  CC=11     ←0
+  │ installer                  178L  1C   12m  CC=11     ←0
   │ graph                      163L  2C   11m  CC=13     ←0
   │ rollback                   162L  2C    6m  CC=7      ←2
   │ main                       158L  0C    3m  CC=6      ←0
   │ system_checks              156L  0C    8m  CC=6      ←2
-  │ config_interactive         149L  0C    5m  CC=9      ←0
+  │ config_interactive         149L  0C    5m  CC=9      ←1
+  │ session_core               149L  1C    4m  CC=12     ←0
   │ resources                  137L  1C    6m  CC=14     ←0
   │ orchestrate_cmd            132L  0C    1m  CC=13     ←0
   │ hardware                   129L  1C    6m  CC=12     ←0
@@ -78,25 +73,23 @@ LAYERS:
   │ watch                      120L  1C    5m  CC=12     ←0
   │ catalog                    119L  3C    7m  CC=7      ←1
   │ system_core                118L  0C    3m  CC=11     ←0
-  │ report_cmd                 118L  0C    4m  CC=5      ←0
   │ thumbnails                 118L  1C    5m  CC=10     ←0
+  │ report_cmd                 118L  0C    4m  CC=5      ←0
   │ disk                       113L  1C    4m  CC=12     ←0
   │ audio                      107L  1C    5m  CC=10     ←0
   │ base                        99L  4C    4m  CC=2      ←0
-  │ session_core                93L  1C    2m  CC=10     ←1
   │ resources                   91L  0C    1m  CC=13     ←0
   │ rollback_cmd                90L  0C    4m  CC=7      ←0
   │ profiles                    88L  1C    4m  CC=8      ←1
   │ anonymizer                  86L  0C    2m  CC=5      ←6
   │ security                    84L  0C    1m  CC=4      ←0
-  │ config_cmd                  83L  0C    4m  CC=4      ←0
   │ quickfix_cmd                76L  0C    1m  CC=12     ←0
   │ system_checks               73L  0C    1m  CC=7      ←0
   │ schemas                     71L  5C    0m  CC=0.0    ←0
   │ __init__                    65L  1C    3m  CC=4      ←2
   │ thumbnails                  62L  0C    1m  CC=1      ←0
-  │ shared                      62L  1C    3m  CC=6      ←0
   │ audio                       60L  0C    1m  CC=1      ←0
+  │ shared                      60L  1C    3m  CC=6      ←0
   │ profile_cmd                 59L  0C    3m  CC=4      ←0
   │ autonomous                  49L  0C    1m  CC=1      ←0
   │ history_cmd                 49L  0C    1m  CC=5      ←0
@@ -105,7 +98,7 @@ LAYERS:
   │ hardware                    42L  0C    1m  CC=1      ←0
   │ __init__                    38L  0C    1m  CC=2      ←3
   │ hitl                        36L  0C    1m  CC=1      ←1
-  │ constants                   27L  0C    0m  CC=0.0    ←0
+  │ constants                   31L  0C    0m  CC=0.0    ←0
   │ __init__                    20L  0C    0m  CC=0.0    ←0
   │ timeout                     17L  1C    1m  CC=1      ←0
   │ sysadmin.yaml               13L  0C    0m  CC=0.0    ←0
@@ -147,15 +140,15 @@ LAYERS:
   │ Dockerfile                   0L  0C    0m  CC=0.0    ←0
   │
   project/                        CC̄=0.0    ←in:0  →out:0
-  │ !! calls.yaml                2363L  0C    0m  CC=0.0    ←0
-  │ !! map.toon.yaml              687L  0C  223m  CC=0.0    ←2
-  │ calls.toon.yaml            291L  0C    0m  CC=0.0    ←0
-  │ analysis.toon.yaml         223L  0C    0m  CC=0.0    ←0
+  │ !! calls.yaml                2575L  0C    0m  CC=0.0    ←0
+  │ !! map.toon.yaml              705L  0C  241m  CC=0.0    ←4
+  │ calls.toon.yaml            303L  0C    0m  CC=0.0    ←0
+  │ analysis.toon.yaml         216L  0C    0m  CC=0.0    ←0
   │ validation.toon.yaml       114L  0C    0m  CC=0.0    ←0
   │ project_refactor.yaml       87L  0C    0m  CC=0.0    ←0
   │ evolution.toon.yaml         82L  0C    0m  CC=0.0    ←0
   │ duplication.toon.yaml       78L  0C    0m  CC=0.0    ←0
-  │ project.toon.yaml           64L  0C    0m  CC=0.0    ←0
+  │ project.toon.yaml           60L  0C    0m  CC=0.0    ←0
   │ prompt.txt                  47L  0C    0m  CC=0.0    ←0
   │ validation.toon.yaml        33L  0C    0m  CC=0.0    ←0
   │
@@ -192,24 +185,25 @@ LAYERS:
 
 COUPLING:
                                    fixos           fixos.cli         fixos.agent       fixos.plugins         fixos.utils      fixos.features  fixos.orchestrator         project.map       docs.examples   fixos.diagnostics
-               fixos                  ──                 ←20                 ←20                 ←32                                                          ←4                                                              hub
-           fixos.cli                  20                  ──                   1                                                          12                   4                                       1                   1  !! fan-out
-         fixos.agent                  20                  ←1                  ──                                      12                                                           2                                          !! fan-out
+               fixos                  ──                 ←21                 ←21                 ←32                                                          ←4                   1                                          hub
+           fixos.cli                  21                  ──                   1                                                          12                   4                   2                   1                   1  !! fan-out
+         fixos.agent                  21                  ←1                  ──                                      14                                                           2                                          !! fan-out
        fixos.plugins                  32                                                          ──                                                                                                                          !! fan-out
-         fixos.utils                                                         ←12                                      ──                                      ←4                                                              hub
+         fixos.utils                                                         ←14                                      ──                                      ←4                                                              hub
       fixos.features                                     ←12                                                                              ──                                                                                  hub
   fixos.orchestrator                   4                  ←4                                                           4                                      ──                                                              !! fan-out
-         project.map                                                          ←2                                                                                                  ──                                        
+         project.map                  ←1                  ←2                  ←2                                                                                                  ──                                          hub
        docs.examples                                      ←1                                                                                                                                          ──                    
    fixos.diagnostics                                      ←1                                                                                                                                                              ──
   CYCLES: none
-  HUB: fixos/ (fan-in=76)
-  HUB: fixos.utils/ (fan-in=16)
+  HUB: fixos.utils/ (fan-in=18)
+  HUB: project.map/ (fan-in=5)
   HUB: fixos.features/ (fan-in=12)
+  HUB: fixos/ (fan-in=78)
+  SMELL: fixos.agent/ fan-out=37 → split needed
+  SMELL: fixos.cli/ fan-out=42 → split needed
   SMELL: fixos.plugins/ fan-out=32 → split needed
-  SMELL: fixos.cli/ fan-out=39 → split needed
   SMELL: fixos.orchestrator/ fan-out=8 → split needed
-  SMELL: fixos.agent/ fan-out=34 → split needed
 
 EXTERNAL:
   validation: run `vallm batch .` → validation.toon

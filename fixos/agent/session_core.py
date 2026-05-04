@@ -9,6 +9,7 @@ from typing import List, Tuple
 
 from ..constants import (
     MAX_SUMMARY_LENGTH,
+    MAX_TECH_TERMS,
 )
 
 
@@ -144,6 +145,6 @@ def extract_search_topic(llm_reply: str) -> str:
         llm_reply, re.IGNORECASE
     )
     if tech_terms:
-        return " ".join(dict.fromkeys(tech_terms[:4]))
+        return " ".join(dict.fromkeys(tech_terms[:MAX_TECH_TERMS]))
     first_sentence = llm_reply.split(".")[0][:MAX_SUMMARY_LENGTH]
     return first_sentence or "linux system diagnostics"

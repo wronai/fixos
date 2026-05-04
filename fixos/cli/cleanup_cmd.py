@@ -318,9 +318,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None
             click.echo(f"    {click.style(f'Elementów: {len(rec["items"])}', fg='white', dim=True)}")
     
     # Podsumowanie potencjalnych korzyści
-    click.echo("\n" + click.style("-"*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('-'*CONSTANT_60, fg='cyan')}")
     click.echo(f"💰 {click.style('ŁĄCZNA POTENCJALNA KORZYŚĆ:', fg='green', bold=True)} ~{_format_bytes(total_potential_savings)}")
-    click.echo(click.style("-"*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'-'*CONSTANT_60}", fg="cyan"))
     
     # Menu wyboru
     click.echo(f"\n{click.style('Dostępne opcje:', fg='white', bold=True)}")
@@ -362,9 +362,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None
         "space_reclaimed": 0,
     }
     
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("🚀 WYKONYWANIE WYBRANYCH AKCJI", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan") + "\n")
+    click.echo(f"{click.style('='*CONSTANT_60, fg='cyan')}\n")
     
     for idx in selected_indices:
         rec = recommendations[idx]
@@ -394,9 +394,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None
                 click.echo(click.style(f"   ❌ Błąd: {result.get('error', 'Unknown error')}", fg="red"))
     
     # Podsumowanie końcowe
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
     click.echo(f"   ✅ Wykonano: {len(results['executed'])}")
     click.echo(f"   ⏭️ Pominięto: {len(results['skipped'])}")
     click.echo(f"   ❌ Błędy: {len(results['failed'])}")
@@ -412,9 +412,9 @@ def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None
 
 def _display_flatpak_status(analysis: dict) -> None:
     """Wyświetl status Flatpak z rzeczywistymi danymi"""
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📊 STATUS FLATPAK", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
     
     # Aplikacje
     apps_count = len(analysis.get('installed_apps', []))
@@ -458,13 +458,13 @@ def _display_flatpak_status(analysis: dict) -> None:
 
 def _display_detailed_recommendations(recommendations: list) -> None:
     """Wyświetl szczegółowe informacje o każdej rekomendacji"""
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📖 SZCZEGÓŁY REKOMENDACJI", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
     
     for i, rec in enumerate(recommendations, 1):
         click.echo(f"\n{click.style(f'[{i}]', fg='cyan', bold=True)} {rec['description']}")
-        click.echo(click.style("-"*CONSTANT_50, fg="white", dim=True))
+        click.echo(click.style(f"{'-'*CONSTANT_50}", fg="white", dim=True))
         click.echo(f"\n{rec['explanation']}")
         
         if rec.get('items'):
@@ -553,9 +553,9 @@ def _build_dep_types(items: list) -> dict:
 
 def _display_full_system_menu(analyzer, analysis: dict, safe_items: list, medium_items: list, dry_run: bool) -> str:
     """Display recommendations and menu for full system cleanup. Returns user selection."""
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📋 REKOMENDACJE", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
 
     if dry_run:
         click.echo(click.style("\n[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
@@ -576,9 +576,9 @@ def _display_full_system_menu(analyzer, analysis: dict, safe_items: list, medium
             click.echo(f"    → {click.style(item.cleanup_command, fg='cyan', dim=True)}")
         click.echo(f"\n  💰 Łącznie: {click.style(_format_bytes(total_medium), fg='yellow')}")
 
-    click.echo("\n" + click.style("-"*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('-'*CONSTANT_60, fg='cyan')}")
     click.echo(f"💰 {click.style('ŁĄCZNIE DO ODZYSKANIA:', fg='green', bold=True)} {analysis['total_reclaimable_human']}")
-    click.echo(click.style("-"*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'-'*CONSTANT_60}", fg="cyan"))
 
     dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
     if dev_items:
@@ -1103,9 +1103,9 @@ def _select_cleanup_items_by_filter(selection: str, analyzer, safe_items: list) 
 
 def _execute_full_cleanup(items_to_clean: list, dry_run: bool) -> None:
     """Execute cleanup commands for a list of StorageItems."""
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("🚀 WYKONYWANIE CZYSZCZENIA", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan") + "\n")
+    click.echo(f"{click.style('='*CONSTANT_60, fg='cyan')}\n")
 
     results = {"success": 0, "failed": 0, "space_reclaimed": 0}
     for item in items_to_clean:
@@ -1136,9 +1136,9 @@ def _execute_full_cleanup(items_to_clean: list, dry_run: bool) -> None:
             click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
             results['failed'] += 1
 
-    click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(f"\n{click.style('='*CONSTANT_60, fg='cyan')}")
     click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
-    click.echo(click.style("="*CONSTANT_60, fg="cyan"))
+    click.echo(click.style(f"{'='*CONSTANT_60}", fg="cyan"))
     click.echo(f"   ✅ Sukces: {results['success']}")
     click.echo(f"   ❌ Błędy: {results['failed']}")
     if dry_run:

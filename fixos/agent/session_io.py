@@ -30,7 +30,7 @@ _session_ref = None
 
 
 @contextmanager
-def suspend_timeout():
+def suspend_timeout() -> object:
     """Context manager to temporarily suspend session timeout during user input."""
     global _timeout_handler, _timeout_seconds, _session_ref
     try:
@@ -167,7 +167,7 @@ def print_thinking() -> None:
 
 def clear_thinking() -> None:
     """Clear the 'Analyzing...' indicator."""
-    console.print("\r" + " " * 30 + "\r", end="")
+    console.print(f"\r{' ' * 30}\r", end="")
 
 
 def print_llm_reply(reply: str) -> None:

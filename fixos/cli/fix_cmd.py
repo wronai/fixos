@@ -12,6 +12,11 @@ from fixos.cli.shared import add_common_options, add_shared_options, BANNER
 from fixos.config import FixOsConfig, interactive_provider_setup
 from fixos.agent.hitl import run_hitl_session
 from fixos.agent.autonomous import run_autonomous_session
+from fixos.constants import (
+    DEFAULT_SESSION_TIMEOUT,
+    MAX_FIXES_DEFAULT,
+    MAX_SEARCH_QUERY_LENGTH,
+)
 
 
 def _collect_diagnostics(modules: str, disc: bool, json_output: bool, output: str) -> dict:
@@ -22,7 +27,7 @@ def _collect_diagnostics(modules: str, disc: bool, json_output: bool, output: st
         data: dict = {}
     else:
         click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
-        def progress(name, desc):
+        def progress(name, desc) -> None:
             click.echo(f"  → {desc}...")
         from fixos.diagnostics import get_full_diagnostics
         data = get_full_diagnostics(selected_modules, progress_callback=progress)
@@ -67,14 +72,14 @@ def _run_agent_session(cfg, data: dict, max_fixes: int) -> None:
 @add_common_options
 @click.option("--mode", type=click.Choice(["hitl", "autonomous"]), default=None,
               help="Tryb: hitl (domyślny) lub autonomous")
-@click.option("--timeout", default=300, show_default=True,
+@click.option("--timeout", default=DEFAULT_SESSION_TIMEOUT, show_default=True,
               help="Timeout sesji agenta (sekundy)")
 @click.option("--modules", "-M", default=None,
               help="Moduły diagnostyki: audio,thumbnails,hardware,system")
 @click.option("--no-show-data", is_flag=True, default=False,
               help="Nie pokazuj danych diagnostycznych (tylko podsumowanie)")
 @click.option("--output", "-o", default=None, help="Zapisz log sesji do JSON")
-@click.option("--max-fixes", default=10, show_default=True,
+@click.option("--max-fixes", default=MAX_FIXES_DEFAULT, show_default=True,
               help="Maksymalna liczba napraw w sesji")
 @add_shared_options
 def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes,
@@ -276,7 +281,7 @@ def try_llm_fallback_for_failures(failed_actions, cfg) -> None:
 
 Zaproponuj alternatywne komendy lub podejście. Odpowiedz krótko, maksymalnie 3 komendy.
 """
-        response = llm.chat([{"role": "user", "content": prompt}], max_tokens=500)
+        response = llm.chat([{"role": "user", "content": prompt}], max_tokens=MAX_SEARCH_QUERY_LENGTH)
         click.echo(click.style("Sugestie LLM:", fg="cyan"))
         click.echo(response)
         

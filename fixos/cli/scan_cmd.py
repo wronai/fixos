@@ -16,7 +16,7 @@ from fixos.cli.shared import add_shared_options, BANNER
 @click.option("--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos")
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
-def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile) -> None:
+def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool, dry_run: bool, interactive: bool, json_output: bool, llm_fallback: bool, profile: str) -> None:
     """
     Przeprowadza diagnostykę systemu.
 
@@ -60,7 +60,7 @@ def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_
         data = {}
     else:
         click.echo(click.style("Zbieranie diagnostyki...", fg="yellow"))
-        def progress(name, desc):
+        def progress(name, desc) -> None:
             click.echo(f"  → {desc}...")
         data = get_full_diagnostics(selected_modules, progress_callback=progress)
     

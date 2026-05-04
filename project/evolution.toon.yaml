@@ -1,9 +1,9 @@
-# code2llm/evolution | 773 func | 75f | 2026-05-04
+# code2llm/evolution | 815 func | 75f | 2026-05-04
 
-NEXT[10] (ranked by impact):
+NEXT[4] (ranked by impact):
   [1] !! SPLIT           fixos/cli/cleanup_cmd.py
-      WHY: 1208L, 0 classes, max CC=18
-      EFFORT: ~4h  IMPACT: 21744
+      WHY: 1237L, 0 classes, max CC=14
+      EFFORT: ~4h  IMPACT: 17318
 
   [2] !! SPLIT           fixos/diagnostics/storage_analyzer.py
       WHY: 1086L, 2 classes, max CC=13
@@ -13,45 +13,21 @@ NEXT[10] (ranked by impact):
       WHY: 940L, 3 classes, max CC=14
       EFFORT: ~4h  IMPACT: 13160
 
-  [4] !  SPLIT-FUNC      _cleanup_full_system  CC=18  fan=17
+  [4] !  SPLIT-FUNC      config_provider  CC=18  fan=15
       WHY: CC=18 exceeds 15
-      EFFORT: ~1h  IMPACT: 306
-
-  [5] !  SPLIT-FUNC      Plugin.diagnose  CC=16  fan=18
-      WHY: CC=16 exceeds 15
-      EFFORT: ~1h  IMPACT: 288
-
-  [6] !  SPLIT-FUNC      cleanup_services  CC=16  fan=17
-      WHY: CC=16 exceeds 15
-      EFFORT: ~1h  IMPACT: 272
-
-  [7] !! SPLIT-FUNC      FeatureInstaller._install_package  CC=27  fan=9
-      WHY: CC=27 exceeds 15
-      EFFORT: ~1h  IMPACT: 243
-
-  [8] !  SPLIT-FUNC      _handle_snap_management  CC=18  fan=13
-      WHY: CC=18 exceeds 15
-      EFFORT: ~1h  IMPACT: 234
-
-  [9] !  SPLIT-FUNC      features_install  CC=15  fan=15
-      WHY: CC=15 exceeds 15
-      EFFORT: ~1h  IMPACT: 225
-
-  [10] !  SPLIT-FUNC      _select_cleanup_items_by_filter  CC=16  fan=10
-      WHY: CC=16 exceeds 15
-      EFFORT: ~1h  IMPACT: 160
+      EFFORT: ~1h  IMPACT: 270
 
 
 RISKS[3]:
-  ⚠ Splitting fixos/cli/cleanup_cmd.py may break 39 import paths
+  ⚠ Splitting fixos/cli/cleanup_cmd.py may break 46 import paths
   ⚠ Splitting fixos/diagnostics/storage_analyzer.py may break 39 import paths
   ⚠ Splitting fixos/diagnostics/flatpak_analyzer.py may break 34 import paths
 
 METRICS-TARGET:
-  CC̄:          3.3 → ≤2.3
-  max-CC:      27 → ≤13
+  CC̄:          3.2 → ≤2.2
+  max-CC:      18 → ≤9
   god-modules: 3 → 0
-  high-CC(≥15): 8 → ≤4
+  high-CC(≥15): 1 → ≤0
   hub-types:   0 → ≤0
 
 PATTERNS (language parser shared logic):
@@ -79,4 +55,4 @@ PATTERNS (language parser shared logic):
     - Standardized FunctionInfo/ClassInfo models
 
 HISTORY:
-  prev CC̄=3.4 → now CC̄=3.3
+  prev CC̄=3.3 → now CC̄=3.2

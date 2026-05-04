@@ -6,7 +6,7 @@ Manage packages and system features based on user profiles.
 import json
 import click
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Dict
 
 from ..features import SystemDetector
 from ..features.catalog import PackageCatalog
@@ -50,7 +50,7 @@ def features_audit(profile: Optional[str], json_output: bool) -> None:
         FeatureRenderer.render_audit(result)
 
 
-def _show_install_plan(to_install: list, yes: bool, dry_run: bool) -> bool:
+def _show_install_plan(to_install: List, yes: bool, dry_run: bool) -> bool:
     """Display install plan and ask for confirmation. Returns False to abort."""
     console.print()
     console.print(f"[bold]Zostaną zainstalowane {len(to_install)} pakiety:[/bold]")
@@ -66,7 +66,7 @@ def _show_install_plan(to_install: list, yes: bool, dry_run: bool) -> bool:
     return True
 
 
-def _show_install_results(install_result: dict) -> None:
+def _show_install_results(install_result: Dict) -> None:
     """Display installation results summary."""
     console.print()
     if install_result["installed"]:

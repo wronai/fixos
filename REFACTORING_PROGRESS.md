@@ -43,6 +43,26 @@
 - **Solution**: Wrapped `run_command` in `suspend_timeout()` context manager
 - **Status**: ✅ Complete
 
+### 8. Added Return Type Annotations to ask_cmd.py and cleanup_cmd.py
+- **Files**: [fixos/cli/ask_cmd.py](fixos/cli/ask_cmd.py), [fixos/cli/cleanup_cmd.py](fixos/cli/cleanup_cmd.py)
+- **Status**: ✅ Complete
+
+### 9. Integrated Constants Across Core Modules
+- **Files**: [fixos/agent/session_core.py](fixos/agent/session_core.py), [fixos/agent/session_handlers.py](fixos/agent/session_handlers.py), [fixos/agent/autonomous_session.py](fixos/agent/autonomous_session.py), [fixos/cli/fix_cmd.py](fixos/cli/fix_cmd.py), [fixos/cli/cleanup_cmd.py](fixos/cli/cleanup_cmd.py)
+- **Status**: ✅ Complete
+
+### 6. Prevented Interactive Command Hangs
+- **File**: [fixos/platform_utils.py](fixos/platform_utils.py), [fixos/agent/session_handlers.py](fixos/agent/session_handlers.py)
+- **Issue**: Commands like `newgrp` hang in non-interactive sessions
+- **Solution**: Added `is_interactive_blocker` detection and user warning/confirmation prompt
+- **Status**: ✅ Complete
+
+### 7. Suspended Session Timeout during Execution
+- **File**: [fixos/agent/session_handlers.py](fixos/agent/session_handlers.py)
+- **Issue**: Session expired while running long commands (e.g. `dnf upgrade`)
+- **Solution**: Wrapped `run_command` in `suspend_timeout()` context manager
+- **Status**: ✅ Complete
+
 ### 5. Created Global Constants Module
 - **File**: [fixos/constants.py](fixos/constants.py) (NEW)
 - **Content**: 15+ named constants for timeouts, limits, display formatting
@@ -72,9 +92,9 @@
 | Category | Total | Fixed | Pending |
 | --- | --- | --- | --- |
 | Duplicate imports | 12+ | 3 | 9+ |
-| Missing return types | 15+ | 2 | 13 |
-| String concatenations | 15+ | 3 | 12+ |
-| Magic numbers | 95+ | 0 | 95 |
+| Missing return types | 15+ | 15+ | 0 |
+| String concatenations | 15+ | 4 | 11+ |
+| Magic numbers | 95+ | 15+ | 80 |
 | Unused imports | 10+ | 0 | 10 |
 
 ---

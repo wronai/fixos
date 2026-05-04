@@ -51,16 +51,16 @@ class HITLSession:
         self.start_ts = time.time()
         self._setup_timeout()
 
-    def _setup_timeout(self):
+    def _setup_timeout(self) -> None:
         """Setup session timeout handler."""
         from . import session_io
-        def _timeout(signum, frame):
+        def _timeout(signum, frame) -> None:
             raise SessionTimeout()
         # Store reference in session_io for reinstatement during user input
         session_io._setup_timeout_ref(self, self.config.session_timeout, _timeout)
         setup_signal_timeout(self.config.session_timeout, _timeout)
 
-    def _clear_timeout(self):
+    def _clear_timeout(self) -> None:
         """Clear the timeout alarm."""
         cancel_signal_timeout()
 
@@ -93,7 +93,7 @@ class HITLSession:
         ]
         return True
 
-    def _print_header(self):
+    def _print_header(self) -> None:
         """Print session header with system info."""
         io.print_session_header(
             self.os_info, self.pkg_manager,
@@ -191,7 +191,7 @@ class HITLSession:
 
         self._print_summary()
 
-    def _print_summary(self):
+    def _print_summary(self) -> None:
         """Print session summary."""
         elapsed = int(time.time() - self.start_ts)
         io.print_session_summary(len(self.messages)-2, elapsed, self.llm.total_tokens, self.executed)

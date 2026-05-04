@@ -1,45 +1,45 @@
-# fixOS | 781 func | 77f | 47040L | python | 2026-05-04
+# fixOS | 823 func | 77f | 47838L | python | 2026-05-04
 
 HEALTH:
-  CC̄=3.3  critical=59 (limit:10)  dup=1  cycles=0
+  CC̄=3.2  critical=53 (limit:10)  dup=1  cycles=0
 
 ALERTS[20]:
-  !!! cc_exceeded      FeatureInstaller._install_package = 27 (limit:15)
-  !!! high_fan_out     orchestrate = 24 (limit:10)
   !!! high_fan_out     StorageAnalyzer.analyze_full = 24 (limit:10)
+  !!! high_fan_out     orchestrate = 24 (limit:10)
   !!! high_fan_out     _cleanup_flatpak_detailed = 21 (limit:10)
   !!! high_fan_out     diagnose_system = 20 (limit:10)
   !!  high_fan_out     render_md = 19 (limit:10)
-  !!  high_fan_out     token_set = 18 (limit:10)
-  !!  high_fan_out     Plugin.diagnose = 18 (limit:10)
+  !!  high_fan_out     Plugin.diagnose = 19 (limit:10)
   !!  high_fan_out     FixOrchestrator.load_from_diagnostics = 18 (limit:10)
+  !!  high_fan_out     token_set = 18 (limit:10)
   !!  high_fan_out     _handle_home_analysis = 18 (limit:10)
+  !!  high_fan_out     diagnose_resources = 17 (limit:10)
 
 MODULES[135] (top by size):
+  M[project/calls.yaml] 2575L C:0 F:0 CC↑0 D:0 (yaml)
   M[planfile.yaml] 2450L C:0 F:0 CC↑0 D:0 (yaml)
-  M[project/calls.yaml] 2363L C:0 F:0 CC↑0 D:0 (yaml)
-  M[fixos/cli/cleanup_cmd.py] 1208L C:0 F:39 CC↑18 D:0 (python)
+  M[fixos/cli/cleanup_cmd.py] 1237L C:0 F:46 CC↑14 D:0 (python)
   M[fixos/diagnostics/storage_analyzer.py] 1086L C:2 F:39 CC↑13 D:0 (python)
   M[fixos/diagnostics/flatpak_analyzer.py] 940L C:3 F:34 CC↑14 D:0 (python)
-  M[project/map.toon.yaml] 687L C:0 F:223 CC↑0 D:2 (yaml)
+  M[project/map.toon.yaml] 705L C:0 F:241 CC↑0 D:4 (yaml)
   M[fixos/diagnostics/service_cleanup.py] 473L C:1 F:10 CC↑14 D:0 (python)
   M[fixos/agent/autonomous_session.py] 433L C:3 F:22 CC↑8 D:0 (python)
   M[fixos/diagnostics/disk_analyzer.py] 430L C:1 F:15 CC↑13 D:0 (python)
   M[goal.yaml] 429L C:0 F:0 CC↑0 D:0 (yaml)
+  M[fixos/config.py] 425L C:1 F:7 CC↑14 D:0 (python)
   M[fixos/interactive/cleanup_planner.py] 413L C:4 F:16 CC↑12 D:0 (python)
   M[fixos/diagnostics/dev_project_analyzer.py] 403L C:2 F:13 CC↑11 D:0 (python)
   M[fixos/orchestrator/orchestrator.py] 395L C:2 F:13 CC↑10 D:0 (python)
-  M[fixos/cli/ask_cmd.py] 354L C:0 F:8 CC↑18 D:0 (python)
-  M[fixos/config.py] 345L C:1 F:7 CC↑14 D:2 (python)
+  M[fixos/cli/ask_cmd.py] 359L C:0 F:9 CC↑14 D:0 (python)
   LANGS: python:90/yaml:24/other:11/yml:3/txt:3/shell:2/toml:1/ini:1
 
 HOTSPOTS[10]:
+  ★ StorageAnalyzer.analyze_full fan=24  // Analysis pipeline, 24 stages
   ★ orchestrate fan=24  // Zaawansowana orkiestracja napraw z grafem problemów.
 
 
 Różnica od 'fix':
   - Bu
-  ★ StorageAnalyzer.analyze_full fan=24  // Analysis pipeline, 24 stages
   ★ _cleanup_flatpak_detailed fan=21  // Detailed interactive Flatpak cleanup with menu selection.
 
 Wyświetla menu z opcj
@@ -49,12 +49,12 @@ Wyświetla menu z opcj
 Handles:
 - ``` code blocks ``` r
 
-REFACTOR[15]:
-  [1] H/L Split FeatureInstaller._install_package (CC=27)
-  [2] H/H Split god module fixos/cli/cleanup_cmd.py (1208L, 0 classes)
-  [3] H/H Split god module fixos/diagnostics/flatpak_analyzer.py (940L, 3 classes)
-  [4] H/H Split god module fixos/diagnostics/storage_analyzer.py (1086L, 2 classes)
-  [5] H/H Split god module planfile.yaml (2450L, 0 classes)
+REFACTOR[10]:
+  [1] H/H Split god module fixos/cli/cleanup_cmd.py (1237L, 0 classes)
+  [2] H/H Split god module fixos/diagnostics/flatpak_analyzer.py (940L, 3 classes)
+  [3] H/H Split god module fixos/diagnostics/storage_analyzer.py (1086L, 2 classes)
+  [4] H/H Split god module planfile.yaml (2450L, 0 classes)
+  [5] H/H Split god module project/calls.yaml (2575L, 0 classes)
 
 EVOLUTION:
-  2026-05-04 CC̄=3.3 crit=59 47040L // Automated analysis
+  2026-05-04 CC̄=3.2 crit=53 47838L // Automated analysis

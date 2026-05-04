@@ -15,9 +15,16 @@ from ..utils.anonymizer import anonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
 from ..config import FixOsConfig
 from ..utils.timeout import SessionTimeout
+from ..constants import (
+    UI_BORDER_WIDTH,
+    MAX_OUTPUT_PREVIEW_LENGTH,
+    MAX_ANON_PREVIEW_LENGTH,
+    DEFAULT_COMMAND_TIMEOUT,
+    DEFAULT_TOKEN_LIMIT,
+    MAX_COMMAND_LENGTH,
+    MAX_SEARCH_QUERY_LENGTH,
+)
 
-# UI formatting constants
-UI_BORDER_WIDTH = 65
 
 
 # Commands NEVER executed automatically
@@ -121,14 +128,14 @@ class AutonomousSession:
         self.start_time = time.time()
         self._setup_timeout()
 
-    def _setup_timeout(self):
+    def _setup_timeout(self) -> None:
         """Setup session timeout handler."""
-        def _timeout_handler(signum, frame):
+        def _timeout_handler(signum, frame) -> None:
             raise SessionTimeout()
         signal.signal(signal.SIGALRM, _timeout_handler)
         signal.alarm(self.config.session_timeout)
 
-    def _clear_timeout(self):
+    def _clear_timeout(self) -> None:
         """Clear the timeout alarm."""
         signal.alarm(0)
 
@@ -148,7 +155,7 @@ class AutonomousSession:
             return False
         return True
 
-    def _initialize_messages(self):
+    def _initialize_messages(self) -> None:
         """Initialize LLM message history with system prompt and diagnostics."""
         anon_str, anon_report = anonymize(str(self.diagnostics))
         if self.show_data:
@@ -170,7 +177,7 @@ class AutonomousSession:
         from . import get_remaining_time
         return get_remaining_time(self)
 
-    def _check_timeout(self):
+    def _check_timeout(self) -> None:
         """Check if session has timed out."""
         if self._get_remaining_time() <= 0:
             raise SessionTimeout()
@@ -178,7 +185,7 @@ class AutonomousSession:
     def _query_llm(self) -> Optional[str]:
         """Query LLM and return reply."""
         try:
-            return self.llm.chat(self.messages, max_tokens=1000, temperature=0.1)
+            return self.llm.chat(self.messages, max_tokens=DEFAULT_TOKEN_LIMIT, temperature=0.1)
         except LLMError as e:
             print(f"  ❌ LLM błąd: {e}")
             return None
@@ -235,12 +242,12 @@ class AutonomousSession:
         """Execute command and return (success, output)."""
         try:
             proc = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, timeout=90
+                cmd, shell=True, capture_output=True, text=True, timeout=DEFAULT_COMMAND_TIMEOUT
             )
             out = proc.stdout.strip() or proc.stderr.strip() or "(brak outputu)"
-            return proc.returncode == 0, out[:1000]
+            return proc.returncode == 0, out[:MAX_OUTPUT_PREVIEW_LENGTH]
         except subprocess.TimeoutExpired:
-            return False, "[TIMEOUT 90s]"
+            return False, f"[TIMEOUT {DEFAULT_COMMAND_TIMEOUT}s]"
         except Exception as e:
             return False, f"[WYJĄTEK: {e}]"
 
@@ -299,7 +306,7 @@ class AutonomousSession:
         self.fix_count += 1
 
         icon = "✅" if ok else "❌"
-        print(f"  {icon} Wynik: {out[:200]}")
+        print(f"  {icon} Wynik: {out[:MAX_COMMAND_LENGTH]}")
 
         # Anonymize before sending to LLM
         anon_out, _ = anonymize(out)
@@ -310,13 +317,13 @@ class AutonomousSession:
             "content": (
                 f"Wykonano: `{anon_cmd}`\n"
                 f"Sukces: {ok}\n"
-                f"Output: {anon_out[:500]}\n"
+                f"Output: {anon_out[:MAX_SEARCH_QUERY_LENGTH]}\n"
                 f"Zweryfikuj wynik i zaproponuj następną akcję."
             ),
         })
         return True
 
-    def _handle_skip(self, action_data: Dict[str, Any]):
+    def _handle_skip(self, action_data: Dict[str, Any]) -> None:
         """Handle SKIP action."""
         reason = action_data.get("reason", "")
         print(f"  ⏭️  Pomijam: {reason}")
@@ -326,7 +333,7 @@ class AutonomousSession:
         })
         self.fix_count += 1
 
-    def _handle_done(self):
+    def _handle_done(self) -> None:
         """Handle DONE action - session complete."""
         print("\n  ✅ Agent zakończył – wszystkie problemy naprawione!")
 
@@ -408,7 +415,7 @@ class AutonomousSession:
         self._print_report()
         return self.report
 
-    def _print_report(self):
+    def _print_report(self) -> None:
         """Print session report."""
         print(f"\n{'═' * UI_BORDER_WIDTH}")
         print("  📊 RAPORT SESJI AUTONOMICZNEJ")

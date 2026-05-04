@@ -20,7 +20,7 @@ from fixos.config import FixOsConfig
               help="Maksymalna liczba iteracji")
 @click.option("--output", "-o", default=None,
               help="Zapisz log wykonania do pliku JSON")
-def orchestrate(provider, token, model, no_banner, mode, modules, dry_run, max_iterations, output) -> None:
+def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: str, modules: str, dry_run: bool, max_iterations: int, output: str) -> None:
     """
     Zaawansowana orkiestracja napraw z grafem problemów.
 

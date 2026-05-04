@@ -7,7 +7,7 @@ import click
 @click.command("history")
 @click.option("--limit", default=20, help="Ile sesji pokazać")
 @click.option("--json", "json_output", is_flag=True, default=False, help="Wyjście JSON")
-def history(limit, json_output) -> None:
+def history(limit: int, json_output: bool) -> None:
     """
     Historia napraw fixOS.
 

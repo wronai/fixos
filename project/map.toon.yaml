@@ -1,6 +1,6 @@
-# fixOS | 114f 19756L | python:111,shell:2,less:1 | 2026-05-04
-# stats: 256 func | 123 cls | 114 mod | CC̄=4.4 | critical:26 | cycles:0
-# alerts[5]: CC _match_heuristic_command=18; CC _handle_snap_management=18; CC _cleanup_full_system=18; CC cleanup_services=16; CC _select_cleanup_items_by_filter=16
+# fixOS | 114f 20187L | python:111,shell:2,less:1 | 2026-05-04
+# stats: 275 func | 123 cls | 114 mod | CC̄=4.3 | critical:21 | cycles:0
+# alerts[5]: CC config_provider=18; CC _validate_result_with_llm=14; CC _handle_interactive_select=14; CC _print_quick_issues=14; CC calibrate=14
 # hotspots[5]: orchestrate fan=24; diagnose_system fan=20; _cleanup_flatpak_detailed fan=19; _handle_home_analysis fan=18; token_set fan=18
 # evolution: baseline
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
@@ -15,15 +15,15 @@ M[114]:
   fixos/agent/autonomous_session.py,434
   fixos/agent/hitl.py,37
   fixos/agent/hitl_session.py,221
-  fixos/agent/session_core.py,94
-  fixos/agent/session_handlers.py,229
+  fixos/agent/session_core.py,150
+  fixos/agent/session_handlers.py,312
   fixos/agent/session_io.py,259
   fixos/anonymizer.py,87
   fixos/cli/__init__.py,9
-  fixos/cli/ask_cmd.py,355
-  fixos/cli/cleanup_cmd.py,1209
-  fixos/cli/config_cmd.py,84
-  fixos/cli/features_cmd.py,177
+  fixos/cli/ask_cmd.py,360
+  fixos/cli/cleanup_cmd.py,1238
+  fixos/cli/config_cmd.py,222
+  fixos/cli/features_cmd.py,184
   fixos/cli/fix_cmd.py,285
   fixos/cli/history_cmd.py,50
   fixos/cli/main.py,159
@@ -33,14 +33,14 @@ M[114]:
   fixos/cli/quickfix_cmd.py,77
   fixos/cli/report_cmd.py,119
   fixos/cli/rollback_cmd.py,91
-  fixos/cli/scan_cmd.py,195
-  fixos/cli/shared.py,63
+  fixos/cli/scan_cmd.py,196
+  fixos/cli/shared.py,61
   fixos/cli/token_cmd.py,125
   fixos/cli/watch_cmd.py,50
   fixos/cli.py,96
-  fixos/config.py,346
+  fixos/config.py,426
   fixos/config_interactive.py,150
-  fixos/constants.py,28
+  fixos/constants.py,32
   fixos/diagnostics/__init__.py,3
   fixos/diagnostics/checks/__init__.py,21
   fixos/diagnostics/checks/_shared.py,45
@@ -61,7 +61,7 @@ M[114]:
   fixos/features/__init__.py,261
   fixos/features/auditor.py,128
   fixos/features/catalog.py,120
-  fixos/features/installer.py,197
+  fixos/features/installer.py,179
   fixos/features/profiles.py,89
   fixos/features/renderer.py,125
   fixos/fixes/__init__.py,5
@@ -69,11 +69,11 @@ M[114]:
   fixos/interactive/cleanup_planner.py,414
   fixos/llm_shell.py,237
   fixos/orchestrator/__init__.py,10
-  fixos/orchestrator/executor.py,272
+  fixos/orchestrator/executor.py,289
   fixos/orchestrator/graph.py,164
   fixos/orchestrator/orchestrator.py,396
   fixos/orchestrator/rollback.py,163
-  fixos/platform_utils.py,185
+  fixos/platform_utils.py,203
   fixos/plugins/__init__.py,12
   fixos/plugins/base.py,100
   fixos/plugins/builtin/__init__.py,2
@@ -81,7 +81,7 @@ M[114]:
   fixos/plugins/builtin/disk.py,114
   fixos/plugins/builtin/hardware.py,130
   fixos/plugins/builtin/resources.py,138
-  fixos/plugins/builtin/security.py,172
+  fixos/plugins/builtin/security.py,185
   fixos/plugins/builtin/thumbnails.py,119
   fixos/plugins/registry.py,128
   fixos/profiles/__init__.py,66
@@ -145,15 +145,19 @@ D:
     HITLSession: __init__(3),_setup_timeout(0),_clear_timeout(0),remaining(0),_initialize_messages(0),_print_header(0),_handle_llm_error(0),_check_low_confidence(1),_process_turn(0),run(0),_print_summary(0)  # Interactive Human-in-the-Loop diagnostic and repair session.
     run_hitl_session(diagnostics;config;show_data)
   fixos/agent/session_core.py:
-    e: extract_fixes,extract_search_topic,CmdResult
+    e: _is_diagnostic_only_command,_is_part_diagnostic_only,extract_fixes,extract_search_topic,CmdResult
     CmdResult:  # Result of executed command.
+    _is_diagnostic_only_command(cmd)
+    _is_part_diagnostic_only(part)
     extract_fixes(reply)
     extract_search_topic(llm_reply)
   fixos/agent/session_handlers.py:
-    e: handle_quit,handle_skip_all,handle_describe_problem,handle_execute_all,handle_fix_by_number,handle_direct_command,handle_search,handle_free_text,run_single_command,parse_user_input
+    e: _resolve_command_timeout,handle_quit,handle_skip_all,handle_describe_problem,_sort_fixes_by_priority,handle_execute_all,handle_fix_by_number,handle_direct_command,handle_search,handle_free_text,run_single_command,parse_user_input
+    _resolve_command_timeout(cmd)
     handle_quit()
     handle_skip_all(messages)
     handle_describe_problem(messages;ask_fn)
+    _sort_fixes_by_priority(fixes)
     handle_execute_all(fixes;messages;executed;run_cmd_fn)
     handle_fix_by_number(user_in;fixes;messages;executed;run_cmd_fn)
     handle_direct_command(user_in;messages;executed;run_cmd_fn)
@@ -162,8 +166,8 @@ D:
     run_single_command(cmd;comment)
     parse_user_input(user_in;fixes;messages;executed;serpapi_key)
   fixos/agent/session_io.py:
-    e: _suspend_timeout,_setup_timeout_ref,print_session_header,fmt_time,print_action_menu,ask_user_problem,print_cmd_preview,print_cmd_result,print_session_summary,print_thinking,clear_thinking,print_llm_reply,print_llm_error,print_blocked_command,print_timeout,print_session_ended,print_session_interrupted,print_executing_all,print_no_commands,print_invalid_option,print_no_results,print_searching,ask_execute_prompt,ask_low_confidence_search,ask_send_data,get_user_input
-    _suspend_timeout()
+    e: suspend_timeout,_setup_timeout_ref,print_session_header,fmt_time,print_action_menu,ask_user_problem,print_cmd_preview,print_cmd_result,print_session_summary,print_thinking,clear_thinking,print_llm_reply,print_llm_error,print_blocked_command,print_timeout,print_session_ended,print_session_interrupted,print_executing_all,print_no_commands,print_invalid_option,print_no_results,print_searching,ask_execute_prompt,ask_low_confidence_search,ask_send_data,get_user_input
+    suspend_timeout()
     _setup_timeout_ref(session;seconds;handler)
     print_session_header(os_info;pkg_manager;model;timeout;remaining_fn)
     fmt_time(s)
@@ -195,8 +199,9 @@ D:
     anonymize(data_str)
   fixos/cli/__init__.py:
   fixos/cli/ask_cmd.py:
-    e: ask,_match_heuristic_command,_format_command,_build_output_dict,_execute_heuristic_command,_execute_with_llm,_handle_natural_command,_validate_result_with_llm
+    e: ask,_object_based_match,_match_heuristic_command,_format_command,_build_output_dict,_execute_heuristic_command,_execute_with_llm,_handle_natural_command,_validate_result_with_llm
     ask(prompt;dry_run)
+    _object_based_match(prompt_lower)
     _match_heuristic_command(prompt_lower)
     _format_command(matched_cmd)
     _build_output_dict(status;prompt;source;command;exit_code;stdout;stderr;llm;reason;message;error)
@@ -205,7 +210,8 @@ D:
     _handle_natural_command(prompt;dry_run)
     _validate_result_with_llm(prompt;cmd_str;result;cfg)
   fixos/cli/cleanup_cmd.py:
-    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_format_hint_line,_display_service_group,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_build_dep_types,_display_full_system_menu,_snap_fetch_packages,_snap_remove_packages,_handle_snap_management,_parse_numeric_range_set,_display_home_items,_resolve_home_selection,_remove_home_items,_handle_home_analysis,_show_home_item_info,_query_info,_query_path,_query_cmd,_query_filter,_handle_select_query,_handle_interactive_select,_filter_by_age,_filter_by_prefix_top,_filter_by_prefix_category,_filter_by_prefix_type,_select_cleanup_items_by_filter,_execute_full_cleanup,_cleanup_full_system,_parse_size_to_gb
+    e: _run_interactive_cleanup,cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_format_hint_line,_display_service_group,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_build_dep_types,_display_full_system_menu,_snap_fetch_packages,_snap_remove_packages,_snap_display_packages,_snap_select_packages,_snap_warn_dangerous,_handle_snap_management,_parse_numeric_range_set,_display_home_items,_resolve_home_selection,_remove_home_items,_handle_home_analysis,_show_home_item_info,_query_info,_query_path,_query_cmd,_query_filter,_handle_select_query,_handle_interactive_select,_filter_by_age,_filter_by_prefix_top,_filter_by_prefix_category,_filter_by_prefix_type,_filter_large,_select_cleanup_items_by_filter,_execute_full_cleanup,_show_dep_types,_dispatch_system_selection,_cleanup_full_system,_parse_size_to_gb
+    _run_interactive_cleanup(plan;list_only;scanner)
     cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only;full_analysis)
     _display_cleanup_summary(plan;threshold)
     _display_service_item(svc)
@@ -224,6 +230,9 @@ D:
     _display_full_system_menu(analyzer;analysis;safe_items;medium_items;dry_run)
     _snap_fetch_packages(analyzer)
     _snap_remove_packages(packages_to_remove)
+    _snap_display_packages(active_packages)
+    _snap_select_packages(active_packages)
+    _snap_warn_dangerous(packages_to_remove)
     _handle_snap_management(analyzer;dry_run)
     _parse_numeric_range_set(nums)
     _display_home_items(large_files;large_dirs)
@@ -241,20 +250,29 @@ D:
     _filter_by_prefix_top(selection;analyzer)
     _filter_by_prefix_category(selection;analyzer)
     _filter_by_prefix_type(selection;analyzer)
+    _filter_large(analyzer;threshold_bytes;label)
     _select_cleanup_items_by_filter(selection;analyzer;safe_items)
     _execute_full_cleanup(items_to_clean;dry_run)
+    _show_dep_types(analyzer)
+    _dispatch_system_selection(selection;analyzer;safe_items;dry_run)
     _cleanup_full_system(json_output;dry_run)
     _parse_size_to_gb(size_str)
   fixos/cli/config_cmd.py:
-    e: config,config_show,config_init,config_set
+    e: _env_path,_set_env_key,config,config_show,config_init,config_set,config_model,config_provider
+    _env_path()
+    _set_env_key(key;value)
     config()
     config_show()
     config_init(force)
     config_set(key;value)
+    config_model(provider)
+    config_provider()
   fixos/cli/features_cmd.py:
-    e: features,features_audit,features_install,features_profiles,features_system,_interactive_profile_select
+    e: features,features_audit,_show_install_plan,_show_install_results,features_install,features_profiles,features_system,_interactive_profile_select
     features()
     features_audit(profile;json_output)
+    _show_install_plan(to_install;yes;dry_run)
+    _show_install_results(install_result)
     features_install(profile;dry_run;yes;category)
     features_profiles()
     features_system()
@@ -414,7 +432,7 @@ D:
     PackageCatalog: __init__(0),load(2),get_package(1),get_packages_by_category(1),list_categories(0)  # Manages the package database.
   fixos/features/installer.py:
     e: FeatureInstaller
-    FeatureInstaller: __init__(2),install(1),_install_package(1),_install_repo(1),_install_native(1),_install_flatpak(1),_install_pip(1),_install_cargo(1),_install_npm(1),_run_script(1),get_rollback_commands(1)  # Safely installs packages using native package manager or oth
+    FeatureInstaller: __init__(2),install(1),_build_install_methods(1),_install_package(1),_install_repo(1),_install_native(1),_install_flatpak(1),_install_pip(1),_install_cargo(1),_install_npm(1),_run_script(1),get_rollback_commands(1)  # Safely installs packages using native package manager or oth
   fixos/features/profiles.py:
     e: UserProfile
     UserProfile: load(3),list_available(2),resolve_packages(2),to_dict(0)  # A user profile defining what packages/features they want.
@@ -444,7 +462,7 @@ D:
     DangerousCommandError: __init__(2)
     CommandTimeoutError: __init__(2)
     ExecutionResult: success(0),to_context(0)
-    CommandExecutor: __init__(3),is_dangerous(1),needs_sudo(1),add_sudo(1),_make_noninteractive(1),check_idempotent(1),execute_sync(4),execute(3)  # Bezpieczny executor komend z:
+    CommandExecutor: __init__(3),is_dangerous(1),needs_sudo(1),add_sudo(1),_make_noninteractive(1),check_idempotent(1),_resolve_timeout(2),execute_sync(4),execute(3)  # Bezpieczny executor komend z:
   fixos/orchestrator/graph.py:
     e: Problem,ProblemGraph
     Problem: is_actionable(0),to_summary(0)
@@ -458,11 +476,12 @@ D:
     RollbackEntry:  # Single recorded operation with its rollback command.
     RollbackSession: record(6),get_rollback_commands(0),rollback_last(2),_save(0),load(2),list_sessions(2)  # A session of recorded operations that can be rolled back.
   fixos/platform_utils.py:
-    e: get_os_info,needs_elevation,elevate_cmd,is_dangerous,run_command,get_package_manager,install_package_cmd,_cmd_exists,setup_signal_timeout,cancel_signal_timeout
+    e: get_os_info,needs_elevation,elevate_cmd,is_dangerous,is_interactive_blocker,run_command,get_package_manager,install_package_cmd,_cmd_exists,setup_signal_timeout,cancel_signal_timeout
     get_os_info()
     needs_elevation(cmd)
     elevate_cmd(cmd)
     is_dangerous(cmd)
+    is_interactive_blocker(cmd)
     run_command(cmd;timeout;shell)
     get_package_manager()
     install_package_cmd(package)
@@ -491,7 +510,7 @@ D:
     Plugin: diagnose(0),_check_cpu(0),_check_ram(0),_check_top_processes(0),_check_zombies(0),_check_swap(0)
   fixos/plugins/builtin/security.py:
     e: Plugin
-    Plugin: diagnose(0),_check_firewall(0),_check_selinux(0),_check_open_ports(0),_check_ssh(0),_check_fail2ban(0)
+    Plugin: _selinux_findings(1),_fail2ban_findings(1),_overall_status(1),diagnose(0),_check_firewall(0),_check_selinux(0),_check_open_ports(0),_check_ssh(0),_check_fail2ban(0)
   fixos/plugins/builtin/thumbnails.py:
     e: Plugin
     Plugin: diagnose(0),_check_cache(0),_check_ffmpegthumbnailer(0),_check_totem(0),_check_gstreamer(0)

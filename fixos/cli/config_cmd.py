@@ -63,7 +63,7 @@ def config_show() -> None:
 
 @config.command("init")
 @click.option("--force", is_flag=True, help="Nadpisz istniejący plik")
-def config_init(force) -> None:
+def config_init(force: bool) -> None:
     """Zainicjalizuj plik konfiguracyjny .env."""
     from pathlib import Path
 
@@ -95,7 +95,7 @@ GEMINI_API_KEY=
 @config.command("set")
 @click.argument("key")
 @click.argument("value")
-def config_set(key, value) -> None:
+def config_set(key: str, value: str) -> None:
     """Ustaw wartość konfiguracyjną w .env."""
     from dotenv import set_key
 

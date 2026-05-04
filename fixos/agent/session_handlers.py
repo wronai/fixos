@@ -11,6 +11,8 @@ from ..constants import (
     DEFAULT_COMMAND_TIMEOUT,
     FAST_COMMAND_TIMEOUT,
     LONG_COMMAND_TIMEOUT,
+    MAX_ANON_PREVIEW_LENGTH,
+    MAX_STDERR_PREVIEW_LENGTH,
 )
 from ..platform_utils import (
     is_dangerous, is_interactive_blocker, elevate_cmd, run_command,
@@ -101,7 +103,7 @@ def _sort_fixes_by_priority(fixes: list) -> list:
         r"\bflatpak\s+(update|install)\b",
     )
 
-    def score(item):
+    def score(item) -> int:
         cmd = item[0].lower()
         if any(re.search(p, cmd) for p in cleanup_patterns):
             return 0
@@ -164,8 +166,8 @@ def handle_fix_by_number(
             "content": (
                 f"Executed: `{cmd}`\n"
                 f"Success: {result.ok}\n"
-                f"Stdout:\n```\n{anon_out[:800]}\n```\n"
-                f"Stderr:\n```\n{anon_err[:300]}\n```\n"
+                f"Stdout:\n```\n{anon_out[:MAX_ANON_PREVIEW_LENGTH]}\n```\n"
+                f"Stderr:\n```\n{anon_err[:MAX_STDERR_PREVIEW_LENGTH]}\n```\n"
                 f"What next?"
             ),
         })
@@ -184,7 +186,7 @@ def handle_direct_command(
     cmd = user_in[1:].strip()
     result = run_cmd_fn(cmd, "Komenda użytkownika")
     executed.append(result)
-    anon_out, _ = anonymize(result.stdout + "\n" + result.stderr)
+    anon_out, _ = anonymize(f"{result.stdout}\n{result.stderr}")
     messages.append({
         "role": "user",
         "content": f"User ran: `{cmd}`\nResult: {anon_out[:600]}\nWhat next?"
@@ -252,7 +254,7 @@ def run_single_command(cmd: str, comment: str) -> CmdResult:
     with io.suspend_timeout():
         ok, stdout, stderr, rc = run_command(cmd, timeout=timeout)
     
-    io.console.print("\r" + " " * 30 + "\r", end="")
+    io.console.print(f"\r{' ' * 30}\r", end="")
     result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                        stdout=stdout, stderr=stderr, returncode=rc)
     io.print_cmd_result(result)

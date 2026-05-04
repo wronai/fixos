@@ -8,9 +8,7 @@ from dataclasses import dataclass, field
 from typing import List, Tuple
 
 from ..constants import (
-    COMMAND_PREFIX_LENGTH,
-    MAX_OUTPUT_LINES,
-    CLEANUP_TIMEOUT_ESTIMATE,
+    MAX_SUMMARY_LENGTH,
 )
 
 
@@ -32,7 +30,7 @@ SYSTEM_PROMPT = """You are an expert Linux/Windows/macOS system diagnostics assi
 You receive anonymized diagnostic data OR a user-described problem. Your tasks:
 
 1. DIAGNOSE – identify ALL problems (🔴 critical → 🟡 important → 🟢 minor)
-2. SOLUTIONS – for each problem provide a CONCRETE command with a brief explanation
+2. SOLUTIONS – for each problem provide an ACTIONABLE repair command with a brief explanation
 3. FORMAT – always use this exact format:
 
 ━━━ DIAGNOZA ━━━
@@ -43,6 +41,12 @@ You receive anonymized diagnostic data OR a user-described problem. Your tasks:
 🟡 Problem 2: [description]
    **Komenda:** `command`
    **Co robi:** explanation
+
+IMPORTANT RULES:
+- Commands in the action list must change/fix something, not only inspect state.
+- Do NOT use read-only diagnostics as fixes (e.g. `df -h`, `free -h`, `ls`, `cat`, `grep`, `systemctl status`).
+- If needed, mention diagnostics in explanation, but propose executable repair steps in `Komenda`.
+- For package upgrades and heavy operations, provide the real fix command (e.g. `dnf upgrade -y`).
 
 Always end with:
 ━━━ DOSTĘPNE AKCJE ━━━
@@ -55,6 +59,36 @@ Always end with:
 
 IMPORTANT: Adapt commands to the detected OS (Linux/Windows/macOS).
 """
+
+
+def _is_diagnostic_only_command(cmd: str) -> bool:
+    """Return True if command is read-only and not a repair action."""
+    normalized = cmd.strip().lower()
+    if normalized.startswith("sudo "):
+        normalized = normalized[5:].strip()
+
+    diagnostic_prefixes = (
+        "df ",
+        "free ",
+        "ls ",
+        "cat ",
+        "grep ",
+        "find ",
+        "which ",
+        "whereis ",
+        "journalctl",
+        "dmesg",
+        "uptime",
+        "top ",
+        "ps ",
+        "systemctl status",
+        "dnf check-update",
+        "apt list --upgradable",
+        "pacman -qu",
+        "flatpak list",
+        "snap list",
+    )
+    return normalized.startswith(diagnostic_prefixes)
 
 
 def extract_fixes(reply: str) -> List[Tuple[str, str]]:
@@ -76,7 +110,10 @@ def extract_fixes(reply: str) -> List[Tuple[str, str]]:
     if not fixes:
         for m in re.finditer(r"EXEC:\s*`([^`]+)`", reply, re.IGNORECASE):
             fixes.append((m.group(1).strip(), ""))
-    return fixes
+
+    # Keep only actionable commands in menu; diagnostic-only commands are noise.
+    filtered = [(cmd, comment) for cmd, comment in fixes if not _is_diagnostic_only_command(cmd)]
+    return filtered
 
 
 def extract_search_topic(llm_reply: str) -> str:

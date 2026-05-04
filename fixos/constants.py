@@ -7,6 +7,9 @@ DEFAULT_SESSION_TIMEOUT = 300  # 5 minutes
 HITL_TIMEOUT_BUFFER = 80  # Buffer time for HITL session (seconds)
 AUTONOMOU_TIMEOUT_BUFFER = 40  # Buffer time for autonomous session
 CLEANUP_TIMEOUT_ESTIMATE = 120  # Estimated cleanup timeout
+DEFAULT_COMMAND_TIMEOUT = 300  # Default command timeout in HITL session
+LONG_COMMAND_TIMEOUT = 1800  # Long-running operations like system updates
+FAST_COMMAND_TIMEOUT = 60  # Read-only and quick diagnostic commands
 
 # String lengths / limits
 MAX_COMMAND_LENGTH = 200  # Maximum length for command display
@@ -25,3 +28,4 @@ DEFAULT_HISTORY_LIMIT = 20  # Default history items to show
 
 # Text formatting
 COMMAND_PREFIX_LENGTH = 80  # Max length for command prefix in output
+MAX_SUMMARY_LENGTH = 200  # Max summary chars for derived search topic

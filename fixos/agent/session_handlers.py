@@ -3,9 +3,15 @@ Command handlers for HITL session.
 Each handler processes a specific user command type.
 """
 
+import re
 from typing import TYPE_CHECKING, Tuple
 
-from ..constants import CLEANUP_TIMEOUT_ESTIMATE
+from ..constants import (
+    CLEANUP_TIMEOUT_ESTIMATE,
+    DEFAULT_COMMAND_TIMEOUT,
+    FAST_COMMAND_TIMEOUT,
+    LONG_COMMAND_TIMEOUT,
+)
 from ..platform_utils import (
     is_dangerous, elevate_cmd, run_command,
 )
@@ -17,6 +23,37 @@ from .session_core import CmdResult, extract_fixes
 if TYPE_CHECKING:
     from ..providers.llm import LLMClient
     from ..config import FixOsConfig
+
+
+def _resolve_command_timeout(cmd: str) -> int:
+    """Choose timeout based on command type to avoid premature failures."""
+    normalized = cmd.strip().lower()
+
+    long_running_patterns = (
+        r"\bdnf\s+(update|upgrade|distro-sync|system-upgrade)\b",
+        r"\bapt(-get)?\s+(update|upgrade|dist-upgrade|full-upgrade)\b",
+        r"\bpacman\s+-S(y|yu|yyu)\b",
+        r"\bzypper\s+(refresh|update|dup)\b",
+        r"\bflatpak\s+update\b",
+        r"\bsnap\s+refresh\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in long_running_patterns):
+        return LONG_COMMAND_TIMEOUT
+
+    fast_read_only_patterns = (
+        r"\bdf\b",
+        r"\bfree\b",
+        r"\bls\b",
+        r"\bcat\b",
+        r"\bgrep\b",
+        r"\bsystemctl\s+status\b",
+    )
+    if any(re.search(pattern, normalized) for pattern in fast_read_only_patterns):
+        return FAST_COMMAND_TIMEOUT
+
+    if CLEANUP_TIMEOUT_ESTIMATE > DEFAULT_COMMAND_TIMEOUT:
+        return CLEANUP_TIMEOUT_ESTIMATE
+    return DEFAULT_COMMAND_TIMEOUT
 
 
 def handle_quit() -> bool:
@@ -167,8 +204,9 @@ def run_single_command(cmd: str, comment: str) -> CmdResult:
         return CmdResult(cmd=cmd, comment=comment, ok=False,
                          stdout="", stderr="Pominięto.", returncode=-1, skipped=True)
     
+    timeout = _resolve_command_timeout(cmd)
     io.console.print("  [dim]⏳ Wykonuję...[/dim]", end="")
-    ok, stdout, stderr, rc = run_command(cmd, timeout=CLEANUP_TIMEOUT_ESTIMATE)
+    ok, stdout, stderr, rc = run_command(cmd, timeout=timeout)
     io.console.print("\r" + " " * 30 + "\r", end="")
     result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                        stdout=stdout, stderr=stderr, returncode=rc)

@@ -6,14 +6,14 @@ from fixos.orchestrator.rollback import RollbackSession
 
 
 @click.group("rollback")
-def rollback():
+def rollback() -> None:
     """Zarządzanie cofaniem operacji fixOS."""
     pass
 
 
 @rollback.command("list")
 @click.option("--limit", default=20, help="Ile sesji pokazać")
-def rollback_list(limit):
+def rollback_list(limit) -> None:
     """Pokaż historię sesji naprawczych."""
     sessions = RollbackSession.list_sessions(limit)
     if not sessions:
@@ -34,7 +34,7 @@ def rollback_list(limit):
 
 @rollback.command("show")
 @click.argument("session_id")
-def rollback_show(session_id):
+def rollback_show(session_id) -> None:
     """Pokaż szczegóły sesji rollback."""
     try:
         session = RollbackSession.load(session_id)
@@ -60,7 +60,7 @@ def rollback_show(session_id):
 @click.argument("session_id")
 @click.option("--last", default=1, help="Ile ostatnich operacji cofnąć")
 @click.option("--dry-run", is_flag=True, default=False, help="Tylko pokaż co by się cofnęło")
-def rollback_undo(session_id, last, dry_run):
+def rollback_undo(session_id, last, dry_run) -> None:
     """Cofnij operacje z podanej sesji."""
     try:
         session = RollbackSession.load(session_id)

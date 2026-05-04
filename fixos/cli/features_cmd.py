@@ -18,7 +18,7 @@ from ..utils.terminal import console
 
 
 @click.group(name="features")
-def features():
+def features() -> None:
     """Zarządzanie pakietami komfortu systemu."""
     pass
 

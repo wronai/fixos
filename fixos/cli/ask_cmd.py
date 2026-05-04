@@ -36,7 +36,7 @@ _OBJECT_KEYWORDS: list[tuple[list[str], tuple]] = [
 ]
 
 
-def _object_based_match(prompt_lower: str):
+def _object_based_match(prompt_lower: str) -> object:
     """Fallback object-based matching when no action keyword is found."""
     for keywords, cmd in _OBJECT_KEYWORDS:
         if any(kw in prompt_lower for kw in keywords):

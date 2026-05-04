@@ -70,7 +70,7 @@ code {{ background: #e9ecef; padding: 2px 6px; border-radius: 3px; }}
 @click.option("--output", "-o", default=None, help="Ścieżka pliku wyjściowego")
 @click.option("--modules", "-m", default=None, help="Moduły diagnostyki")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny")
-def report(output_format, output, modules, profile):
+def report(output_format, output, modules, profile) -> None:
     """
     Eksport wyników diagnostyki do raportu HTML/Markdown/JSON.
 

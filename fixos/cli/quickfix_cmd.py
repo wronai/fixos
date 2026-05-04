@@ -9,7 +9,7 @@ from fixos.plugins.base import Severity
 @click.command("quickfix")
 @click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania")
 @click.option("--modules", "-m", default=None, help="Moduły: audio,disk,security,...")
-def quickfix(dry_run, modules):
+def quickfix(dry_run, modules) -> None:
     """
     Natychmiastowe naprawy bez API — baza znanych bugów.
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 @click.group("token")
-def token():
+def token() -> None:
     """Zarządzanie tokenem API."""
     pass
 
@@ -16,7 +16,7 @@ def token():
 @click.argument("key")
 @click.option("--provider", "-p", default=None, help="Provider (auto-detect if not provided)")
 @click.option("--env-file", "-e", default=".env", help="Plik .env do zapisu")
-def token_set(key, provider, env_file):
+def token_set(key, provider, env_file) -> None:
     """
     Zapisz token API do pliku .env.
 
@@ -69,7 +69,7 @@ def token_set(key, provider, env_file):
         set_key(str(env_path), env_var, key)
         # Set file permissions to 600 (owner read/write only)
         os.chmod(env_path, 0o600)
-        masked = key[:8] + "..." + key[-4:] if len(key) > 12 else "***"
+        masked = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
         click.echo(click.style(f"Zapisano {env_var}={masked} do {env_path}", fg="green"))
 
         # Also update current process
@@ -87,13 +87,13 @@ def token_set(key, provider, env_file):
 
 
 @token.command("show")
-def token_show():
+def token_show() -> None:
     """Pokaż obecny token (masked)."""
     from fixos.config import FixOsConfig
 
     cfg = FixOsConfig.load()
     if cfg.api_key:
-        masked = cfg.api_key[:8] + "..." + cfg.api_key[-4:]
+        masked = f"{cfg.api_key[:8]}...{cfg.api_key[-4:]}"
         click.echo(f"Provider: {cfg.provider}")
         click.echo(f"Model: {cfg.model}")
         click.echo(f"Token: {masked}")
@@ -103,7 +103,7 @@ def token_show():
 
 @token.command("clear")
 @click.option("--env-file", "-e", default=".env", help="Plik .env do edycji")
-def token_clear(env_file):
+def token_clear(env_file) -> None:
     """Usuń token z pliku .env."""
     from dotenv import unset_key
 

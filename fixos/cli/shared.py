@@ -23,19 +23,17 @@ COMMON_OPTIONS = [
 ]
 
 
-def add_common_options(fn):
+def add_common_options(fn) -> object:
     """Decorator adding common LLM options to a Click command."""
     for opt in reversed(COMMON_OPTIONS):
         fn = opt(fn)
     return fn
 
 
-def add_shared_options(func):
+def add_shared_options(func) -> object:
     """Shared options for both scan and fix commands."""
     func = click.option("--show-raw", "show_raw", is_flag=True, default=False,
                        help="Pokaż surowe dane diagnostyczne (JSON)")(func)
-    func = click.option("--no-banner", "no_banner", is_flag=True, default=False,
-                       help="Ukryj baner fixos")(func)
     func = click.option("--disc", is_flag=True, default=False,
                        help="Analiza zajętości dysku + grupowanie przyczyn")(func)
     func = click.option("--disk", "disc", is_flag=True, default=False,
@@ -54,7 +52,7 @@ def add_shared_options(func):
 class NaturalLanguageGroup(click.Group):
     """Click group that routes unknown commands to 'ask' command."""
     
-    def resolve_command(self, ctx, args):
+    def resolve_command(self, ctx, args) -> tuple[str, click.Command, list[str]]:
         cmd_name = args[0] if args else None
         cmd = self.get_command(ctx, cmd_name) if cmd_name else None
         if cmd is None and args and not args[0].startswith("-"):

@@ -110,10 +110,10 @@ def _print_welcome() -> None:
         click.echo(f"{click.style('     fixos fix', fg='yellow')}  # zapyta o provider interaktywnie")
     else:
         click.echo(click.style("  Przykłady użycia:", fg="yellow", bold=True))
-        click.echo(click.style("     fixos fix", fg="yellow") + "                           # pełna diagnostyka + naprawa")
-        click.echo(click.style("     fixos fix --modules security,resources", fg="yellow") + " # bezpieczeństwo + zasoby")
-        click.echo(click.style("     fixos scan --modules security", fg="yellow") + "        # tylko skan bezpieczeństwa")
-        click.echo(click.style("     fixos orchestrate --dry-run", fg="yellow") + "          # podgląd napraw bez wykonania")
+        click.echo(f"{click.style('     fixos fix', fg='yellow')}                           # pełna diagnostyka + naprawa")
+        click.echo(f"{click.style('     fixos fix --modules security,resources', fg='yellow')} # bezpieczeństwo + zasoby")
+        click.echo(f"{click.style('     fixos scan --modules security', fg='yellow')}        # tylko skan bezpieczeństwa")
+        click.echo(f"{click.style('     fixos orchestrate --dry-run', fg='yellow')}          # podgląd napraw bez wykonania")
     click.echo()
 
 

@@ -13,9 +13,10 @@ from fixos.cli.shared import add_shared_options, BANNER
 @click.option("--system", "modules", flag_value="system", help="Tylko system")
 @click.option("--all", "modules", flag_value="all", default=True, help="Wszystkie moduły (domyślnie)")
 @add_shared_options
+@click.option("--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos")
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
-def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile):
+def scan(modules, output, show_raw, no_banner, disc, dry_run, interactive, json_output, llm_fallback, profile) -> None:
     """
     Przeprowadza diagnostykę systemu.
 
@@ -124,7 +125,7 @@ def _display_disk_scan_mode(disk_analysis: dict) -> None:
             click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
 
 
-def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False):
+def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False) -> None:
     """Helper for disk analysis logic to avoid duplication between scan and fix"""
     indent = "  " if is_fix_mode else ""
     click.echo(click.style("Analizowanie zajętości dysku...", fg="blue"))
@@ -155,7 +156,7 @@ def _run_disk_analysis(data: dict, json_output: bool, is_fix_mode: bool = False)
         click.echo(click.style(f"{indent}Błąd podczas analizy dysku: {str(e)}", fg="red"))
 
 
-def _print_quick_issues(data: dict):
+def _print_quick_issues(data: dict) -> None:
     """Wyświetla szybki przegląd problemów z zebranych danych."""
     import click
     click.echo(click.style("\nSzybki przegląd problemów:", fg="cyan"))

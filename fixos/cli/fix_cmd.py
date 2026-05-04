@@ -218,7 +218,7 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
             click.echo(click.style("\nBrak bezpiecznych akcji do automatycznego wykonania", fg="yellow"))
 
 
-def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
+def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool) -> None:
     """Execute cleanup actions with safety checks"""
     from fixos.orchestrator.executor import CommandExecutor
     
@@ -259,7 +259,7 @@ def execute_cleanup_actions(actions: List[Dict], cfg, llm_fallback: bool):
         try_llm_fallback_for_failures(failed, cfg)
 
 
-def try_llm_fallback_for_failures(failed_actions, cfg):
+def try_llm_fallback_for_failures(failed_actions, cfg) -> None:
     """Try to fix failed actions using LLM"""
     from fixos.providers.llm import LLMClient
     

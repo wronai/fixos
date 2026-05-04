@@ -51,7 +51,7 @@ PROVIDER_DEFAULTS = {
     },
     "openrouter": {
         "base_url": "https://openrouter.ai/api/v1",
-        "model": "deepseek/deepseek-chat-v3-0324:free",
+        "model": "deepseek/deepseek-v4-flash",
         "key_env": "OPENROUTER_API_KEY",
         "key_url": "https://openrouter.ai/settings/keys",
         "free_tier": True,
@@ -327,11 +327,11 @@ PROVIDER_MODELS: dict[str, list[str]] = {
         "gpt-3.5-turbo",
     ],
     "openrouter": [
-        "deepseek/deepseek-chat-v3-0324:free",
-        "qwen/qwen3-235b-a22b:free",
-        "meta-llama/llama-3.3-70b-instruct",
+        "deepseek/deepseek-v4-flash",
         "meta-llama/llama-3.1-8b-instruct:free",
         "mistralai/mistral-small-3.1-24b-instruct:free",
+        "qwen/qwen3-235b-a22b:free",
+        "meta-llama/llama-3.3-70b-instruct",
         "google/gemini-2.0-flash-001",
         "google/gemini-flash-1.5",
         "openai/gpt-4o-mini",

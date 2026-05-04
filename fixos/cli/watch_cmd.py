@@ -15,7 +15,7 @@ from fixos.plugins.base import Severity
               help="Minimalny poziom alertów")
 @click.option("--max-iterations", default=0, show_default=True,
               help="Maksymalna liczba iteracji (0 = bez limitu)")
-def watch(interval, modules, alert_on, max_iterations):
+def watch(interval, modules, alert_on, max_iterations) -> None:
     """
     Monitorowanie systemu w tle z powiadomieniami.
 

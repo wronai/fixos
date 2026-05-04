@@ -589,3 +589,113 @@ def _make_sensitive_string() -> str:
         "sk-abc123def456ghi789jkl012mno345pqr password=mysecretpass123 "
         "UUID=a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     )
+
+# ══════════════════════════════════════════════════════════
+#  WARSTWA 7: Deanonimizacja (LLM → wykonanie)
+# ══════════════════════════════════════════════════════════
+
+class TestDeanonymizationLayer:
+    """Testy odwracania anonimizacji dla komend z LLM."""
+
+    def test_deanonymize_base_function(self):
+        from fixos.utils.anonymizer import deanonymize
+        
+        cmd = "ping [HOSTNAME]"
+        assert deanonymize(cmd) == f"ping {REAL_HOSTNAME}"
+        
+        cmd = "ls /home/[USER]/.cache"
+        assert deanonymize(cmd) == f"ls /home/{REAL_USER}/.cache"
+        
+        cmd = "chown [USER]:[USER] [HOME]/file"
+        res = deanonymize(cmd)
+        assert REAL_USER in res
+        assert REAL_HOME in res
+        assert "[USER]" not in res
+        assert "[HOME]" not in res
+
+    @patch("fixos.providers.llm.openai")
+    def test_hitl_deanonymize_extracted_fixes(self, mock_openai, mock_cfg):
+        from fixos.agent.hitl_session import HITLSession
+        
+        def capture(**kwargs):
+            resp = MagicMock()
+            resp.choices[0].message.content = (
+                "**Komenda:** `rm -rf /home/[USER]/tmp`\n"
+                "**Co robi:** clean\n"
+            )
+            resp.usage.total_tokens = 10
+            return resp
+
+        mock_openai.OpenAI.return_value.chat.completions.create.side_effect = capture
+        
+        session = HITLSession(diagnostics={}, config=mock_cfg, show_data=False)
+        # Mock _initialize_messages and inputs
+        session._initialize_messages = MagicMock(return_value=True)
+        session.web_search_count = 0
+        
+        with patch("fixos.agent.session_io.get_user_input", return_value="q"), \
+             patch("fixos.agent.session_io.ask_execute_prompt", return_value="n"), \
+             patch("fixos.agent.session_handlers.run_single_command") as mock_run:
+            
+            session.run()
+            
+        assert len(session.last_fixes) == 1
+        cmd, comment = session.last_fixes[0]
+        assert cmd == f"rm -rf /home/{REAL_USER}/tmp"
+        assert "[USER]" not in cmd
+
+    @patch("fixos.providers.llm.openai")
+    @patch("fixos.agent.autonomous_session.subprocess.run")
+    def test_autonomous_deanonymize_exec(self, mock_subproc, mock_openai, mock_cfg):
+        from fixos.agent.autonomous import run_autonomous_session
+        
+        def capture(**kwargs):
+            resp = MagicMock()
+            resp.choices[0].message.content = json.dumps({
+                "analysis": "test",
+                "severity": "low",
+                "action": "EXEC",
+                "command": "echo [HOSTNAME] [USER] [HOME]",
+                "reason": "test",
+                "next_step": "done",
+            })
+            resp.usage.total_tokens = 50
+            return resp
+
+        mock_openai.OpenAI.return_value.chat.completions.create.side_effect = capture
+        
+        # Mock subprocess.run to avoid actual execution
+        mock_proc = MagicMock()
+        mock_proc.returncode = 0
+        mock_proc.stdout = "ok"
+        mock_proc.stderr = ""
+        mock_subproc.return_value = mock_proc
+        
+        with patch("builtins.input", return_value="yes"):
+            report = run_autonomous_session(
+                diagnostics={},
+                config=mock_cfg,
+                show_data=False,
+                max_fixes=1,
+            )
+            
+        assert len(report.fixes_applied) == 1
+        executed_cmd = report.fixes_applied[0].command
+        assert REAL_HOSTNAME in executed_cmd
+        assert REAL_USER in executed_cmd
+        assert "[HOSTNAME]" not in executed_cmd
+        assert "[USER]" not in executed_cmd
+        
+    @patch("fixos.agent.session_handlers.run_command")
+    def test_run_single_command_deanonymizes(self, mock_run):
+        from fixos.agent.session_handlers import run_single_command
+        
+        mock_run.return_value = (True, "ok", "", 0)
+        
+        with patch("fixos.agent.session_io.ask_execute_prompt", return_value="y"):
+            run_single_command("ls /home/[USER]", "test comment")
+            
+        # run_command is called with the deanonymized command
+        args, kwargs = mock_run.call_args
+        assert args[0] == f"ls /home/{REAL_USER}"
+        assert "[USER]" not in args[0]

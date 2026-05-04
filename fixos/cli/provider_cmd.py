@@ -106,7 +106,7 @@ PROVIDERS_INFO = {
 
 @click.command("llm")
 @click.option("--free", is_flag=True, help="Tylko darmowe providery")
-def llm_providers(free):
+def llm_providers(free) -> None:
     """
     Lista dostępnych providerów LLM.
 
@@ -151,7 +151,7 @@ def llm_providers(free):
 
 
 @click.command("providers")
-def providers():
+def providers() -> None:
     """
     Lista providerów LLM z oznaczeniem FREE/PAID.
     """
@@ -189,7 +189,7 @@ def providers():
 @click.option("--token", "-t", default=None, envvar="API_KEY", help="Token API")
 @click.option("--model", "-m", default=None, help="Model")
 @click.option("--no-banner", is_flag=True, help="Ukryj baner")
-def test_llm(provider, token, model, no_banner):
+def test_llm(provider, token, model, no_banner) -> None:
     """
     Test połączenia z LLM.
 

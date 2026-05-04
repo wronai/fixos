@@ -5,7 +5,7 @@ import click
 
 
 @click.group("config")
-def config():
+def config() -> None:
     """Zarządzanie konfiguracją fixOS."""
     pass
 

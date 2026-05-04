@@ -1,27 +1,27 @@
-# fixOS | 113f 19723L | python:110,shell:2,less:1 | 2026-05-04
-# stats: 213 func | 123 cls | 113 mod | CC̄=5.2 | critical:27 | cycles:0
-# alerts[5]: CC _cleanup_full_system=172; CC _match_heuristic_command=18; CC _display_unsafe_services=18; CC fix=18; CC _run_disk_analysis=18
-# hotspots[5]: _cleanup_full_system fan=39; orchestrate fan=24; run_llm_shell fan=23; fix fan=21; report fan=21
+# fixOS | 114f 19708L | python:111,shell:2,less:1 | 2026-05-04
+# stats: 238 func | 123 cls | 114 mod | CC̄=4.7 | critical:28 | cycles:0
+# alerts[5]: CC _select_cleanup_items_by_filter=41; CC _handle_snap_management=26; CC _handle_home_analysis=23; CC _handle_select_query=20; CC _match_heuristic_command=18
+# hotspots[5]: orchestrate fan=24; run_llm_shell fan=23; fix fan=21; diagnose_system fan=20; _cleanup_flatpak_detailed fan=19
 # evolution: baseline
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
-M[113]:
+M[114]:
   app.doql.less,232
   docker/test-multi-system.sh,129
   docs/examples/advanced_usage.py,10
   docs/examples/quickstart.py,14
   fixos/__init__.py,3
-  fixos/agent/__init__.py,40
+  fixos/agent/__init__.py,39
   fixos/agent/autonomous.py,50
   fixos/agent/autonomous_session.py,434
   fixos/agent/hitl.py,37
-  fixos/agent/hitl_session.py,215
-  fixos/agent/session_core.py,93
-  fixos/agent/session_handlers.py,228
+  fixos/agent/hitl_session.py,221
+  fixos/agent/session_core.py,94
+  fixos/agent/session_handlers.py,229
   fixos/agent/session_io.py,259
   fixos/anonymizer.py,87
   fixos/cli/__init__.py,9
   fixos/cli/ask_cmd.py,355
-  fixos/cli/cleanup_cmd.py,1247
+  fixos/cli/cleanup_cmd.py,1140
   fixos/cli/config_cmd.py,84
   fixos/cli/features_cmd.py,177
   fixos/cli/fix_cmd.py,283
@@ -31,15 +31,16 @@ M[113]:
   fixos/cli/profile_cmd.py,60
   fixos/cli/provider_cmd.py,251
   fixos/cli/quickfix_cmd.py,77
-  fixos/cli/report_cmd.py,116
+  fixos/cli/report_cmd.py,119
   fixos/cli/rollback_cmd.py,91
-  fixos/cli/scan_cmd.py,188
+  fixos/cli/scan_cmd.py,195
   fixos/cli/shared.py,63
   fixos/cli/token_cmd.py,125
   fixos/cli/watch_cmd.py,50
   fixos/cli.py,96
   fixos/config.py,346
   fixos/config_interactive.py,150
+  fixos/constants.py,28
   fixos/diagnostics/__init__.py,3
   fixos/diagnostics/checks/__init__.py,21
   fixos/diagnostics/checks/_shared.py,45
@@ -47,15 +48,15 @@ M[113]:
   fixos/diagnostics/checks/hardware.py,43
   fixos/diagnostics/checks/resources.py,92
   fixos/diagnostics/checks/security.py,85
-  fixos/diagnostics/checks/system_core.py,106
+  fixos/diagnostics/checks/system_core.py,119
   fixos/diagnostics/checks/thumbnails.py,63
   fixos/diagnostics/dev_project_analyzer.py,404
-  fixos/diagnostics/disk_analyzer.py,434
+  fixos/diagnostics/disk_analyzer.py,431
   fixos/diagnostics/flatpak_analyzer.py,945
   fixos/diagnostics/service_cleanup.py,474
-  fixos/diagnostics/service_details.py,243
+  fixos/diagnostics/service_details.py,231
   fixos/diagnostics/service_scanner.py,250
-  fixos/diagnostics/storage_analyzer.py,1059
+  fixos/diagnostics/storage_analyzer.py,1076
   fixos/diagnostics/system_checks.py,74
   fixos/features/__init__.py,268
   fixos/features/auditor.py,128
@@ -70,7 +71,7 @@ M[113]:
   fixos/orchestrator/__init__.py,10
   fixos/orchestrator/executor.py,272
   fixos/orchestrator/graph.py,164
-  fixos/orchestrator/orchestrator.py,383
+  fixos/orchestrator/orchestrator.py,396
   fixos/orchestrator/rollback.py,163
   fixos/platform_utils.py,185
   fixos/plugins/__init__.py,12
@@ -90,8 +91,8 @@ M[113]:
   fixos/providers/schemas.py,72
   fixos/system_checks.py,157
   fixos/utils/__init__.py,4
-  fixos/utils/anonymizer.py,300
-  fixos/utils/terminal.py,317
+  fixos/utils/anonymizer.py,309
+  fixos/utils/terminal.py,327
   fixos/utils/timeout.py,18
   fixos/utils/web_search.py,255
   fixos/watch.py,121
@@ -204,11 +205,13 @@ D:
     _handle_natural_command(prompt;dry_run)
     _validate_result_with_llm(prompt;cmd_str;result;cfg)
   fixos/cli/cleanup_cmd.py:
-    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_cleanup_full_system,_parse_size_to_gb
+    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_format_hint_line,_display_service_group,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_build_dep_types,_display_full_system_menu,_handle_snap_management,_parse_numeric_range_set,_handle_home_analysis,_show_home_item_info,_handle_select_query,_handle_interactive_select,_select_cleanup_items_by_filter,_execute_full_cleanup,_cleanup_full_system,_parse_size_to_gb
     cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only;full_analysis)
     _display_cleanup_summary(plan;threshold)
     _display_service_item(svc)
     _execute_safe_cleanup(services;scanner)
+    _format_hint_line(hint)
+    _display_service_group(service_type;svcs;type_map)
     _display_unsafe_services(services)
     _cleanup_single_service(service_name;scanner;json_output;dry_run)
     _cleanup_flatpak_detailed(scanner;json_output;dry_run)
@@ -217,6 +220,16 @@ D:
     _parse_selection(selection;max_count)
     _parse_size_to_bytes(size_str)
     _format_bytes(size_bytes)
+    _build_dep_types(items)
+    _display_full_system_menu(analyzer;analysis;safe_items;medium_items;dry_run)
+    _handle_snap_management(analyzer;dry_run)
+    _parse_numeric_range_set(nums)
+    _handle_home_analysis(analyzer;dry_run)
+    _show_home_item_info(nums;large_files;large_dirs;total_items)
+    _handle_select_query(nums;analyzer)
+    _handle_interactive_select(analyzer;dry_run)
+    _select_cleanup_items_by_filter(selection;analyzer;safe_items)
+    _execute_full_cleanup(items_to_clean;dry_run)
     _cleanup_full_system(json_output;dry_run)
     _parse_size_to_gb(size_str)
   fixos/cli/config_cmd.py:
@@ -264,7 +277,10 @@ D:
     e: quickfix
     quickfix(dry_run;modules)
   fixos/cli/report_cmd.py:
-    e: report
+    e: _render_report_json,_render_report_markdown,_render_report_html,report
+    _render_report_json(results;timestamp)
+    _render_report_markdown(results;timestamp)
+    _render_report_html(results;timestamp)
     report(output_format;output;modules;profile)
   fixos/cli/rollback_cmd.py:
     e: rollback,rollback_list,rollback_show,rollback_undo
@@ -273,8 +289,10 @@ D:
     rollback_show(session_id)
     rollback_undo(session_id;last;dry_run)
   fixos/cli/scan_cmd.py:
-    e: scan,_run_disk_analysis,_print_quick_issues
+    e: scan,_display_disk_fix_mode,_display_disk_scan_mode,_run_disk_analysis,_print_quick_issues
     scan(modules;output;show_raw;no_banner;disc;dry_run;interactive;json_output;llm_fallback;profile)
+    _display_disk_fix_mode(disk_analysis)
+    _display_disk_scan_mode(disk_analysis)
     _run_disk_analysis(data;json_output;is_fix_mode)
     _print_quick_issues(data)
   fixos/cli/shared.py:
@@ -306,6 +324,7 @@ D:
     _get_api_key(provider)
     _save_to_env(provider;key;key_env)
     interactive_provider_setup()
+  fixos/constants.py:
   fixos/diagnostics/__init__.py:
   fixos/diagnostics/checks/__init__.py:
   fixos/diagnostics/checks/_shared.py:
@@ -325,7 +344,9 @@ D:
     e: diagnose_security
     diagnose_security()
   fixos/diagnostics/checks/system_core.py:
-    e: diagnose_system
+    e: _collect_os_info,_collect_platform_details,diagnose_system
+    _collect_os_info()
+    _collect_platform_details()
     diagnose_system()
   fixos/diagnostics/checks/thumbnails.py:
     e: diagnose_thumbnails
@@ -349,7 +370,7 @@ D:
     ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(1),is_safe_cleanup(2),get_cleanup_hints(2),get_service_description(1),get_cleanup_command(2),_chrome_cleanup_command(1),get_preview_command(2)  # Plans and executes cleanup of service data.
   fixos/diagnostics/service_details.py:
     e: ServiceDetailsProvider
-    ServiceDetailsProvider: get_details(2),_docker(0),_ollama(0),_conda(0),_package_cache(1),_flatpak(0),_parse_size_bytes(1)  # Provides detailed information about service data.
+    ServiceDetailsProvider: get_details(2),_parse_docker_system_df(1),_get_docker_counts(1),_docker(0),_ollama(0),_conda(0),_package_cache(1),_flatpak(0),_parse_size_bytes(1)  # Provides detailed information about service data.
   fixos/diagnostics/service_scanner.py:
     e: main,ServiceType,ServiceDataInfo,ServiceDataScanner
     ServiceType:  # Service types that can be scanned and cleaned.
@@ -359,7 +380,7 @@ D:
   fixos/diagnostics/storage_analyzer.py:
     e: StorageItem,StorageAnalyzer
     StorageItem: to_dict(0),_format_size(1)  # Represents a storage item that can be cleaned
-    StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
+    StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_parse_size_static(1),_parse_docker_df_output(1),_add_dangling_images_item(2),_add_build_cache_item(1),_add_docker_total_item(2),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_parse_snap_line(1),_add_snap_items(2),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
   fixos/diagnostics/system_checks.py:
     e: get_full_diagnostics
     get_full_diagnostics(modules;progress_callback)
@@ -414,7 +435,7 @@ D:
   fixos/orchestrator/orchestrator.py:
     e: _SkipAll,FixOrchestrator
     _SkipAll:  # Rzucany gdy user wpisuje 's' – pomija wszystkie komendy bież
-    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),run_sync(2),run_async(2),_evaluate_and_rediagnose(2),_parse_json(1),_log(2),_session_summary(0),_default_confirm(2),_default_progress(2)  # Orkiestrator napraw systemowych.
+    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),_process_fix_commands(3),_process_rediagnose(2),run_sync(2),run_async(2),_evaluate_and_rediagnose(2),_parse_json(1),_log(2),_session_summary(0),_default_confirm(2),_default_progress(2)  # Orkiestrator napraw systemowych.
   fixos/orchestrator/rollback.py:
     e: RollbackEntry,RollbackSession
     RollbackEntry:  # Single recorded operation with its rollback command.
@@ -492,19 +513,25 @@ D:
     get_full_diagnostics()
   fixos/utils/__init__.py:
   fixos/utils/anonymizer.py:
-    e: _get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_dict_to_markdown,_format_key_title,AnonymizationReport
+    e: _get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_render_dict_list_value,_render_dict_long_string,_render_dict_multiline_string,_dict_to_markdown,_format_key_title,AnonymizationReport
     AnonymizationReport: add(2),summary(0)  # Raport anonimizacji – co zostało zmaskowane.
     _get_sensitive()
     anonymize(data_str)
     display_anonymized_preview(data_str;report;max_lines)
     _colorize_md_line(line)
     _format_diagnostics_markdown(data_str)
+    _render_dict_list_value(key;value;prefix)
+    _render_dict_long_string(key;value;prefix)
+    _render_dict_multiline_string(key;value;prefix)
     _dict_to_markdown(data;indent)
     _format_key_title(key)
   fixos/utils/terminal.py:
-    e: colorize,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap,_C
+    e: colorize,_is_divider_line,_handle_divider_line,_get_severity_style,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap,_C
     _C:  # No-op stubs – kept so existing callers don't break at import
     colorize(line)
+    _is_divider_line(stripped)
+    _handle_divider_line(stripped)
+    _get_severity_style(stripped)
     render_md(text)
     print_cmd_block(cmd;comment;dry_run)
     print_stdout_box(stdout;max_lines)

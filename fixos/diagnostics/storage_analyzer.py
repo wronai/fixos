@@ -256,18 +256,124 @@ class StorageAnalyzer:
                            "Bezpiecznie ogranicz do 7 dni.",
             ))
     
+    @staticmethod
+    def _parse_size_static(size_str: str) -> int:
+        """Parse size string like '1.2G' to bytes (static version for use in classmethods)."""
+        size_str = size_str.strip().upper()
+        multipliers = {
+            'K': CONSTANT_1024,
+            'M': CONSTANT_1024**2,
+            'G': CONSTANT_1024**CONSTANT_3,
+            'T': CONSTANT_1024**CONSTANT_4,
+        }
+        for suffix, mult in multipliers.items():
+            if size_str.endswith(suffix):
+                try:
+                    return int(float(size_str[:-1]) * mult)
+                except ValueError:
+                    return 0
+        try:
+            return int(float(size_str))
+        except ValueError:
+            return 0
+
+    @staticmethod
+    def _parse_docker_df_output(output: str) -> dict:
+        """Parse 'docker system df -v' output into image/cache stats."""
+        total_images = 0
+        dangling_images = 0
+        dangling_size = 0
+        build_cache = 0
+        current_section = None
+
+        for line in output.split('\n'):
+            line = line.strip()
+            if line.startswith("Images space usage:"):
+                current_section = "images"
+            elif line.startswith("Containers space usage:"):
+                current_section = "containers"
+            elif line.startswith("Local Volumes space usage:"):
+                current_section = "volumes"
+            elif line.startswith("Build Cache"):
+                current_section = "build_cache"
+            elif current_section == "images" and line and not line.startswith("REPOSITORY"):
+                parts = line.split()
+                if len(parts) >= CONSTANT_4:
+                    if parts[0] == "<none>" or parts[1] == "<none>":
+                        dangling_images += 1
+                        dangling_size += StorageAnalyzer._parse_size_static(parts[CONSTANT_3])
+                    total_images += 1
+            elif current_section == "build_cache" and line and not line.startswith("CACHE ID"):
+                parts = line.split()
+                if len(parts) >= 2:
+                    build_cache += StorageAnalyzer._parse_size_static(parts[-2])
+
+        return {
+            "total_images": total_images,
+            "dangling_images": dangling_images,
+            "dangling_size": dangling_size,
+            "build_cache": build_cache,
+        }
+
+    def _add_dangling_images_item(self, dangling_images: int, dangling_size: int) -> None:
+        """Append a StorageItem for dangling Docker images if threshold exceeded."""
+        if dangling_size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:
+            self.items.append(StorageItem(
+                name=f"Dangling Docker Images ({dangling_images})",
+                path="/var/lib/docker",
+                size_bytes=dangling_size,
+                category="containers",
+                risk="low",
+                cleanup_command="docker image prune -f",
+                description=(
+                    f"Dangling images (bez tagu): {StorageItem._format_size(dangling_size)}. "
+                    "Bezpieczne do usunięcia - to nieużywane obrazy."
+                ),
+            ))
+
+    def _add_build_cache_item(self, build_cache: int) -> None:
+        """Append a StorageItem for Docker build cache if threshold exceeded."""
+        if build_cache > 100 * CONSTANT_1024 * CONSTANT_1024:
+            self.items.append(StorageItem(
+                name="Docker Build Cache",
+                path="/var/lib/docker",
+                size_bytes=build_cache,
+                category="containers",
+                risk="low",
+                cleanup_command="docker builder prune -f",
+                description=(
+                    f"Build cache Dockera: {StorageItem._format_size(build_cache)}. "
+                    "Bezpieczne do usunięcia."
+                ),
+            ))
+
+    def _add_docker_total_item(self, total_images: int, dangling_images: int) -> None:
+        """Append a StorageItem for total Docker usage if threshold exceeded."""
+        total_docker = self._get_dir_size("/var/lib/docker")
+        if total_docker > CONSTANT_1024**CONSTANT_3:
+            self.items.append(StorageItem(
+                name="Docker Total",
+                path="/var/lib/docker",
+                size_bytes=total_docker,
+                category="containers",
+                risk="medium",
+                cleanup_command="docker system prune -a --volumes",
+                description=(
+                    f"Docker łącznie: {StorageItem._format_size(total_docker)}. "
+                    f"Obrazy: {total_images}, dangling: {dangling_images}. "
+                    "Uwaga: usunie wszystkie nieużywane zasoby."
+                ),
+            ))
+
     def _analyze_docker(self):
         """Analyze Docker storage - images, containers, volumes, build cache"""
-        # Check if docker is installed
         if not os.path.exists("/var/lib/docker"):
             return
-        
-        # Get detailed docker system df
+
         output = self._run_command(["docker", "system", "df", "-v"])
         if not output:
-            # Fallback: just check directory size
             size = self._get_dir_size("/var/lib/docker")
-            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
+            if size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:
                 self.items.append(StorageItem(
                     name="Docker",
                     path="/var/lib/docker",
@@ -279,88 +385,11 @@ class StorageAnalyzer:
                                "Uwaga: usunie nieużywane obrazy i kontenery.",
                 ))
             return
-        
-        # Parse docker system df -v output
-        total_images = 0
-        dangling_images = 0
-        dangling_size = 0
-        unused_containers = 0
-        build_cache = 0
-        
-        current_section = None
-        for line in output.split('\n'):
-            line = line.strip()
-            
-            # Detect sections
-            if line.startswith("Images space usage:"):
-                current_section = "images"
-                continue
-            elif line.startswith("Containers space usage:"):
-                current_section = "containers"
-                continue
-            elif line.startswith("Local Volumes space usage:"):
-                current_section = "volumes"
-                continue
-            elif line.startswith("Build Cache"):
-                current_section = "build_cache"
-                continue
-            
-            # Parse images
-            if current_section == "images" and line and not line.startswith("REPOSITORY"):
-                parts = line.split()
-                if len(parts) >= CONSTANT_4:
-                    # <none> <none> = dangling image
-                    if parts[0] == "<none>" or parts[1] == "<none>":
-                        dangling_images += 1
-                        dangling_size += self._parse_size(parts[CONSTANT_3])
-                    total_images += 1
-            
-            # Parse build cache
-            if current_section == "build_cache" and line and not line.startswith("CACHE ID"):
-                parts = line.split()
-                if len(parts) >= 2:
-                    build_cache += self._parse_size(parts[-2])
-        
-        # Report dangling images
-        if dangling_size > CONSTANT_50 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_50 MB
-            self.items.append(StorageItem(
-                name=f"Dangling Docker Images ({dangling_images})",
-                path="/var/lib/docker",
-                size_bytes=dangling_size,
-                category="containers",
-                risk="low",
-                cleanup_command="docker image prune -f",
-                description=f"Dangling images (bez tagu): {StorageItem._format_size(dangling_size)}. "
-                           "Bezpieczne do usunięcia - to nieużywane obrazy.",
-            ))
-        
-        # Report build cache
-        if build_cache > 100 * CONSTANT_1024 * CONSTANT_1024:  # > 100 MB
-            self.items.append(StorageItem(
-                name="Docker Build Cache",
-                path="/var/lib/docker",
-                size_bytes=build_cache,
-                category="containers",
-                risk="low",
-                cleanup_command="docker builder prune -f",
-                description=f"Build cache Dockera: {StorageItem._format_size(build_cache)}. "
-                           "Bezpieczne do usunięcia.",
-            ))
-        
-        # Report total if significant
-        total_docker = self._get_dir_size("/var/lib/docker")
-        if total_docker > CONSTANT_1024**CONSTANT_3:  # > 1 GB
-            self.items.append(StorageItem(
-                name="Docker Total",
-                path="/var/lib/docker",
-                size_bytes=total_docker,
-                category="containers",
-                risk="medium",
-                cleanup_command="docker system prune -a --volumes",
-                description=f"Docker łącznie: {StorageItem._format_size(total_docker)}. "
-                           f"Obrazy: {total_images}, dangling: {dangling_images}. "
-                           "Uwaga: usunie wszystkie nieużywane zasoby.",
-            ))
+
+        stats = self._parse_docker_df_output(output)
+        self._add_dangling_images_item(stats["dangling_images"], stats["dangling_size"])
+        self._add_build_cache_item(stats["build_cache"])
+        self._add_docker_total_item(stats["total_images"], stats["dangling_images"])
     
     def _analyze_podman(self):
         """Analyze Podman storage"""
@@ -840,52 +869,22 @@ class StorageAnalyzer:
         
         return large_dirs
     
-    def _analyze_snap(self):
-        """Analyze Snap packages - old versions and installed packages"""
-        if not os.path.exists("/var/lib/snapd"):
-            return
-        
-        output = self._run_command(["snap", "list", "--all"])
-        if not output:
-            return
-        
-        # Parse all snap packages
-        lines = output.strip().split('\n')[1:]  # Skip header
-        old_count = 0
-        snap_packages = []
-        
-        for line in lines:
-            parts = line.split()
-            if len(parts) >= CONSTANT_4:
-                name = parts[0]
-                version = parts[1]
-                rev = parts[2]
-                status = parts[CONSTANT_3] if len(parts) > CONSTANT_3 else ""
-                
-                is_disabled = 'disabled' in status.lower()
-                if is_disabled:
-                    old_count += 1
-                
-                # Get size for each snap
-                snap_path = f"/var/lib/snapd/snaps/{name}_{rev}.snap"
-                size = self._get_file_size(snap_path) if os.path.exists(snap_path) else 0
-                
-                snap_packages.append({
-                    'name': name,
-                    'version': version,
-                    'rev': rev,
-                    'size': size,
-                    'disabled': is_disabled,
-                })
-        
-        # Store snap packages for interactive selection
-        self.snap_packages = snap_packages
-        
-        # Report old versions
+    def _parse_snap_line(self, line: str) -> dict | None:
+        """Parse a single line from 'snap list --all' output. Returns None if invalid."""
+        parts = line.split()
+        if len(parts) < CONSTANT_4:
+            return None
+        name, version, rev = parts[0], parts[1], parts[2]
+        status = parts[CONSTANT_3] if len(parts) > CONSTANT_3 else ""
+        is_disabled = 'disabled' in status.lower()
+        snap_path = f"/var/lib/snapd/snaps/{name}_{rev}.snap"
+        size = self._get_file_size(snap_path) if os.path.exists(snap_path) else 0
+        return {'name': name, 'version': version, 'rev': rev, 'size': size, 'disabled': is_disabled}
+
+    def _add_snap_items(self, snap_packages: list, old_count: int) -> None:
+        """Append StorageItems for old snap versions and active snap total."""
         if old_count > 0:
-            # Estimate: ~100MB per old snap
             estimated_size = old_count * 100 * CONSTANT_1024 * CONSTANT_1024
-            
             self.items.append(StorageItem(
                 name=f"Stare wersje Snap ({old_count})",
                 path="/var/lib/snapd",
@@ -893,24 +892,42 @@ class StorageAnalyzer:
                 category="packages",
                 risk="low",
                 cleanup_command="sudo snap set system refresh.retain=2",
-                description=f"Masz {old_count} starych wersji pakietów Snap. "
-                           "Ogranicz do 2 wersji.",
+                description=f"Masz {old_count} starych wersji pakietów Snap. Ogranicz do 2 wersji.",
             ))
-        
-        # Add option to manage all snap packages
         if snap_packages:
-            total_snap_size = sum(p['size'] for p in snap_packages if not p['disabled'])
-            if total_snap_size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:  # > CONSTANT_500 MB
+            active = [p for p in snap_packages if not p['disabled']]
+            total_snap_size = sum(p['size'] for p in active)
+            if total_snap_size > CONSTANT_500 * CONSTANT_1024 * CONSTANT_1024:
                 self.items.append(StorageItem(
-                    name=f"Zainstalowane Snap ({len([p for p in snap_packages if not p['disabled']])})",
+                    name=f"Zainstalowane Snap ({len(active)})",
                     path="/var/lib/snapd/snaps",
                     size_bytes=total_snap_size,
                     category="packages",
                     risk="medium",
-                    cleanup_command="snap:interactive",  # Special marker for interactive
-                    description=f"Masz {len(snap_packages)} pakietów Snap. "
-                               "Użyj 'snap' w menu aby zarządzać.",
+                    cleanup_command="snap:interactive",
+                    description=f"Masz {len(snap_packages)} pakietów Snap. Użyj 'snap' w menu aby zarządzać.",
                 ))
+
+    def _analyze_snap(self):
+        """Analyze Snap packages - old versions and installed packages"""
+        if not os.path.exists("/var/lib/snapd"):
+            return
+
+        output = self._run_command(["snap", "list", "--all"])
+        if not output:
+            return
+
+        snap_packages = []
+        old_count = 0
+        for line in output.strip().split('\n')[1:]:
+            pkg = self._parse_snap_line(line)
+            if pkg:
+                snap_packages.append(pkg)
+                if pkg['disabled']:
+                    old_count += 1
+
+        self.snap_packages = snap_packages
+        self._add_snap_items(snap_packages, old_count)
     
     def _analyze_btrfs_snapshots(self):
         """Analyze Btrfs snapshots"""

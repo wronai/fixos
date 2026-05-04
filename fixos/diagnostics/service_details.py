@@ -44,55 +44,43 @@ class ServiceDetailsProvider:
         else:
             return {}
 
-    def _docker(self) -> Dict[str, Any]:
-        """Get Docker-specific details - images, containers, volumes."""
-        details = {"items_count": 0, "components": {}}
-
-        # Get docker system df info
+    def _parse_docker_system_df(self, details: Dict[str, Any]) -> None:
+        """Populate details from 'docker system df -v' output."""
         try:
             result = subprocess.run(
                 ["docker", "system", "df", "-v"],
-                capture_output=True, text=True, timeout=10
+                capture_output=True, text=True, timeout=10,
             )
             if result.returncode == 0:
-                lines = result.stdout.strip().split("\n")
-                for line in lines:
+                for line in result.stdout.strip().split("\n"):
                     if any(x in line for x in ["Images", "Containers", "Volumes", "Build Cache"]):
                         parts = line.split()
-                        if len(parts) >= 2:
-                            component = parts[0]
-                            try:
-                                count = int(parts[1]) if parts[1].isdigit() else 0
-                                details["components"][component] = count
-                                details["items_count"] += count
-                            except ValueError:
-                                pass
+                        if len(parts) >= 2 and parts[1].isdigit():
+                            details["components"][parts[0]] = int(parts[1])
+                            details["items_count"] += int(parts[1])
         except Exception:
             pass
 
-        # Get detailed counts
+    def _get_docker_counts(self, details: Dict[str, Any]) -> None:
+        """Add precise image and container counts via docker CLI queries."""
         try:
-            images_result = subprocess.run(
-                ["docker", "images", "-q"],
-                capture_output=True, text=True, timeout=5
-            )
-            if images_result.returncode == 0:
-                image_count = len([l for l in images_result.stdout.strip().split("\n") if l])
-                details["components"]["images"] = image_count
+            r = subprocess.run(["docker", "images", "-q"], capture_output=True, text=True, timeout=5)
+            if r.returncode == 0:
+                details["components"]["images"] = len([l for l in r.stdout.strip().split("\n") if l])
         except Exception:
             pass
-
         try:
-            containers_result = subprocess.run(
-                ["docker", "ps", "-aq"],
-                capture_output=True, text=True, timeout=5
-            )
-            if containers_result.returncode == 0:
-                container_count = len([l for l in containers_result.stdout.strip().split("\n") if l])
-                details["components"]["containers"] = container_count
+            r = subprocess.run(["docker", "ps", "-aq"], capture_output=True, text=True, timeout=5)
+            if r.returncode == 0:
+                details["components"]["containers"] = len([l for l in r.stdout.strip().split("\n") if l])
         except Exception:
             pass
 
+    def _docker(self) -> Dict[str, Any]:
+        """Get Docker-specific details - images, containers, volumes."""
+        details: Dict[str, Any] = {"items_count": 0, "components": {}}
+        self._parse_docker_system_df(details)
+        self._get_docker_counts(details)
         return details
 
     def _ollama(self) -> Dict[str, Any]:

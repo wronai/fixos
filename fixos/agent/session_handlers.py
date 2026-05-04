@@ -5,13 +5,14 @@ Each handler processes a specific user command type.
 
 from typing import TYPE_CHECKING, Tuple
 
+from ..constants import CLEANUP_TIMEOUT_ESTIMATE
 from ..platform_utils import (
     is_dangerous, elevate_cmd, run_command,
 )
 from ..utils.anonymizer import anonymize
 from ..utils.web_search import search_all, format_results_for_llm
 from . import session_io as io
-from .session_core import CmdResult, DEFAULT_COMMAND_TIMEOUT, extract_fixes
+from .session_core import CmdResult, extract_fixes
 
 if TYPE_CHECKING:
     from ..providers.llm import LLMClient
@@ -167,7 +168,7 @@ def run_single_command(cmd: str, comment: str) -> CmdResult:
                          stdout="", stderr="Pominięto.", returncode=-1, skipped=True)
     
     io.console.print("  [dim]⏳ Wykonuję...[/dim]", end="")
-    ok, stdout, stderr, rc = run_command(cmd, timeout=DEFAULT_COMMAND_TIMEOUT)
+    ok, stdout, stderr, rc = run_command(cmd, timeout=CLEANUP_TIMEOUT_ESTIMATE)
     io.console.print("\r" + " " * 30 + "\r", end="")
     result = CmdResult(cmd=cmd, comment=comment, ok=ok,
                        stdout=stdout, stderr=stderr, returncode=rc)

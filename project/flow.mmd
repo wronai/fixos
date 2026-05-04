@@ -7,19 +7,19 @@ flowchart TD
         fixos__cli__profile_cmd__profile["profile"]
         fixos__cli__profile_cmd__profile_list["profile_list"]
         fixos__cli__profile_cmd__profile_show["profile_show"]
-        fixos__cli__scan_cmd__scan["scan"]
-        fixos__cli__scan_cmd___run_disk_analysis["_run_disk_analysis"]
-        fixos__cli__scan_cmd___print_quick_issues["_print_quick_issues"]
         fixos__cli__quickfix_cmd__quickfix["quickfix"]
         fixos__cli__orchestrate_cmd__orchestrate["orchestrate"]
-        fixos__cli__report_cmd__report["report"]
         fixos__cli__provider_cmd__llm_providers["llm_providers"]
         fixos__cli__provider_cmd__providers["providers"]
         fixos__cli__provider_cmd__test_llm["test_llm"]
         fixos__cli__rollback_cmd__rollback["rollback"]
         fixos__cli__rollback_cmd__rollback_list["rollback_list"]
         fixos__cli__rollback_cmd__rollback_show["rollback_show"]
-        ...["+49 more"]
+        fixos__cli__rollback_cmd__rollback_undo["rollback_undo"]
+        fixos__cli__ask_cmd__ask["ask"]
+        fixos__cli__ask_cmd___match_heuristic_command["_match_heuristic_command"]
+        fixos__cli__ask_cmd___format_command["_format_command"]
+        ...["+66 more"]
     end
 
     subgraph Core
@@ -38,7 +38,7 @@ flowchart TD
         fixos__config_interactive__interactive_provider_setup["interactive_provider_setup"]
         fixos__diagnostics__system_checks__get_full_diagnostics["get_full_diagnostics"]
         fixos__diagnostics__flatpak_analyzer__FlatpakItemInfo__to_dict["to_dict"]
-        ...["+521 more"]
+        ...["+540 more"]
     end
 
     class docker__test_multi_system__test_system,fixos__config__FixOsConfig__load,fixos__config__FixOsConfig__validate,fixos__config__FixOsConfig__summary,fixos__config__get_providers_list,fixos__watch__WatchDaemon__run,fixos__watch__WatchDaemon__stop,fixos__watch__WatchDaemon___check_for_new_issues,fixos__watch__WatchDaemon___notify,fixos__platform_utils__install_package_cmd entry

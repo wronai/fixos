@@ -233,56 +233,65 @@ def _format_diagnostics_markdown(data_str: str) -> str:
     return f"```\n{data_str}\n```"
 
 
+def _render_dict_list_value(key: str, value: list, prefix: str) -> list:
+    """Render a list value as markdown lines."""
+    if value and isinstance(value[0], dict):
+        return [f"{prefix}- **{key}**: [{len(value)} elementów]"]
+    if len(value) > 10:
+        lines = [f"{prefix}- **{key}**:"]
+        for item in value[:5]:
+            lines.append(f"{prefix}  - {item}")
+        lines.append(f"{prefix}  ... ({len(value) - 10} więcej)")
+        for item in value[-5:]:
+            lines.append(f"{prefix}  - {item}")
+        return lines
+    return [f"{prefix}- **{key}**: {value}"]
+
+
+def _render_dict_long_string(key: str, value: str, prefix: str) -> list:
+    """Render a long string (>200 chars) as a truncated code block."""
+    lines = [f"{prefix}- **{key}**:", f"{prefix}  ```"]
+    for line in value.split("\n")[:15]:
+        lines.append(f"{prefix}  {line[:80]}")
+    if value.count("\n") > 15:
+        lines.append(f"{prefix}  ... ({value.count(chr(10)) - 15} więcej linii)")
+    lines.append(f"{prefix}  ```")
+    return lines
+
+
+def _render_dict_multiline_string(key: str, value: str, prefix: str) -> list:
+    """Render a multiline string as a code block."""
+    lines = [f"{prefix}- **{key}**:", f"{prefix}  ```"]
+    for line in value.split("\n")[:10]:
+        lines.append(f"{prefix}  {line}")
+    if value.count("\n") > 10:
+        lines.append(f"{prefix}  ... ({value.count(chr(10)) - 10} więcej)")
+    lines.append(f"{prefix}  ```")
+    return lines
+
+
 def _dict_to_markdown(data: dict, indent: int = 0) -> str:
     """Rekurencyjnie konwertuje dict na markdown."""
     lines = []
     prefix = "  " * indent
-    
+
     for key, value in data.items():
         if isinstance(value, dict):
-            # Nagłówek sekcji
             section_title = _format_key_title(key)
             lines.append(f"\n{prefix}### {section_title}")
             lines.append(_dict_to_markdown(value, indent + 1))
         elif isinstance(value, list):
-            if len(value) > 0 and isinstance(value[0], dict):
-                # Lista dictów - skróć
-                lines.append(f"{prefix}- **{key}**: [{len(value)} elementów]")
-            elif len(value) > 10:
-                # Długa lista - pokaż pierwsze i ostatnie
-                lines.append(f"{prefix}- **{key}**:")
-                for item in value[:5]:
-                    lines.append(f"{prefix}  - {item}")
-                lines.append(f"{prefix}  ... ({len(value) - 10} więcej)")
-                for item in value[-5:]:
-                    lines.append(f"{prefix}  - {item}")
-            else:
-                lines.append(f"{prefix}- **{key}**: {value}")
+            lines.extend(_render_dict_list_value(key, value, prefix))
         elif isinstance(value, str) and len(value) > 200:
-            # Długi string - skróć
-            lines.append(f"{prefix}- **{key}**:")
-            lines.append(f"{prefix}  ```")
-            for line in value.split("\n")[:15]:
-                lines.append(f"{prefix}  {line[:80]}")
-            if value.count("\n") > 15:
-                lines.append(f"{prefix}  ... ({value.count(chr(10)) - 15} więcej linii)")
-            lines.append(f"{prefix}  ```")
+            lines.extend(_render_dict_long_string(key, value, prefix))
         elif isinstance(value, str) and "\n" in value:
-            # Wieloliniowy string jako blok kodu
-            lines.append(f"{prefix}- **{key}**:")
-            lines.append(f"{prefix}  ```")
-            for line in value.split("\n")[:10]:
-                lines.append(f"{prefix}  {line}")
-            if value.count("\n") > 10:
-                lines.append(f"{prefix}  ... ({value.count(chr(10)) - 10} więcej)")
-            lines.append(f"{prefix}  ```")
+            lines.extend(_render_dict_multiline_string(key, value, prefix))
         else:
-            # Prosta wartość
             val_str = str(value)
             if len(val_str) > 60:
                 val_str = val_str[:57] + "..."
             lines.append(f"{prefix}- **{key}**: `{val_str}`")
-    
+
     return "\n".join(lines)
 
 

@@ -23,9 +23,10 @@ AI-powered Linux/Windows diagnostics and repair – audio, hardware, system issu
 ## Metadata
 
 - **name**: `fixos`
-- **version**: `2.2.12`
+- **version**: `2.2.13`
 - **python_requires**: `>=3.10`
-- **license**: Apache-2.0
+- **license**: {'text': 'Apache-2.0'}
+- **ai_model**: `openrouter/qwen/qwen3-coder-next`
 - **ecosystem**: SUMD + DOQL + testql + taskfile
 - **generated_from**: pyproject.toml, requirements-dev.txt, requirements.txt, Makefile, testql(2), app.doql.less, pyqual.yaml, goal.yaml, .env.example, docker-compose.yml, project/(2 analysis files)
 
@@ -42,12 +43,12 @@ SUMD (description) → DOQL/source (code) → taskfile (automation) → testql (
 
 app {
   name: fixos;
-  version: 2.2.12;
+  version: 2.2.13;
 }
 
 dependencies {
   runtime: "openai>=1.35.0, prompt_toolkit>=3.0.43, psutil>=5.9.0, pyyaml>=6.0, click>=8.1.0, python-dotenv>=1.0.0, rich>=13.0";
-  dev: "pytest>=7.4.0, pytest-mock>=3.12.0, pytest-cov>=4.1.0, pytest-xdist>=3.5.0, pytest-timeout>=2.2.0, pytest-sugar>=0.9.7";
+  dev: "pytest>=7.4.0, pytest-mock>=3.12.0, pytest-cov>=4.1.0, pytest-xdist>=3.5.0, pytest-timeout>=2.2.0, pytest-sugar>=0.9.7, goal>=2.1.0, costs>=0.1.20, pfix>=0.1.60";
 }
 
 entity[name="FixSuggestion"] {
@@ -456,7 +457,7 @@ pipeline:
 ```yaml
 project:
   name: fixos
-  version: 2.2.12
+  version: 2.2.13
   env: local
 ```
 
@@ -483,6 +484,9 @@ pytest-cov>=4.1.0
 pytest-xdist>=3.5.0
 pytest-timeout>=2.2.0
 pytest-sugar>=0.9.7
+goal>=2.1.0
+costs>=0.1.20
+pfix>=0.1.60
 ```
 
 ## Deployment
@@ -601,30 +605,30 @@ pip install -e .[dev]
 ### `project/map.toon.yaml`
 
 ```toon markpact:analysis path=project/map.toon.yaml
-# fixOS | 113f 19723L | python:110,shell:2,less:1 | 2026-05-04
-# stats: 213 func | 123 cls | 113 mod | CC̄=5.2 | critical:27 | cycles:0
-# alerts[5]: CC _cleanup_full_system=172; CC _match_heuristic_command=18; CC _display_unsafe_services=18; CC fix=18; CC _run_disk_analysis=18
-# hotspots[5]: _cleanup_full_system fan=39; orchestrate fan=24; run_llm_shell fan=23; fix fan=21; report fan=21
+# fixOS | 114f 19708L | python:111,shell:2,less:1 | 2026-05-04
+# stats: 238 func | 123 cls | 114 mod | CC̄=4.7 | critical:28 | cycles:0
+# alerts[5]: CC _select_cleanup_items_by_filter=41; CC _handle_snap_management=26; CC _handle_home_analysis=23; CC _handle_select_query=20; CC _match_heuristic_command=18
+# hotspots[5]: orchestrate fan=24; run_llm_shell fan=23; fix fan=21; diagnose_system fan=20; _cleanup_flatpak_detailed fan=19
 # evolution: baseline
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
-M[113]:
+M[114]:
   app.doql.less,232
   docker/test-multi-system.sh,129
   docs/examples/advanced_usage.py,10
   docs/examples/quickstart.py,14
   fixos/__init__.py,3
-  fixos/agent/__init__.py,40
+  fixos/agent/__init__.py,39
   fixos/agent/autonomous.py,50
   fixos/agent/autonomous_session.py,434
   fixos/agent/hitl.py,37
-  fixos/agent/hitl_session.py,215
-  fixos/agent/session_core.py,93
-  fixos/agent/session_handlers.py,228
+  fixos/agent/hitl_session.py,221
+  fixos/agent/session_core.py,94
+  fixos/agent/session_handlers.py,229
   fixos/agent/session_io.py,259
   fixos/anonymizer.py,87
   fixos/cli/__init__.py,9
   fixos/cli/ask_cmd.py,355
-  fixos/cli/cleanup_cmd.py,1247
+  fixos/cli/cleanup_cmd.py,1140
   fixos/cli/config_cmd.py,84
   fixos/cli/features_cmd.py,177
   fixos/cli/fix_cmd.py,283
@@ -634,15 +638,16 @@ M[113]:
   fixos/cli/profile_cmd.py,60
   fixos/cli/provider_cmd.py,251
   fixos/cli/quickfix_cmd.py,77
-  fixos/cli/report_cmd.py,116
+  fixos/cli/report_cmd.py,119
   fixos/cli/rollback_cmd.py,91
-  fixos/cli/scan_cmd.py,188
+  fixos/cli/scan_cmd.py,195
   fixos/cli/shared.py,63
   fixos/cli/token_cmd.py,125
   fixos/cli/watch_cmd.py,50
   fixos/cli.py,96
   fixos/config.py,346
   fixos/config_interactive.py,150
+  fixos/constants.py,28
   fixos/diagnostics/__init__.py,3
   fixos/diagnostics/checks/__init__.py,21
   fixos/diagnostics/checks/_shared.py,45
@@ -650,15 +655,15 @@ M[113]:
   fixos/diagnostics/checks/hardware.py,43
   fixos/diagnostics/checks/resources.py,92
   fixos/diagnostics/checks/security.py,85
-  fixos/diagnostics/checks/system_core.py,106
+  fixos/diagnostics/checks/system_core.py,119
   fixos/diagnostics/checks/thumbnails.py,63
   fixos/diagnostics/dev_project_analyzer.py,404
-  fixos/diagnostics/disk_analyzer.py,434
+  fixos/diagnostics/disk_analyzer.py,431
   fixos/diagnostics/flatpak_analyzer.py,945
   fixos/diagnostics/service_cleanup.py,474
-  fixos/diagnostics/service_details.py,243
+  fixos/diagnostics/service_details.py,231
   fixos/diagnostics/service_scanner.py,250
-  fixos/diagnostics/storage_analyzer.py,1059
+  fixos/diagnostics/storage_analyzer.py,1076
   fixos/diagnostics/system_checks.py,74
   fixos/features/__init__.py,268
   fixos/features/auditor.py,128
@@ -673,7 +678,7 @@ M[113]:
   fixos/orchestrator/__init__.py,10
   fixos/orchestrator/executor.py,272
   fixos/orchestrator/graph.py,164
-  fixos/orchestrator/orchestrator.py,383
+  fixos/orchestrator/orchestrator.py,396
   fixos/orchestrator/rollback.py,163
   fixos/platform_utils.py,185
   fixos/plugins/__init__.py,12
@@ -693,8 +698,8 @@ M[113]:
   fixos/providers/schemas.py,72
   fixos/system_checks.py,157
   fixos/utils/__init__.py,4
-  fixos/utils/anonymizer.py,300
-  fixos/utils/terminal.py,317
+  fixos/utils/anonymizer.py,309
+  fixos/utils/terminal.py,327
   fixos/utils/timeout.py,18
   fixos/utils/web_search.py,255
   fixos/watch.py,121
@@ -807,11 +812,13 @@ D:
     _handle_natural_command(prompt;dry_run)
     _validate_result_with_llm(prompt;cmd_str;result;cfg)
   fixos/cli/cleanup_cmd.py:
-    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_cleanup_full_system,_parse_size_to_gb
+    e: cleanup_services,_display_cleanup_summary,_display_service_item,_execute_safe_cleanup,_format_hint_line,_display_service_group,_display_unsafe_services,_cleanup_single_service,_cleanup_flatpak_detailed,_display_flatpak_status,_display_detailed_recommendations,_parse_selection,_parse_size_to_bytes,_format_bytes,_build_dep_types,_display_full_system_menu,_handle_snap_management,_parse_numeric_range_set,_handle_home_analysis,_show_home_item_info,_handle_select_query,_handle_interactive_select,_select_cleanup_items_by_filter,_execute_full_cleanup,_cleanup_full_system,_parse_size_to_gb
     cleanup_services(threshold;services;json_output;cleanup;dry_run;list_only;full_analysis)
     _display_cleanup_summary(plan;threshold)
     _display_service_item(svc)
     _execute_safe_cleanup(services;scanner)
+    _format_hint_line(hint)
+    _display_service_group(service_type;svcs;type_map)
     _display_unsafe_services(services)
     _cleanup_single_service(service_name;scanner;json_output;dry_run)
     _cleanup_flatpak_detailed(scanner;json_output;dry_run)
@@ -820,6 +827,16 @@ D:
     _parse_selection(selection;max_count)
     _parse_size_to_bytes(size_str)
     _format_bytes(size_bytes)
+    _build_dep_types(items)
+    _display_full_system_menu(analyzer;analysis;safe_items;medium_items;dry_run)
+    _handle_snap_management(analyzer;dry_run)
+    _parse_numeric_range_set(nums)
+    _handle_home_analysis(analyzer;dry_run)
+    _show_home_item_info(nums;large_files;large_dirs;total_items)
+    _handle_select_query(nums;analyzer)
+    _handle_interactive_select(analyzer;dry_run)
+    _select_cleanup_items_by_filter(selection;analyzer;safe_items)
+    _execute_full_cleanup(items_to_clean;dry_run)
     _cleanup_full_system(json_output;dry_run)
     _parse_size_to_gb(size_str)
   fixos/cli/config_cmd.py:
@@ -867,7 +884,10 @@ D:
     e: quickfix
     quickfix(dry_run;modules)
   fixos/cli/report_cmd.py:
-    e: report
+    e: _render_report_json,_render_report_markdown,_render_report_html,report
+    _render_report_json(results;timestamp)
+    _render_report_markdown(results;timestamp)
+    _render_report_html(results;timestamp)
     report(output_format;output;modules;profile)
   fixos/cli/rollback_cmd.py:
     e: rollback,rollback_list,rollback_show,rollback_undo
@@ -876,8 +896,10 @@ D:
     rollback_show(session_id)
     rollback_undo(session_id;last;dry_run)
   fixos/cli/scan_cmd.py:
-    e: scan,_run_disk_analysis,_print_quick_issues
+    e: scan,_display_disk_fix_mode,_display_disk_scan_mode,_run_disk_analysis,_print_quick_issues
     scan(modules;output;show_raw;no_banner;disc;dry_run;interactive;json_output;llm_fallback;profile)
+    _display_disk_fix_mode(disk_analysis)
+    _display_disk_scan_mode(disk_analysis)
     _run_disk_analysis(data;json_output;is_fix_mode)
     _print_quick_issues(data)
   fixos/cli/shared.py:
@@ -909,6 +931,7 @@ D:
     _get_api_key(provider)
     _save_to_env(provider;key;key_env)
     interactive_provider_setup()
+  fixos/constants.py:
   fixos/diagnostics/__init__.py:
   fixos/diagnostics/checks/__init__.py:
   fixos/diagnostics/checks/_shared.py:
@@ -928,7 +951,9 @@ D:
     e: diagnose_security
     diagnose_security()
   fixos/diagnostics/checks/system_core.py:
-    e: diagnose_system
+    e: _collect_os_info,_collect_platform_details,diagnose_system
+    _collect_os_info()
+    _collect_platform_details()
     diagnose_system()
   fixos/diagnostics/checks/thumbnails.py:
     e: diagnose_thumbnails
@@ -952,7 +977,7 @@ D:
     ServiceCleaner: __init__(1),get_cleanup_plan(1),cleanup_service(2),_service_to_dict(1),is_safe_cleanup(2),get_cleanup_hints(2),get_service_description(1),get_cleanup_command(2),_chrome_cleanup_command(1),get_preview_command(2)  # Plans and executes cleanup of service data.
   fixos/diagnostics/service_details.py:
     e: ServiceDetailsProvider
-    ServiceDetailsProvider: get_details(2),_docker(0),_ollama(0),_conda(0),_package_cache(1),_flatpak(0),_parse_size_bytes(1)  # Provides detailed information about service data.
+    ServiceDetailsProvider: get_details(2),_parse_docker_system_df(1),_get_docker_counts(1),_docker(0),_ollama(0),_conda(0),_package_cache(1),_flatpak(0),_parse_size_bytes(1)  # Provides detailed information about service data.
   fixos/diagnostics/service_scanner.py:
     e: main,ServiceType,ServiceDataInfo,ServiceDataScanner
     ServiceType:  # Service types that can be scanned and cleaned.
@@ -962,7 +987,7 @@ D:
   fixos/diagnostics/storage_analyzer.py:
     e: StorageItem,StorageAnalyzer
     StorageItem: to_dict(0),_format_size(1)  # Represents a storage item that can be cleaned
-    StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
+    StorageAnalyzer: __init__(0),analyze_full(0),_get_dir_size(1),_get_file_size(1),_run_command(1),_analyze_dnf_cache(0),_analyze_old_kernels(0),_analyze_journal_logs(0),_parse_size_static(1),_parse_docker_df_output(1),_add_dangling_images_item(2),_add_build_cache_item(1),_add_docker_total_item(2),_analyze_docker(0),_analyze_podman(0),_analyze_user_cache(0),_analyze_browser_cache(0),_analyze_btrfs_snapshots(0),_analyze_coredumps(0),_analyze_orphaned_packages(0),_analyze_browser_profiles(0),_analyze_flatpak_user_data(0),_analyze_ostree_repo(0),_analyze_dev_projects(0),_analyze_system_logs(0),_analyze_home_directory(0),_find_large_files(2),_find_large_home_dirs(2),get_large_directories(1),_parse_snap_line(1),_add_snap_items(2),_analyze_snap(0),_analyze_btrfs_snapshots(0),_analyze_var_cache(0),_parse_size(1),_get_recommendations(0),get_summary(0)  # Comprehensive storage analyzer for Linux systems.
   fixos/diagnostics/system_checks.py:
     e: get_full_diagnostics
     get_full_diagnostics(modules;progress_callback)
@@ -1017,7 +1042,7 @@ D:
   fixos/orchestrator/orchestrator.py:
     e: _SkipAll,FixOrchestrator
     _SkipAll:  # Rzucany gdy user wpisuje 's' – pomija wszystkie komendy bież
-    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),run_sync(2),run_async(2),_evaluate_and_rediagnose(2),_parse_json(1),_log(2),_session_summary(0),_default_confirm(2),_default_progress(2)  # Orkiestrator napraw systemowych.
+    FixOrchestrator: __init__(3),load_from_diagnostics(1),load_from_dict(1),_process_fix_commands(3),_process_rediagnose(2),run_sync(2),run_async(2),_evaluate_and_rediagnose(2),_parse_json(1),_log(2),_session_summary(0),_default_confirm(2),_default_progress(2)  # Orkiestrator napraw systemowych.
   fixos/orchestrator/rollback.py:
     e: RollbackEntry,RollbackSession
     RollbackEntry:  # Single recorded operation with its rollback command.
@@ -1095,19 +1120,25 @@ D:
     get_full_diagnostics()
   fixos/utils/__init__.py:
   fixos/utils/anonymizer.py:
-    e: _get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_dict_to_markdown,_format_key_title,AnonymizationReport
+    e: _get_sensitive,anonymize,display_anonymized_preview,_colorize_md_line,_format_diagnostics_markdown,_render_dict_list_value,_render_dict_long_string,_render_dict_multiline_string,_dict_to_markdown,_format_key_title,AnonymizationReport
     AnonymizationReport: add(2),summary(0)  # Raport anonimizacji – co zostało zmaskowane.
     _get_sensitive()
     anonymize(data_str)
     display_anonymized_preview(data_str;report;max_lines)
     _colorize_md_line(line)
     _format_diagnostics_markdown(data_str)
+    _render_dict_list_value(key;value;prefix)
+    _render_dict_long_string(key;value;prefix)
+    _render_dict_multiline_string(key;value;prefix)
     _dict_to_markdown(data;indent)
     _format_key_title(key)
   fixos/utils/terminal.py:
-    e: colorize,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap,_C
+    e: colorize,_is_divider_line,_handle_divider_line,_get_severity_style,render_md,print_cmd_block,print_stdout_box,print_stderr_box,print_problem_header,render_tree_colored,_wrap,_C
     _C:  # No-op stubs – kept so existing callers don't break at import
     colorize(line)
+    _is_divider_line(stripped)
+    _handle_divider_line(stripped)
+    _get_severity_style(stripped)
     render_md(text)
     print_cmd_block(cmd;comment;dry_run)
     print_stdout_box(stdout;max_lines)
@@ -1265,7 +1296,7 @@ D:
 
 ## Call Graph
 
-*139 nodes · 131 edges · 35 modules · CC̄=3.7*
+*157 nodes · 143 edges · 36 modules · CC̄=3.5*
 
 ### Hubs (by degree)
 
@@ -1273,41 +1304,47 @@ D:
 |----------|----|----|-----|-------|
 | `_cmd` *(in fixos.diagnostics.checks._shared)* | 7 | 142 | 3 | **145** |
 | `_cleanup_flatpak_detailed` *(in fixos.cli.cleanup_cmd)* | 12 ⚠ | 1 | 111 | **112** |
+| `_handle_home_analysis` *(in fixos.cli.cleanup_cmd)* | 23 ⚠ | 1 | 79 | **80** |
+| `_display_full_system_menu` *(in fixos.cli.cleanup_cmd)* | 12 ⚠ | 1 | 79 | **80** |
 | `_display_flatpak_status` *(in fixos.cli.cleanup_cmd)* | 9 | 1 | 65 | **66** |
 | `_print_welcome` *(in fixos.cli.main)* | 6 | 1 | 61 | **62** |
+| `_handle_snap_management` *(in fixos.cli.cleanup_cmd)* | 26 ⚠ | 1 | 60 | **61** |
 | `run_llm_shell` *(in fixos.llm_shell)* | 15 ⚠ | 0 | 53 | **53** |
-| `diagnose_resources` *(in fixos.diagnostics.checks.resources)* | 13 ⚠ | 0 | 49 | **49** |
-| `anonymize` *(in fixos.utils.anonymizer)* | 15 ⚠ | 0 | 48 | **48** |
-| `diagnose_system` *(in fixos.diagnostics.checks.system_core)* | 16 ⚠ | 0 | 46 | **46** |
 
 ```toon markpact:analysis path=project/calls.toon.yaml
 # code2llm call graph | /home/tom/github/wronai/fixOS
-# nodes: 139 | edges: 131 | modules: 35
-# CC̄=3.7
+# nodes: 157 | edges: 143 | modules: 36
+# CC̄=3.5
 
 HUBS[20]:
   fixos.diagnostics.checks._shared._cmd
     CC=7  in:142  out:3  total:145
   fixos.cli.cleanup_cmd._cleanup_flatpak_detailed
     CC=12  in:1  out:111  total:112
+  fixos.cli.cleanup_cmd._handle_home_analysis
+    CC=23  in:1  out:79  total:80
+  fixos.cli.cleanup_cmd._display_full_system_menu
+    CC=12  in:1  out:79  total:80
   fixos.cli.cleanup_cmd._display_flatpak_status
     CC=9  in:1  out:65  total:66
   fixos.cli.main._print_welcome
     CC=6  in:1  out:61  total:62
+  fixos.cli.cleanup_cmd._handle_snap_management
+    CC=26  in:1  out:60  total:61
   fixos.llm_shell.run_llm_shell
     CC=15  in:0  out:53  total:53
   fixos.diagnostics.checks.resources.diagnose_resources
     CC=13  in:0  out:49  total:49
   fixos.utils.anonymizer.anonymize
     CC=15  in:0  out:48  total:48
-  fixos.diagnostics.checks.system_core.diagnose_system
-    CC=16  in:0  out:46  total:46
-  fixos.utils.anonymizer._dict_to_markdown
-    CC=18  in:2  out:43  total:45
   fixos.platform_utils.run_command
     CC=5  in:33  out:4  total:37
   fixos.diagnostics.checks.security.diagnose_security
     CC=4  in:0  out:36  total:36
+  fixos.cli.cleanup_cmd._cleanup_full_system
+    CC=18  in:1  out:30  total:31
+  fixos.utils.terminal.render_md
+    CC=9  in:0  out:30  total:30
   fixos.cli.token_cmd.token_set
     CC=7  in:0  out:29  total:29
   fixos.anonymizer.anonymize
@@ -1320,12 +1357,6 @@ HUBS[20]:
     CC=14  in:0  out:26  total:26
   fixos.diagnostics.checks.audio.diagnose_audio
     CC=1  in:0  out:25  total:25
-  fixos.orchestrator.orchestrator.FixOrchestrator._evaluate_and_rediagnose
-    CC=10  in:0  out:23  total:23
-  fixos.cli.features_cmd._interactive_profile_select
-    CC=11  in:1  out:22  total:23
-  fixos.cli.ask_cmd._execute_with_llm
-    CC=8  in:1  out:21  total:22
 
 MODULES:
   fixos.agent  [1 funcs]
@@ -1345,9 +1376,6 @@ MODULES:
     _process_turn  CC=7  out:16
     _setup_timeout  CC=1  out:3
     remaining  CC=1  out:1
-  fixos.agent.session_core  [2 funcs]
-    extract_fixes  CC=10  out:19
-    extract_search_topic  CC=3  out:4
   fixos.agent.session_handlers  [9 funcs]
     handle_describe_problem  CC=2  out:2
     handle_direct_command  CC=1  out:5
@@ -1381,9 +1409,17 @@ MODULES:
     _match_heuristic_command  CC=18  out:2
     _validate_result_with_llm  CC=14  out:16
     ask  CC=1  out:4
-  fixos.cli.cleanup_cmd  [2 funcs]
+  fixos.cli.cleanup_cmd  [10 funcs]
+    _build_dep_types  CC=4  out:2
     _cleanup_flatpak_detailed  CC=12  out:111
+    _cleanup_full_system  CC=18  out:30
     _display_flatpak_status  CC=9  out:65
+    _display_full_system_menu  CC=12  out:79
+    _display_service_group  CC=8  out:15
+    _display_unsafe_services  CC=4  out:10
+    _handle_home_analysis  CC=23  out:79
+    _handle_snap_management  CC=26  out:60
+    _parse_numeric_range_set  CC=5  out:10
   fixos.cli.features_cmd  [2 funcs]
     _interactive_profile_select  CC=11  out:22
     features_audit  CC=4  out:18
@@ -1391,6 +1427,10 @@ MODULES:
     _print_welcome  CC=6  out:61
     cli  CC=3  out:5
     main  CC=1  out:1
+  fixos.cli.scan_cmd  [3 funcs]
+    _display_disk_fix_mode  CC=6  out:11
+    _display_disk_scan_mode  CC=4  out:12
+    _run_disk_analysis  CC=8  out:15
   fixos.cli.token_cmd  [1 funcs]
     token_set  CC=7  out:29
   fixos.config  [3 funcs]
@@ -1414,8 +1454,10 @@ MODULES:
     diagnose_resources  CC=13  out:49
   fixos.diagnostics.checks.security  [1 funcs]
     diagnose_security  CC=4  out:36
-  fixos.diagnostics.checks.system_core  [1 funcs]
-    diagnose_system  CC=16  out:46
+  fixos.diagnostics.checks.system_core  [3 funcs]
+    _collect_os_info  CC=3  out:9
+    _collect_platform_details  CC=3  out:14
+    diagnose_system  CC=11  out:23
   fixos.diagnostics.checks.thumbnails  [1 funcs]
     diagnose_thumbnails  CC=1  out:21
   fixos.llm_shell  [1 funcs]
@@ -1475,18 +1517,18 @@ MODULES:
     get_network_info  CC=4  out:3
     get_top_processes  CC=3  out:4
     run_cmd  CC=6  out:3
-  fixos.utils.anonymizer  [6 funcs]
-    _dict_to_markdown  CC=18  out:43
+  fixos.utils.anonymizer  [7 funcs]
+    _dict_to_markdown  CC=9  out:20
     _format_diagnostics_markdown  CC=3  out:5
     _format_key_title  CC=1  out:3
     _get_sensitive  CC=4  out:3
+    _render_dict_list_value  CC=6  out:7
     anonymize  CC=15  out:48
     display_anonymized_preview  CC=5  out:18
-  fixos.utils.terminal  [4 funcs]
-    print_cmd_block  CC=4  out:6
-    print_problem_header  CC=3  out:10
-    print_stderr_box  CC=2  out:8
-    print_stdout_box  CC=2  out:8
+  fixos.utils.terminal  [3 funcs]
+    _get_severity_style  CC=3  out:1
+    _is_divider_line  CC=1  out:2
+    render_md  CC=9  out:30
   fixos.utils.web_search  [9 funcs]
     _http_get  CC=2  out:4
     format_results_for_llm  CC=3  out:5
@@ -1497,6 +1539,14 @@ MODULES:
     search_fedora_bugzilla  CC=4  out:8
     search_github_issues  CC=4  out:12
     search_serpapi  CC=5  out:9
+  project.map.toon  [7 funcs]
+    display_anonymized_preview  CC=0  out:0
+    extract_fixes  CC=0  out:0
+    extract_search_topic  CC=0  out:0
+    print_cmd_block  CC=0  out:0
+    print_problem_header  CC=0  out:0
+    print_stderr_box  CC=0  out:0
+    print_stdout_box  CC=0  out:0
   scripts.pyqual-calibrate  [4 funcs]
     calibrate  CC=14  out:26
     extract_current_metrics  CC=4  out:9
@@ -1521,28 +1571,12 @@ EDGES:
   fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._get_api_key
   fixos.config_interactive.interactive_provider_setup → fixos.config_interactive._save_to_env
   fixos.diagnostics.checks.resources.diagnose_resources → fixos.diagnostics.checks._shared._psutil_required
-  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._psutil_required
-  fixos.diagnostics.checks.system_core.diagnose_system → fixos.diagnostics.checks._shared._cmd
   fixos.diagnostics.checks.audio.diagnose_audio → fixos.diagnostics.checks._shared._cmd
   fixos.diagnostics.checks.security.diagnose_security → fixos.diagnostics.checks._shared._cmd
   fixos.diagnostics.checks.hardware.diagnose_hardware → fixos.diagnostics.checks._shared._cmd
   fixos.diagnostics.checks.thumbnails.diagnose_thumbnails → fixos.diagnostics.checks._shared._cmd
-  fixos.agent.session_handlers.handle_execute_all → fixos.anonymizer.anonymize
-  fixos.agent.session_handlers.handle_fix_by_number → fixos.anonymizer.anonymize
-  fixos.agent.session_handlers.handle_direct_command → fixos.anonymizer.anonymize
-  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.search_all
-  fixos.agent.session_handlers.handle_search → fixos.utils.web_search.format_results_for_llm
-  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.elevate_cmd
-  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.is_dangerous
-  fixos.agent.session_handlers.run_single_command → fixos.platform_utils.run_command
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_quit
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_describe_problem
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_skip_all
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_execute_all
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_fix_by_number
-  fixos.agent.session_handlers.parse_user_input → fixos.agent.session_handlers.handle_direct_command
   fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.anonymizer.anonymize
-  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → fixos.utils.anonymizer.display_anonymized_preview
+  fixos.agent.autonomous_session.AutonomousSession._initialize_messages → project.map.toon.display_anonymized_preview
   fixos.agent.autonomous_session.AutonomousSession._get_remaining_time → fixos.agent.get_remaining_time
   fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.search_all
   fixos.agent.autonomous_session.AutonomousSession._handle_llm_error → fixos.utils.web_search.format_results_for_llm
@@ -1554,6 +1588,22 @@ EDGES:
   fixos.agent.hitl_session.HITLSession._setup_timeout → fixos.platform_utils.setup_signal_timeout
   fixos.agent.hitl_session.HITLSession._clear_timeout → fixos.platform_utils.cancel_signal_timeout
   fixos.agent.hitl_session.HITLSession.remaining → fixos.agent.get_remaining_time
+  fixos.agent.hitl_session.HITLSession._initialize_messages → fixos.anonymizer.anonymize
+  fixos.agent.hitl_session.HITLSession._initialize_messages → project.map.toon.display_anonymized_preview
+  fixos.agent.hitl_session.HITLSession._handle_llm_error → fixos.utils.web_search.search_all
+  fixos.agent.hitl_session.HITLSession._handle_llm_error → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.hitl_session.HITLSession._check_low_confidence → project.map.toon.extract_search_topic
+  fixos.agent.hitl_session.HITLSession._check_low_confidence → fixos.utils.web_search.search_all
+  fixos.agent.hitl_session.HITLSession._check_low_confidence → fixos.utils.web_search.format_results_for_llm
+  fixos.agent.hitl_session.HITLSession._process_turn → project.map.toon.extract_fixes
+  fixos.cli.ask_cmd.ask → fixos.cli.ask_cmd._handle_natural_command
+  fixos.cli.ask_cmd._execute_heuristic_command → fixos.cli.ask_cmd._build_output_dict
+  fixos.cli.ask_cmd._execute_heuristic_command → fixos.cli.ask_cmd._validate_result_with_llm
+  fixos.cli.ask_cmd._execute_with_llm → fixos.cli.ask_cmd._build_output_dict
+  fixos.cli.ask_cmd._execute_with_llm → fixos.cli.ask_cmd._validate_result_with_llm
+  fixos.cli.ask_cmd._handle_natural_command → fixos.cli.ask_cmd._match_heuristic_command
+  fixos.cli.ask_cmd._handle_natural_command → fixos.cli.ask_cmd._execute_with_llm
+  fixos.cli.ask_cmd._handle_natural_command → fixos.cli.ask_cmd._format_command
 ```
 
 ## Test Contracts

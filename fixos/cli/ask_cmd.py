@@ -7,7 +7,7 @@ import click
 @click.command("ask")
 @click.argument("prompt")
 @click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania")
-def ask(prompt, dry_run):
+def ask(prompt, dry_run) -> None:
     """Wykonaj polecenie w języku naturalnym."""
     _handle_natural_command(prompt, dry_run)
 
@@ -28,7 +28,7 @@ _ACTION_KEYWORDS = {
 }
 
 
-def _match_heuristic_command(prompt_lower: str):
+def _match_heuristic_command(prompt_lower: str) -> object:
     """
     Match user prompt against heuristic keyword mappings.
     
@@ -227,7 +227,7 @@ Przykłady:
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
 
 
-def _handle_natural_command(prompt: str, dry_run: bool = False):
+def _handle_natural_command(prompt: str, dry_run: bool = False) -> None:
     """
     Handle natural language commands with heuristic matching and LLM fallback.
     """
@@ -261,7 +261,7 @@ def _handle_natural_command(prompt: str, dry_run: bool = False):
     _execute_with_llm(prompt, dry_run, cfg)
 
 
-def _validate_result_with_llm(prompt: str, cmd_str: str, result, cfg):
+def _validate_result_with_llm(prompt: str, cmd_str: str, result, cfg) -> None:
     """Validate command result using LLM - generates check command and assesses outcome."""
     import yaml
     import subprocess

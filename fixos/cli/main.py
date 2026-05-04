@@ -102,12 +102,12 @@ def _print_welcome():
 
     if not has_key:
         click.echo(click.style("  Szybki start:", fg="yellow", bold=True))
-        click.echo(click.style("     fixos llm", fg="yellow") + "                    # wybierz provider i pobierz klucz")
-        click.echo(click.style("     fixos token set <KLUCZ>", fg="yellow") + "      # zapisz klucz (auto-detekcja providera)")
-        click.echo(click.style("     fixos fix", fg="yellow") + "                    # uruchom diagnostykę + naprawę")
+        click.echo(f"{click.style('     fixos llm', fg='yellow')}                    # wybierz provider i pobierz klucz")
+        click.echo(f"{click.style('     fixos token set <KLUCZ>', fg='yellow')}      # zapisz klucz (auto-detekcja providera)")
+        click.echo(f"{click.style('     fixos fix', fg='yellow')}                    # uruchom diagnostykę + naprawę")
         click.echo()
         click.echo(click.style("  ⚡ Lub po prostu:", fg="yellow"))
-        click.echo(click.style("     fixos fix", fg="yellow") + "  # zapyta o provider interaktywnie")
+        click.echo(f"{click.style('     fixos fix', fg='yellow')}  # zapyta o provider interaktywnie")
     else:
         click.echo(click.style("  Przykłady użycia:", fg="yellow", bold=True))
         click.echo(click.style("     fixos fix", fg="yellow") + "                           # pełna diagnostyka + naprawa")

@@ -10,6 +10,12 @@ from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
 from ..config import FixOsConfig
+from ..constants import (
+    HITL_TIMEOUT_BUFFER,
+    AUTONOMOU_TIMEOUT_BUFFER,
+    CLEANUP_TIMEOUT_ESTIMATE,
+    MAX_COMMAND_LENGTH,
+)
 from ..platform_utils import (
     setup_signal_timeout, cancel_signal_timeout,
     get_os_info, get_package_manager,

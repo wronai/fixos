@@ -162,6 +162,61 @@ class FixOrchestrator:
             problems.append(p)
         return problems
 
+    def _process_fix_commands(
+        self, problem, confirm_fn, progress_fn
+    ) -> tuple:
+        """Execute all fix commands for a problem.
+
+        Returns (last_result, skip_all) where skip_all signals the outer loop
+        should move to the next problem without rediagnosis.
+        """
+        last_result = None
+        skip_all = False
+        for cmd in problem.fix_commands:
+            try:
+                if not confirm_fn(problem, cmd):
+                    problem.status = "skipped"
+                    self._log("skipped", {"problem_id": problem.id, "command": cmd})
+                    break
+            except _SkipAll:
+                skip_all = True
+                problem.status = "skipped"
+                self._log("skipped_all", {"problem_id": problem.id})
+                break
+
+            if skip_all:
+                break
+
+            try:
+                result = self.executor.execute_sync(cmd)
+                last_result = result
+                self._log("executed", result.to_context())
+                progress_fn(problem, result)
+                if not result.success and result.executed:
+                    break
+            except DangerousCommandError as e:
+                console.print(f"\n  [bold red]⛔ ZABLOKOWANO:[/bold red] {e}")
+                problem.status = "failed"
+                self._log("dangerous_blocked", {"command": cmd, "error": str(e)})
+                break
+            except CommandTimeoutError as e:
+                console.print(f"\n  [bold yellow]⏰ TIMEOUT:[/bold yellow] {e}")
+                last_result = ExecutionResult(command=cmd, timed_out=True, executed=False)
+                break
+
+        return last_result, skip_all
+
+    def _process_rediagnose(self, problem, last_result) -> None:
+        """Evaluate fix result via LLM and attach any newly discovered problems."""
+        if last_result is None:
+            return
+        new_problems = self._evaluate_and_rediagnose(problem, last_result)
+        for np in new_problems:
+            np.caused_by.append(problem.id)
+            problem.may_cause.append(np.id)
+            self.graph.add(np)
+            console.print(f"\n  [cyan]Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
+
     def run_sync(
         self,
         confirm_fn=None,
@@ -169,7 +224,7 @@ class FixOrchestrator:
     ) -> dict:
         """
         Synchroniczna pętla napraw (dla trybu HITL).
-        
+
         Args:
             confirm_fn: callable(problem, command) -> bool – pytaj użytkownika
             progress_fn: callable(problem, result) – callback po każdym kroku
@@ -191,53 +246,11 @@ class FixOrchestrator:
             problem.status = "in_progress"
             problem.attempts += 1
 
-            # Wykonaj każdą komendę fix
-            last_result = None
-            skip_all = False
-            for cmd in problem.fix_commands:
-                try:
-                    if not confirm_fn(problem, cmd):
-                        problem.status = "skipped"
-                        self._log("skipped", {"problem_id": problem.id, "command": cmd})
-                        break
-                except _SkipAll:
-                    skip_all = True
-                    problem.status = "skipped"
-                    self._log("skipped_all", {"problem_id": problem.id})
-                    break
-
-                if skip_all:
-                    break
-
-                try:
-                    result = self.executor.execute_sync(cmd)
-                    last_result = result
-                    self._log("executed", result.to_context())
-                    progress_fn(problem, result)
-
-                    if not result.success and result.executed:
-                        break
-                except DangerousCommandError as e:
-                    console.print(f"\n  [bold red]⛔ ZABLOKOWANO:[/bold red] {e}")
-                    problem.status = "failed"
-                    self._log("dangerous_blocked", {"command": cmd, "error": str(e)})
-                    break
-                except CommandTimeoutError as e:
-                    console.print(f"\n  [bold yellow]⏰ TIMEOUT:[/bold yellow] {e}")
-                    last_result = ExecutionResult(command=cmd, timed_out=True, executed=False)
-                    break
-
+            last_result, skip_all = self._process_fix_commands(problem, confirm_fn, progress_fn)
             if skip_all:
                 continue
 
-            # Oceń wynik przez LLM i wykryj nowe problemy
-            if last_result is not None:
-                new_problems = self._evaluate_and_rediagnose(problem, last_result)
-                for np in new_problems:
-                    np.caused_by.append(problem.id)
-                    problem.may_cause.append(np.id)
-                    self.graph.add(np)
-                    console.print(f"\n  [cyan]Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
+            self._process_rediagnose(problem, last_result)
 
         return self._session_summary()
 

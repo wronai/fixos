@@ -59,6 +59,39 @@ def colorize(line: str) -> str:
 
 # ── Markdown renderer ──────────────────────────────────────────────────────
 
+def _is_divider_line(stripped: str) -> bool:
+    """Return True if the stripped line is a section divider (━━━ / === / ---)."""
+    return bool(re.match(r'^[━═─]{3,}', stripped))
+
+
+def _handle_divider_line(stripped: str) -> None:
+    """Print a rich Rule for a section divider line."""
+    inner = re.sub(r'^[━═─\s]+|[━═─\s]+$', '', stripped)
+    if inner:
+        console.print(Rule(f"[bold cyan]{inner}[/bold cyan]", style="cyan"))
+    else:
+        console.print(Rule(style="dim cyan"))
+
+
+_SEVERITY_STYLES: list[tuple[str, str]] = [
+    ("🔴", "bold red"),
+    ("🟡", "bold yellow"),
+    ("🟢", "bold green"),
+    ("✅", "green"),
+    ("❌", "red"),
+    ("⚠️", "yellow"),
+    ("⚠", "yellow"),
+]
+
+
+def _get_severity_style(stripped: str) -> Optional[str]:
+    """Return rich style string if line starts with a severity emoji, else None."""
+    for prefix, style in _SEVERITY_STYLES:
+        if stripped.startswith(prefix):
+            return style
+    return None
+
+
 def render_md(text: str) -> None:
     """
     Print LLM markdown reply to terminal via rich.
@@ -115,39 +148,16 @@ def render_md(text: str) -> None:
         stripped = line.strip()
 
         # ── Section dividers (━━━ TEXT ━━━ / === / ---) ────────────
-        if re.match(r'^[━═─]{3,}', stripped):
+        if _is_divider_line(stripped):
             _flush_md()
-            inner = re.sub(r'^[━═─\s]+|[━═─\s]+$', '', stripped)
-            if inner:
-                console.print(Rule(f"[bold cyan]{inner}[/bold cyan]", style="cyan"))
-            else:
-                console.print(Rule(style="dim cyan"))
+            _handle_divider_line(stripped)
             continue
 
         # ── Severity lines ─────────────────────────────────────────
-        if stripped.startswith("🔴"):
+        sev_style = _get_severity_style(stripped)
+        if sev_style is not None:
             _flush_md()
-            console.print(Text(line, style="bold red"))
-            continue
-        if stripped.startswith("🟡"):
-            _flush_md()
-            console.print(Text(line, style="bold yellow"))
-            continue
-        if stripped.startswith("🟢"):
-            _flush_md()
-            console.print(Text(line, style="bold green"))
-            continue
-        if stripped.startswith("✅"):
-            _flush_md()
-            console.print(Text(line, style="green"))
-            continue
-        if stripped.startswith("❌"):
-            _flush_md()
-            console.print(Text(line, style="red"))
-            continue
-        if stripped.startswith("⚠️") or stripped.startswith("⚠"):
-            _flush_md()
-            console.print(Text(line, style="yellow"))
+            console.print(Text(line, style=sev_style))
             continue
 
         # ── Action items [N] / [A] / [S] / [Q] ────────────────────

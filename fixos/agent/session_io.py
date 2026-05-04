@@ -79,7 +79,7 @@ def print_action_menu(fixes: list, remaining: int, total_tokens: int) -> None:
     ))
     if fixes:
         for i, (cmd, comment) in enumerate(fixes, 1):
-            label = comment if comment else (cmd[:55] + "..." if len(cmd) > 55 else cmd)
+            label = comment if comment else (f"{cmd[:55]}..." if len(cmd) > 55 else cmd)
             console.print(f"  [bold yellow][{i}][/bold yellow] {label}")
             console.print(Panel(
                 Syntax(cmd, "bash", theme="monokai", word_wrap=True),

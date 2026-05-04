@@ -7,10 +7,11 @@ import time
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
-# Constants for UI formatting and timeouts
-MAX_SUMMARY_LENGTH = 80
-MAX_STDOUT_LINES = 40
-DEFAULT_COMMAND_TIMEOUT = 120
+from ..constants import (
+    COMMAND_PREFIX_LENGTH,
+    MAX_OUTPUT_LINES,
+    CLEANUP_TIMEOUT_ESTIMATE,
+)
 
 
 @dataclass

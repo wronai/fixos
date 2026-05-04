@@ -5,13 +5,13 @@ import click
 
 
 @click.group("profile")
-def profile():
+def profile() -> None:
     """Zarządzanie profilami diagnostycznymi."""
     pass
 
 
 @profile.command("list")
-def profile_list():
+def profile_list() -> None:
     """Pokaż dostępne profile diagnostyczne."""
     from fixos.profiles import Profile
 

@@ -356,29 +356,26 @@ class DiskAnalyzer:
         else:
             return "other"
     
+    _CACHE_TYPE_RULES: list[tuple[list[str], str]] = [
+        (["npm", "node_modules"], "npm"),
+        (["pip", "python"], "pip"),
+        (["gradle"], "gradle"),
+        (["maven"], "maven"),
+        (["cargo"], "cargo"),
+        (["docker", "containers"], "docker"),
+        (["apt", "dnf", "yum", "pacman"], "package_manager"),
+        (["browser", "chrome", "firefox"], "browser"),
+    ]
+
     def _identify_cache_type(self, dir_path: Path) -> str:
         """Identify cache directory type"""
         name = dir_path.name.lower()
         path_str = str(dir_path).lower()
-        
-        if "npm" in name or "node_modules" in path_str:
-            return "npm"
-        elif "pip" in name or "python" in path_str:
-            return "pip"
-        elif "gradle" in name:
-            return "gradle"
-        elif "maven" in name:
-            return "maven"
-        elif "cargo" in name:
-            return "cargo"
-        elif "docker" in path_str or "containers" in path_str:
-            return "docker"
-        elif "apt" in path_str or "dnf" in path_str or "yum" in path_str or "pacman" in path_str:
-            return "package_manager"
-        elif "browser" in path_str or "chrome" in path_str or "firefox" in path_str:
-            return "browser"
-        else:
-            return "application"
+        combined = name + " " + path_str
+        for keywords, cache_type in self._CACHE_TYPE_RULES:
+            if any(kw in combined for kw in keywords):
+                return cache_type
+        return "application"
     
     def _identify_temp_type(self, dir_path: Path) -> str:
         """Identify temporary directory type"""

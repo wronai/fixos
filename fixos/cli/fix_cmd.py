@@ -1,10 +1,13 @@
 """
 Fix command for fixOS CLI - diagnostics and repair session with LLM
 """
-import click
+import sys
 import json
 from pathlib import Path
 from typing import Dict, Any, List
+
+import click
+
 from fixos.cli.shared import add_common_options, add_shared_options, BANNER
 from fixos.config import FixOsConfig, interactive_provider_setup
 from fixos.agent.hitl import run_hitl_session
@@ -26,7 +29,7 @@ from fixos.agent.autonomous import run_autonomous_session
               help="Maksymalna liczba napraw w sesji")
 @add_shared_options
 def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data, output, max_fixes,
-        disc, dry_run, interactive, json_output, llm_fallback, show_raw):
+        disc, dry_run, interactive, json_output, llm_fallback, show_raw) -> None:
     """
     Przeprowadza pełną diagnostykę i uruchamia sesję naprawczą z LLM.
 
@@ -76,14 +79,12 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
         new_cfg = interactive_provider_setup()
         if new_cfg is None:
             click.echo(click.style("Anulowano. Użyj: fixos llm  aby zobaczyć dostępne providery.", fg="red"))
-            import sys
             sys.exit(1)
         cfg = new_cfg
         errors = cfg.validate()
         if errors:
             for err in errors:
                 click.echo(click.style(f"{err}", fg="red"))
-            import sys
             sys.exit(1)
 
     click.echo(click.style("\nKonfiguracja:", fg="cyan"))
@@ -146,8 +147,8 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
         )
 
 
-def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool, 
-                           interactive: bool, json_output: bool, llm_fallback: bool):
+def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
+                           interactive: bool, json_output: bool, llm_fallback: bool) -> None:
     """Handle disk cleanup mode with interactive planning"""
     from fixos.interactive.cleanup_planner import CleanupPlanner
     
@@ -161,7 +162,6 @@ def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,
     plan = planner.create_cleanup_plan(suggestions)
     
     if json_output:
-        import json
         click.echo(json.dumps(plan, indent=2, default=str))
         return
     

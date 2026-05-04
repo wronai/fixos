@@ -167,67 +167,67 @@ def _execute_safe_cleanup(services: list, scanner) -> float:
     return total_freed
 
 
+def _format_hint_line(hint: str) -> None:
+    """Print a single cleanup hint line with appropriate styling."""
+    if hint.startswith("  "):
+        click.echo(click.style(hint, fg="cyan"))
+    elif hint.startswith("🔥") or hint.startswith("🐳") or hint.startswith("🤖"):
+        click.echo(click.style(f"\n    {hint}", fg="yellow", bold=True))
+    elif hint.startswith("💡"):
+        click.echo(click.style(f"    {hint}", fg="green"))
+    elif hint.startswith("⚠️"):
+        click.echo(click.style(f"    {hint}", fg="red"))
+    elif hint.startswith("📊"):
+        click.echo(click.style(f"    {hint}", fg="blue"))
+    else:
+        click.echo(click.style(f"    {hint}", fg="white"))
+
+
+def _display_service_group(service_type: str, svcs: list, type_map: dict) -> None:
+    """Display a single service group with cleanup commands and hints."""
+    from fixos.diagnostics.service_cleanup import ServiceCleaner
+
+    total_size = sum(s.get('size_gb', 0) for s in svcs)
+    click.echo(f"\n  • {service_type.title()}: {total_size:.2f} GB")
+
+    unique_commands = list(set(s['cleanup_command'] for s in svcs))
+    for cmd in unique_commands[:2]:
+        click.echo(f"    {cmd}")
+    if len(unique_commands) > 2:
+        click.echo(f"    ... (+{len(unique_commands)-2} more commands)")
+
+    service_enum = type_map.get(service_type.lower())
+    if service_enum:
+        hints = ServiceCleaner.get_cleanup_hints(service_enum, total_size)
+        if hints:
+            click.echo()
+            for hint in hints:
+                _format_hint_line(hint)
+
+
 def _display_unsafe_services(services: list) -> None:
     """Display services that require manual review."""
-    from fixos.diagnostics.service_cleanup import ServiceCleaner
     from fixos.diagnostics.service_scanner import ServiceType
-    
+
     click.echo()
     click.echo(click.style("Usługi wymagające przeglądu:", fg="yellow"))
-    
-    # Group services by type for cleaner display
-    service_groups = {}
+
+    service_groups: dict = {}
     for svc in services:
         service_type = svc.get('service_type', 'unknown')
         if service_type not in service_groups:
             service_groups[service_type] = []
         service_groups[service_type].append(svc)
-    
-    # Map service type strings to enum
+
     type_map = {
         'flatpak': ServiceType.FLATPAK,
         'docker': ServiceType.DOCKER,
         'ollama': ServiceType.OLLAMA,
     }
-    
+
     for service_type, svcs in service_groups.items():
-        # Display basic info
-        total_size = sum(s.get('size_gb', 0) for s in svcs)
-        click.echo(f"\n  • {service_type.title()}: {total_size:.2f} GB")
-        
-        # Show cleanup commands
-        unique_commands = list(set(s['cleanup_command'] for s in svcs))
-        for cmd in unique_commands[:2]:  # Show max 2 unique commands
-            click.echo(f"    {cmd}")
-        if len(unique_commands) > 2:
-            click.echo(f"    ... (+{len(unique_commands)-2} more commands)")
-        
-        # Display hints if available
-        service_enum = type_map.get(service_type.lower())
-        if service_enum:
-            hints = ServiceCleaner.get_cleanup_hints(service_enum, total_size)
-            if hints:
-                click.echo()
-                for hint in hints:
-                    if hint.startswith("  "):
-                        # Indented commands
-                        click.echo(click.style(hint, fg="cyan"))
-                    elif hint.startswith("🔥") or hint.startswith("🐳") or hint.startswith("🤖"):
-                        # Service headers
-                        click.echo(click.style(f"\n    {hint}", fg="yellow", bold=True))
-                    elif hint.startswith("💡"):
-                        # Tips
-                        click.echo(click.style(f"    {hint}", fg="green"))
-                    elif hint.startswith("⚠️"):
-                        # Warnings
-                        click.echo(click.style(f"    {hint}", fg="red"))
-                    elif hint.startswith("📊"):
-                        # Investigation commands
-                        click.echo(click.style(f"    {hint}", fg="blue"))
-                    else:
-                        # Regular text
-                        click.echo(click.style(f"    {hint}", fg="white"))
-    
+        _display_service_group(service_type, svcs, type_map)
+
     click.echo()
     click.echo(click.style("💡 Wskazówki: Powyższe komendy są bezpieczne i często odzyskują dużo miejsca", fg="green"))
 
@@ -536,44 +536,27 @@ def _format_bytes(size_bytes: int) -> str:
     return f"{size_bytes:.1f} PB"
 
 
-def _cleanup_full_system(json_output: bool, dry_run: bool):
-    """
-    Full system storage analysis and cleanup.
-    
-    Analizuje cały system: DNF, kernels, logs, Docker, Podman, cache, etc.
-    """
-    from fixos.diagnostics.storage_analyzer import StorageAnalyzer
-    
-    analyzer = StorageAnalyzer()
-    
-    click.echo(click.style("\n🔍 Analizuję system...", fg="cyan"))
-    analysis = analyzer.analyze_full()
-    
-    # JSON output
-    if json_output:
-        import json
-        click.echo(json.dumps(analysis, indent=2, default=str))
-        return
-    
-    # Display summary
-    click.echo(analyzer.get_summary())
-    
-    if not analysis['items']:
-        return
-    
-    # Show recommendations
+def _build_dep_types(items: list) -> dict:
+    """Group dev_projects items by dependency type."""
+    dep_types = {}
+    for item in items:
+        dep_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+        if dep_type not in dep_types:
+            dep_types[dep_type] = {"items": [], "total": 0}
+        dep_types[dep_type]["items"].append(item)
+        dep_types[dep_type]["total"] += item.size_bytes
+    return dep_types
+
+
+def _display_full_system_menu(analyzer, analysis: dict, safe_items: list, medium_items: list, dry_run: bool) -> str:
+    """Display recommendations and menu for full system cleanup. Returns user selection."""
     click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📋 REKOMENDACJE", fg="cyan", bold=True))
     click.echo(click.style("="*CONSTANT_60, fg="cyan"))
-    
+
     if dry_run:
         click.echo(click.style("\n[TRYB DRY-RUN] - brak faktycznych zmian\n", fg="yellow"))
-    
-    # Group items by risk
-    safe_items = [item for item in analyzer.items if item.risk in ['none', 'low']]
-    medium_items = [item for item in analyzer.items if item.risk == 'medium']
-    
-    # Safe items
+
     if safe_items:
         total_safe = sum(item.size_bytes for item in safe_items)
         click.echo(f"\n{click.style('✅ BEZPIECZNE (automatyczne):', fg='green', bold=True)}")
@@ -581,8 +564,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             click.echo(f"  • {item.name}: {_format_bytes(item.size_bytes)}")
             click.echo(f"    → {click.style(item.cleanup_command, fg='cyan', dim=True)}")
         click.echo(f"\n  💰 Łącznie: {click.style(_format_bytes(total_safe), fg='green')}")
-    
-    # Medium risk items
+
     if medium_items:
         total_medium = sum(item.size_bytes for item in medium_items)
         click.echo(f"\n{click.style('🟡 WYMAGA POTWIERDZENIA:', fg='yellow', bold=True)}")
@@ -590,32 +572,18 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
             click.echo(f"  • {item.name}: {_format_bytes(item.size_bytes)}")
             click.echo(f"    → {click.style(item.cleanup_command, fg='cyan', dim=True)}")
         click.echo(f"\n  💰 Łącznie: {click.style(_format_bytes(total_medium), fg='yellow')}")
-    
-    # Menu
+
     click.echo("\n" + click.style("-"*CONSTANT_60, fg="cyan"))
     click.echo(f"💰 {click.style('ŁĄCZNIE DO ODZYSKANIA:', fg='green', bold=True)} {analysis['total_reclaimable_human']}")
     click.echo(click.style("-"*CONSTANT_60, fg="cyan"))
-    
-    # Show category breakdown for dev_projects
+
     dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
     if dev_items:
-        # Group by dependency type
-        dep_types = {}
-        for item in dev_items:
-            # Extract dep_type from name (e.g., "node_modules (project)" -> "node_modules")
-            dep_type = item.name.split(' (')[0] if ' (' in item.name else item.name
-            if dep_type not in dep_types:
-                dep_types[dep_type] = {"items": [], "total": 0}
-            dep_types[dep_type]["items"].append(item)
-            dep_types[dep_type]["total"] += item.size_bytes
-        
-        # Show available types
+        dep_types = _build_dep_types(dev_items)
         click.echo(f"\n{click.style('📦 TYPY ZALEŻNOŚCI:', fg='magenta', bold=True)}")
         for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
-            count = len(data["items"])
-            total = data["total"]
-            click.echo(f"  {click.style(dep_type, fg='yellow')}: {count} folderów, {_format_bytes(total)}")
-    
+            click.echo(f"  {click.style(dep_type, fg='yellow')}: {len(data['items'])} folderów, {_format_bytes(data['total'])}")
+
     click.echo(f"\n{click.style('Dostępne opcje:', fg='white', bold=True)}")
     click.echo(f"  {click.style('safe', fg='green')}             - wykonaj bezpieczne czyszczenie")
     click.echo(f"  {click.style('all', fg='yellow')}              - wykonaj wszystko (z potwierdzeniem)")
@@ -632,594 +600,519 @@ def _cleanup_full_system(json_output: bool, dry_run: bool):
     click.echo(f"  {click.style('snap', fg='magenta')}            - zarządzaj pakietami Snap")
     click.echo(f"  {click.style('home', fg='yellow')}             - analizuj duże pliki w home")
     click.echo(f"  {click.style('none', fg='white')}              - pomiń")
-    
-    selection = click.prompt(
+
+    return click.prompt(
         click.style("\nTwój wybór", fg="cyan"),
         default="none",
         show_default=False
-    )
-    
-    selection = selection.strip().lower()
-    
-    if selection in ['none', 'n', '']:
-        click.echo(click.style("\n⏭️ Nie wybrano żadnych akcji.", fg="yellow"))
+    ).strip().lower()
+
+
+def _handle_snap_management(analyzer, dry_run: bool) -> None:
+    """Handle Snap package management selection."""
+    snap_packages = getattr(analyzer, 'snap_packages', [])
+
+    if not snap_packages:
+        try:
+            result = subprocess.run(['snap', 'list', '--all'], capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                snap_packages = []
+                for line in result.stdout.strip().split('\n')[1:]:
+                    parts = line.split()
+                    if len(parts) >= CONSTANT_4:
+                        snap_packages.append({
+                            'name': parts[0], 'version': parts[1], 'rev': parts[2],
+                            'size': 0, 'disabled': 'disabled' in line.lower(),
+                        })
+        except Exception:
+            pass
+
+    if not snap_packages:
+        click.echo(click.style("\n❌ Brak zainstalowanych pakietów Snap lub snapd niedostępny.", fg="red"))
         return
-    
-    # Show types details
-    if selection == 'types':
-        click.echo(f"\n{click.style('📦 SZCZEGÓŁY TYPÓW:', fg='magenta', bold=True)}")
-        for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
-            count = len(data["items"])
-            total = data["total"]
-            click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {count} folderów, {_format_bytes(total)}")
-            for item in data["items"][:CONSTANT_5]:
-                click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
-            if count > CONSTANT_5:
-                click.echo(f"  ... i {count - CONSTANT_5} więcej")
+
+    active_packages = [p for p in snap_packages if not p.get('disabled', False)]
+    if not active_packages:
+        click.echo(click.style("\n❌ Brak aktywnych pakietów Snap do odinstalowania.", fg="red"))
         return
-    
-    # Snap package management
-    if selection == 'snap':
-        # Get snap packages from analyzer
-        snap_packages = getattr(analyzer, 'snap_packages', [])
-        
-        if not snap_packages:
-            # Try to get snap packages directly
-            import subprocess
+
+    click.echo(f"\n{click.style('📦 ZAINSTALOWANE PAKIETY SNAP:', fg='magenta', bold=True)}")
+    click.echo(click.style("Wybierz numery pakietów do odinstalowania", fg="white"))
+    for i, pkg in enumerate(active_packages, 1):
+        size_str = _format_bytes(pkg.get('size', 0)) if pkg.get('size', 0) > 0 else "? MB"
+        click.echo(f"  [{i:3d}] {click.style(pkg['name'], fg='yellow')} (v{pkg['version']}, rev {pkg['rev']}): {size_str}")
+    click.echo(f"\n  💰 Łącznie pakietów: {len(active_packages)}")
+
+    nums = click.prompt(click.style("\nWybierz numery do odinstalowania (np. 1,3,5-10)", fg="cyan"), default="")
+    if not nums.strip():
+        click.echo(click.style("⏭️ Nie wybrano żadnych pakietów.", fg="yellow"))
+        return
+
+    selected_indices = _parse_numeric_range_set(nums)
+    packages_to_remove = [active_packages[i - 1] for i in selected_indices if 1 <= i <= len(active_packages)]
+
+    if not packages_to_remove:
+        click.echo(click.style("❌ Nie wybrano żadnych pakietów.", fg="red"))
+        return
+
+    click.echo(f"\n{click.style('📦 WYBRANE PAKIETY DO ODINSTALOWANIA:', fg='red', bold=True)}")
+    for i, pkg in enumerate(packages_to_remove, 1):
+        click.echo(f"  {i:3d}. {click.style(pkg['name'], fg='yellow')} (v{pkg['version']})")
+
+    core_packages = ['core', 'core18', 'core20', 'core22', 'snapd']
+    dangerous = [p for p in packages_to_remove if p['name'] in core_packages]
+    if dangerous:
+        click.echo(click.style("\n⚠️ UWAGA: Wybrane pakiety zawierają komponenty systemowe:", fg="red", bold=True))
+        for pkg in dangerous:
+            click.echo(f"  • {pkg['name']}")
+        click.echo(click.style("Ich usunięcie może wpłynąć na działanie innych pakietów Snap!", fg="red"))
+
+    if dry_run:
+        click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
+        return
+    if not click.confirm(click.style("\n⚠️ Potwierdzasz odinstalowanie tych pakietów?", fg="yellow"), default=False):
+        click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+        return
+
+    click.echo(f"\n{click.style('🚀 ODINSTALOWYWANIE PAKIETÓW SNAP:', fg='cyan', bold=True)}")
+    for pkg in packages_to_remove:
+        click.echo(f"\n• {pkg['name']} (v{pkg['version']})")
+        try:
+            result = subprocess.run(
+                ['sudo', 'snap', 'remove', pkg['name']],
+                capture_output=True, text=True, timeout=CONSTANT_120,
+            )
+            if result.returncode == 0:
+                click.echo(click.style("  ✅ Odinstalowano", fg="green"))
+            else:
+                click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
+        except Exception as e:
+            click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+
+
+def _parse_numeric_range_set(nums: str) -> set:
+    """Parse comma/range number string (e.g. '1,3,5-10') into a set of ints."""
+    selected = set()
+    for part in nums.split(','):
+        part = part.strip()
+        if '-' in part:
             try:
-                result = subprocess.run(['snap', 'list', '--all'], capture_output=True, text=True, timeout=10)
-                if result.returncode == 0:
-                    lines = result.stdout.strip().split('\n')[1:]
-                    snap_packages = []
-                    for line in lines:
-                        parts = line.split()
-                        if len(parts) >= CONSTANT_4:
-                            snap_packages.append({
-                                'name': parts[0],
-                                'version': parts[1],
-                                'rev': parts[2],
-                                'size': 0,
-                                'disabled': 'disabled' in line.lower(),
-                            })
-            except Exception:
+                start, end = part.split('-', 1)
+                selected.update(range(int(start), int(end) + 1))
+            except ValueError:
                 pass
-        
-        if not snap_packages:
-            click.echo(click.style("\n❌ Brak zainstalowanych pakietów Snap lub snapd niedostępny.", fg="red"))
-            return
-        
-        # Filter only active (non-disabled) packages
-        active_packages = [p for p in snap_packages if not p.get('disabled', False)]
-        
-        if not active_packages:
-            click.echo(click.style("\n❌ Brak aktywnych pakietów Snap do odinstalowania.", fg="red"))
-            return
-        
-        click.echo(f"\n{click.style('📦 ZAINSTALOWANE PAKIETY SNAP:', fg='magenta', bold=True)}")
-        click.echo(click.style("Wybierz numery pakietów do odinstalowania", fg="white"))
-        
-        # Show packages with numbers
-        for i, pkg in enumerate(active_packages, 1):
-            size_str = _format_bytes(pkg.get('size', 0)) if pkg.get('size', 0) > 0 else "? MB"
-            click.echo(f"  [{i:3d}] {click.style(pkg['name'], fg='yellow')} (v{pkg['version']}, rev {pkg['rev']}): {size_str}")
-        
-        click.echo(f"\n  💰 Łącznie pakietów: {len(active_packages)}")
-        
-        # Get selection
-        nums = click.prompt(click.style("\nWybierz numery do odinstalowania (np. 1,3,5-10)", fg="cyan"), default="")
-        
-        if not nums.strip():
-            click.echo(click.style("⏭️ Nie wybrano żadnych pakietów.", fg="yellow"))
-            return
-        
-        # Parse selection
-        selected_indices = set()
-        for part in nums.split(','):
-            part = part.strip()
-            if '-' in part:
-                try:
-                    start, end = part.split('-')
-                    selected_indices.update(range(int(start), int(end) + 1))
-                except ValueError:
-                    pass
-            else:
-                try:
-                    selected_indices.add(int(part))
-                except ValueError:
-                    pass
-        
-        # Get selected packages
-        packages_to_remove = []
-        for i in selected_indices:
-            if 1 <= i <= len(active_packages):
-                packages_to_remove.append(active_packages[i - 1])
-        
-        if not packages_to_remove:
-            click.echo(click.style("❌ Nie wybrano żadnych pakietów.", fg="red"))
-            return
-        
-        # Show selected packages
-        click.echo(f"\n{click.style('📦 WYBRANE PAKIETY DO ODINSTALOWANIA:', fg='red', bold=True)}")
-        for i, pkg in enumerate(packages_to_remove, 1):
-            click.echo(f"  {i:3d}. {click.style(pkg['name'], fg='yellow')} (v{pkg['version']})")
-        
-        # Warning about core packages
-        core_packages = ['core', 'core18', 'core20', 'core22', 'snapd']
-        dangerous = [p for p in packages_to_remove if p['name'] in core_packages]
-        
-        if dangerous:
-            click.echo(click.style(f"\n⚠️ UWAGA: Wybrane pakiety zawierają komponenty systemowe:", fg="red", bold=True))
-            for pkg in dangerous:
-                click.echo(f"  • {pkg['name']}")
-            click.echo(click.style("Ich usunięcie może wpłynąć na działanie innych pakietów Snap!", fg="red"))
-        
-        # Final confirmation
-        if not dry_run:
-            if not click.confirm(click.style("\n⚠️ Potwierdzasz odinstalowanie tych pakietów?", fg="yellow"), default=False):
-                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
-                return
         else:
-            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
-            return
-        
-        # Execute removal
-        click.echo(f"\n{click.style('🚀 ODINSTALOWYWANIE PAKIETÓW SNAP:', fg='cyan', bold=True)}")
-        
-        for pkg in packages_to_remove:
-            click.echo(f"\n• {pkg['name']} (v{pkg['version']})")
             try:
-                result = subprocess.run(
-                    ['sudo', 'snap', 'remove', pkg['name']],
-                    capture_output=True,
-                    text=True,
-                    timeout=CONSTANT_120,
-                )
-                if result.returncode == 0:
-                    click.echo(click.style("  ✅ Odinstalowano", fg="green"))
-                else:
-                    click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
-            except Exception as e:
-                click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
-        
+                selected.add(int(part))
+            except ValueError:
+                pass
+    return selected
+
+
+def _handle_home_analysis(analyzer, dry_run: bool) -> None:
+    """Handle home directory large-file analysis and removal."""
+    import os
+    import shutil
+
+    large_files = getattr(analyzer, 'home_large_files', [])
+    large_dirs = getattr(analyzer, 'home_large_dirs', [])
+
+    if not large_files and not large_dirs:
+        click.echo(click.style("\n❌ Brak dużych plików w home do analizy.", fg="red"))
         return
-    
-    # Home directory analysis
-    if selection == 'home':
-        # Get large files and dirs from analyzer
-        large_files = getattr(analyzer, 'home_large_files', [])
-        large_dirs = getattr(analyzer, 'home_large_dirs', [])
-        
-        if not large_files and not large_dirs:
-            click.echo(click.style("\n❌ Brak dużych plików w home do analizy.", fg="red"))
-            return
-        
-        click.echo(f"\n{click.style('🏠 ANALIZA HOME DIRECTORY:', fg='yellow', bold=True)}")
-        click.echo(click.style(f"Znaleziono {len(large_files)} dużych plików (>200MB) i {len(large_dirs)} folderów (>500MB)", fg="white"))
-        
-        # Show large files
-        if large_files:
-            click.echo(f"\n{click.style('📄 DUŻE PLIKI (>200MB):', fg='red', bold=True)}")
-            for i, f in enumerate(large_files[:CONSTANT_30], 1):
-                click.echo(f"  [{i:3d}] 📄 {click.style(f['path'], fg='cyan')}: {f['size_human']}")
-            
-            if len(large_files) > CONSTANT_30:
-                click.echo(f"  ... i {len(large_files) - CONSTANT_30} więcej")
-        
-        # Show large directories
-        if large_dirs:
-            click.echo(f"\n{click.style('📁 DUŻE FOLDERY (>500MB):', fg='magenta', bold=True)}")
-            offset = len(large_files)
-            for i, d in enumerate(large_dirs[:CONSTANT_20], 1):
-                click.echo(f"  [{offset + i:3d}] 📁 {click.style(d['path'], fg='yellow')}: {d['size_human']}")
-            
-            if len(large_dirs) > CONSTANT_20:
-                click.echo(f"  ... i {len(large_dirs) - CONSTANT_20} więcej")
-        
-        # Get selection
-        total_items = len(large_files) + len(large_dirs)
-        click.echo(f"\n{click.style('💡 Wybierz numery plików/folderów do usunięcia:', fg='cyan')}")
-        click.echo(click.style("  • Pliki: 1-{}, Foldery: {}-{}".format(len(large_files), len(large_files)+1, total_items), fg="white"))
-        
-        nums = click.prompt(click.style("\nWybierz numery (np. 1,3,5-10) lub 'info:N' dla szczegółów", fg="cyan"), default="")
-        
+
+    click.echo(f"\n{click.style('🏠 ANALIZA HOME DIRECTORY:', fg='yellow', bold=True)}")
+    click.echo(click.style(f"Znaleziono {len(large_files)} dużych plików (>200MB) i {len(large_dirs)} folderów (>500MB)", fg="white"))
+
+    if large_files:
+        click.echo(f"\n{click.style('📄 DUŻE PLIKI (>200MB):', fg='red', bold=True)}")
+        for i, f in enumerate(large_files[:CONSTANT_30], 1):
+            click.echo(f"  [{i:3d}] 📄 {click.style(f['path'], fg='cyan')}: {f['size_human']}")
+        if len(large_files) > CONSTANT_30:
+            click.echo(f"  ... i {len(large_files) - CONSTANT_30} więcej")
+
+    if large_dirs:
+        click.echo(f"\n{click.style('📁 DUŻE FOLDERY (>500MB):', fg='magenta', bold=True)}")
+        offset = len(large_files)
+        for i, d in enumerate(large_dirs[:CONSTANT_20], 1):
+            click.echo(f"  [{offset + i:3d}] 📁 {click.style(d['path'], fg='yellow')}: {d['size_human']}")
+        if len(large_dirs) > CONSTANT_20:
+            click.echo(f"  ... i {len(large_dirs) - CONSTANT_20} więcej")
+
+    total_items = len(large_files) + len(large_dirs)
+    click.echo(f"\n{click.style('💡 Wybierz numery plików/folderów do usunięcia:', fg='cyan')}")
+    click.echo(click.style("  • Pliki: 1-{}, Foldery: {}-{}".format(len(large_files), len(large_files)+1, total_items), fg="white"))
+
+    nums = click.prompt(click.style("\nWybierz numery (np. 1,3,5-10) lub 'info:N' dla szczegółów", fg="cyan"), default="")
+    if not nums.strip():
+        click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
+        return
+
+    nums = nums.strip().lower()
+
+    if nums.startswith('info:'):
+        _show_home_item_info(nums, large_files, large_dirs, total_items)
+        return
+
+    selected_indices = _parse_numeric_range_set(nums)
+    items_to_remove = []
+    for i in selected_indices:
+        if 1 <= i <= len(large_files):
+            items_to_remove.append(large_files[i - 1])
+        elif len(large_files) < i <= total_items:
+            items_to_remove.append(large_dirs[i - len(large_files) - 1])
+
+    if not items_to_remove:
+        click.echo(click.style("❌ Nie wybrano żadnych elementów.", fg="red"))
+        return
+
+    click.echo(f"\n{click.style('📦 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
+    for i, item in enumerate(items_to_remove, 1):
+        icon = "📄" if item.get('type') == 'file' else "📁"
+        click.echo(f"  {i:3d}. {icon} {click.style(item['path'], fg='cyan')}: {item['size_human']}")
+    total_size = sum(item['size'] for item in items_to_remove)
+    click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_size)}")
+
+    if dry_run:
+        click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
+        return
+    if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
+        click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+        return
+
+    click.echo(f"\n{click.style('🚀 USUWANIE ELEMENTÓW:', fg='cyan', bold=True)}")
+    for item in items_to_remove:
+        click.echo(f"\n• {item['path']}")
+        try:
+            if item.get('type') == 'file':
+                os.remove(item['path'])
+            else:
+                shutil.rmtree(item['path'])
+            click.echo(click.style("  ✅ Usunięto", fg="green"))
+        except Exception as e:
+            click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+
+
+def _show_home_item_info(nums: str, large_files: list, large_dirs: list, total_items: int) -> None:
+    """Display info about a single home item by index."""
+    import os
+    import mimetypes
+    try:
+        idx = int(nums[CONSTANT_5:])
+        if 1 <= idx <= len(large_files):
+            f = large_files[idx - 1]
+            click.echo(f"\n{click.style('📦 SZCZEGÓŁY PLIKU:', fg='yellow', bold=True)}")
+            click.echo(f"  Ścieżka:   {f['path']}")
+            click.echo(f"  Rozmiar:   {f['size_human']}")
+            if os.path.exists(f['path']):
+                click.echo(click.style("  ✅ Istnieje", fg="green"))
+                mime_type, _ = mimetypes.guess_type(f['path'])
+                if mime_type:
+                    click.echo(f"  Typ:       {mime_type}")
+            else:
+                click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
+        elif len(large_files) < idx <= total_items:
+            d = large_dirs[idx - len(large_files) - 1]
+            click.echo(f"\n{click.style('📦 SZCZEGÓŁY FOLDERU:', fg='yellow', bold=True)}")
+            click.echo(f"  Ścieżka:   {d['path']}")
+            click.echo(f"  Rozmiar:   {d['size_human']}")
+        else:
+            click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+    except ValueError:
+        click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
+
+
+def _handle_select_query(nums: str, analyzer) -> bool:
+    """Handle a single interactive query (info:/path:/cmd:/filter:) in select mode.
+    Returns True if a special command was handled (loop should continue),
+    False if nums should be parsed as item indices."""
+    import os
+    if nums.startswith('info:'):
+        try:
+            idx = int(nums[CONSTANT_5:])
+            if 1 <= idx <= len(analyzer.items):
+                item = analyzer.items[idx - 1]
+                click.echo(f"\n{click.style('📦 SZCZEGÓŁY ELEMENTU:', fg='yellow', bold=True)}")
+                click.echo(f"  Nazwa:     {item.name}")
+                click.echo(f"  Ścieżka:   {item.path}")
+                click.echo(f"  Rozmiar:   {_format_bytes(item.size_bytes)}")
+                click.echo(f"  Kategoria: {item.category}")
+                click.echo(f"  Ryzyko:    {item.risk}")
+                click.echo(f"  Komenda:   {click.style(item.cleanup_command, fg='cyan')}")
+                click.echo(f"  Opis:      {item.description}")
+            else:
+                click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+        except ValueError:
+            click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
+        return True
+    if nums.startswith('path:'):
+        try:
+            idx = int(nums[CONSTANT_5:])
+            if 1 <= idx <= len(analyzer.items):
+                item = analyzer.items[idx - 1]
+                click.echo(f"\n{click.style('📁 ŚCIEŻKA:', fg='yellow')}")
+                click.echo(f"  {item.path}")
+                if os.path.exists(item.path):
+                    click.echo(click.style("  ✅ Istnieje", fg="green"))
+                else:
+                    click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
+            else:
+                click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+        except ValueError:
+            click.echo(click.style("❌ Format: path:N (np. path:5)", fg="red"))
+        return True
+    if nums.startswith('cmd:'):
+        try:
+            idx = int(nums[CONSTANT_4:])
+            if 1 <= idx <= len(analyzer.items):
+                item = analyzer.items[idx - 1]
+                click.echo(f"\n{click.style('🔧 KOMENDA CZYSZCZENIA:', fg='yellow')}")
+                click.echo(f"  {click.style(item.cleanup_command, fg='cyan')}")
+                if item.risk in ['none', 'low']:
+                    click.echo(click.style("  ✅ Bezpieczne", fg="green"))
+                else:
+                    click.echo(click.style("  ⚠️ Wymaga ostrożności", fg="yellow"))
+            else:
+                click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
+        except ValueError:
+            click.echo(click.style("❌ Format: cmd:N (np. cmd:5)", fg="red"))
+        return True
+    if nums.startswith('filter:'):
+        filter_type = nums[CONSTANT_7:].strip()
+        filtered_items = [
+            item for item in analyzer.items
+            if filter_type in (item.name.split(' (')[0] if ' (' in item.name else item.name).lower()
+            or filter_type in item.category.lower()
+        ]
+        if not filtered_items:
+            click.echo(click.style(f"❌ Brak elementów typu '{filter_type}'", fg="red"))
+            return True
+        click.echo(f"\n{click.style(f'🔍 FILTR: {filter_type}', fg='magenta', bold=True)}")
+        for i, item in enumerate(filtered_items[:CONSTANT_50], 1):
+            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+            original_idx = analyzer.items.index(item) + 1
+            click.echo(f"  [{original_idx:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+        click.echo(click.style(f"\n  💰 Łącznie: {_format_bytes(sum(i.size_bytes for i in filtered_items))}", fg="green"))
+        return True
+    return False
+
+
+def _handle_interactive_select(analyzer, dry_run: bool) -> list:
+    """Interactive numbered item selection. Returns list of items to clean."""
+    click.echo(f"\n{click.style('📋 WYBIERZ ELEMENTY DO USUNIĘCIA:', fg='green', bold=True)}")
+    click.echo(click.style("Podaj numery oddzielone przecinkami (np. 1,3,5-10,15)", fg="white"))
+    click.echo(click.style("Dodatkowe opcje:", fg="white"))
+    click.echo(f"  {click.style('info:N', fg='cyan')}    - pokaż szczegóły elementu N")
+    click.echo(f"  {click.style('path:N', fg='cyan')}    - pokaż pełną ścieżkę elementu N")
+    click.echo(f"  {click.style('cmd:N', fg='cyan')}     - pokaż komendę odtworzenia")
+    click.echo(f"  {click.style('filter:TYPE', fg='magenta')} - filtruj po typie (np. filter:venv)")
+
+    for i, item in enumerate(analyzer.items[:CONSTANT_50], 1):
+        risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+        click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+    if len(analyzer.items) > CONSTANT_50:
+        click.echo(f"  ... i {len(analyzer.items) - CONSTANT_50} więcej (użyj filter:TYPE lub top:N)")
+
+    items_to_clean = []
+    while True:
+        nums = click.prompt(click.style("\nWybierz numery (lub info:N/path:N/cmd:N/filter:TYPE)", fg="cyan"), default="")
         if not nums.strip():
-            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
-            return
-        
+            break
         nums = nums.strip().lower()
-        
-        # Handle info:N
-        if nums.startswith('info:'):
-            try:
-                idx = int(nums[CONSTANT_5:])
-                if 1 <= idx <= len(large_files):
-                    f = large_files[idx - 1]
-                    click.echo(f"\n{click.style('📦 SZCZEGÓŁY PLIKU:', fg='yellow', bold=True)}")
-                    click.echo(f"  Ścieżka:   {f['path']}")
-                    click.echo(f"  Rozmiar:   {f['size_human']}")
-                    # Check if exists
-                    import os
-                    if os.path.exists(f['path']):
-                        click.echo(click.style("  ✅ Istnieje", fg="green"))
-                        # Show file type
-                        import mimetypes
-                        mime_type, _ = mimetypes.guess_type(f['path'])
-                        if mime_type:
-                            click.echo(f"  Typ:       {mime_type}")
-                    else:
-                        click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
-                elif len(large_files) < idx <= total_items:
-                    d = large_dirs[idx - len(large_files) - 1]
-                    click.echo(f"\n{click.style('📦 SZCZEGÓŁY FOLDERU:', fg='yellow', bold=True)}")
-                    click.echo(f"  Ścieżka:   {d['path']}")
-                    click.echo(f"  Rozmiar:   {d['size_human']}")
-                else:
-                    click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
-            except ValueError:
-                click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
-            return
-        
-        # Parse selection
-        selected_indices = set()
-        for part in nums.split(','):
-            part = part.strip()
-            if '-' in part:
-                try:
-                    start, end = part.split('-')
-                    selected_indices.update(range(int(start), int(end) + 1))
-                except ValueError:
-                    pass
-            else:
-                try:
-                    selected_indices.add(int(part))
-                except ValueError:
-                    pass
-        
-        # Get selected items
-        items_to_remove = []
-        for i in selected_indices:
-            if 1 <= i <= len(large_files):
-                items_to_remove.append(large_files[i - 1])
-            elif len(large_files) < i <= total_items:
-                items_to_remove.append(large_dirs[i - len(large_files) - 1])
-        
-        if not items_to_remove:
-            click.echo(click.style("❌ Nie wybrano żadnych elementów.", fg="red"))
-            return
-        
-        # Show selected items
-        click.echo(f"\n{click.style('📦 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
-        for i, item in enumerate(items_to_remove, 1):
-            icon = "📄" if item.get('type') == 'file' else "📁"
-            click.echo(f"  {i:3d}. {icon} {click.style(item['path'], fg='cyan')}: {item['size_human']}")
-        
-        total_size = sum(item['size'] for item in items_to_remove)
-        click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_size)}")
-        
-        # Final confirmation
-        if not dry_run:
-            if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
-                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
-                return
-        else:
-            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
-            return
-        
-        # Execute removal
-        click.echo(f"\n{click.style('🚀 USUWANIE ELEMENTÓW:', fg='cyan', bold=True)}")
-        
-        for item in items_to_remove:
-            click.echo(f"\n• {item['path']}")
-            try:
-                import shutil
-                if item.get('type') == 'file':
-                    os.remove(item['path'])
-                else:
-                    shutil.rmtree(item['path'])
-                click.echo(click.style("  ✅ Usunięto", fg="green"))
-            except Exception as e:
-                click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
-        
-        return
-    
-    # Interactive selection
-    if selection == 'select':
-        click.echo(f"\n{click.style('📋 WYBIERZ ELEMENTY DO USUNIĘCIA:', fg='green', bold=True)}")
-        click.echo(click.style("Podaj numery oddzielone przecinkami (np. 1,3,5-10,15)", fg="white"))
-        click.echo(click.style("Dodatkowe opcje:", fg="white"))
-        click.echo(f"  {click.style('info:N', fg='cyan')}    - pokaż szczegóły elementu N")
-        click.echo(f"  {click.style('path:N', fg='cyan')}    - pokaż pełną ścieżkę elementu N")
-        click.echo(f"  {click.style('cmd:N', fg='cyan')}     - pokaż komendę odtworzenia")
-        click.echo(f"  {click.style('filter:TYPE', fg='magenta')} - filtruj po typie (np. filter:venv)")
-        
-        # Show numbered list
-        for i, item in enumerate(analyzer.items[:CONSTANT_50], 1):
-            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
-            click.echo(f"  [{i:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
-        
-        if len(analyzer.items) > CONSTANT_50:
-            click.echo(f"  ... i {len(analyzer.items) - CONSTANT_50} więcej (użyj filter:TYPE lub top:N)")
-        
-        # Interactive loop for selection
-        items_to_clean = []
-        current_filter = None
-        
-        while True:
-            nums = click.prompt(click.style("\nWybierz numery (lub info:N/path:N/cmd:N/filter:TYPE)", fg="cyan"), default="")
-            
-            if not nums.strip():
-                break
-            
-            nums = nums.strip().lower()
-            
-            # Handle info:N
-            if nums.startswith('info:'):
-                try:
-                    idx = int(nums[CONSTANT_5:])
-                    if 1 <= idx <= len(analyzer.items):
-                        item = analyzer.items[idx - 1]
-                        click.echo(f"\n{click.style('📦 SZCZEGÓŁY ELEMENTU:', fg='yellow', bold=True)}")
-                        click.echo(f"  Nazwa:     {item.name}")
-                        click.echo(f"  Ścieżka:   {item.path}")
-                        click.echo(f"  Rozmiar:   {_format_bytes(item.size_bytes)}")
-                        click.echo(f"  Kategoria: {item.category}")
-                        click.echo(f"  Ryzyko:    {item.risk}")
-                        click.echo(f"  Komenda:   {click.style(item.cleanup_command, fg='cyan')}")
-                        click.echo(f"  Opis:      {item.description}")
-                    else:
-                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
-                except ValueError:
-                    click.echo(click.style("❌ Format: info:N (np. info:5)", fg="red"))
-                continue
-            
-            # Handle path:N
-            if nums.startswith('path:'):
-                try:
-                    idx = int(nums[CONSTANT_5:])
-                    if 1 <= idx <= len(analyzer.items):
-                        item = analyzer.items[idx - 1]
-                        click.echo(f"\n{click.style('📁 ŚCIEŻKA:', fg='yellow')}")
-                        click.echo(f"  {item.path}")
-                        # Check if exists
-                        import os
-                        if os.path.exists(item.path):
-                            click.echo(click.style("  ✅ Istnieje", fg="green"))
-                        else:
-                            click.echo(click.style("  ⚠️ Nie istnieje", fg="yellow"))
-                    else:
-                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
-                except ValueError:
-                    click.echo(click.style("❌ Format: path:N (np. path:5)", fg="red"))
-                continue
-            
-            # Handle cmd:N
-            if nums.startswith('cmd:'):
-                try:
-                    idx = int(nums[CONSTANT_4:])
-                    if 1 <= idx <= len(analyzer.items):
-                        item = analyzer.items[idx - 1]
-                        click.echo(f"\n{click.style('🔧 KOMENDA CZYSZCZENIA:', fg='yellow')}")
-                        click.echo(f"  {click.style(item.cleanup_command, fg='cyan')}")
-                        # Check if it's safe
-                        if item.risk in ['none', 'low']:
-                            click.echo(click.style("  ✅ Bezpieczne", fg="green"))
-                        else:
-                            click.echo(click.style("  ⚠️ Wymaga ostrożności", fg="yellow"))
-                    else:
-                        click.echo(click.style(f"❌ Nieprawidłowy numer: {idx}", fg="red"))
-                except ValueError:
-                    click.echo(click.style("❌ Format: cmd:N (np. cmd:5)", fg="red"))
-                continue
-            
-            # Handle filter:TYPE
-            if nums.startswith('filter:'):
-                filter_type = nums[CONSTANT_7:].strip()
-                filtered_items = []
-                for item in analyzer.items:
-                    item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
-                    if filter_type in item_type.lower() or filter_type in item.category.lower():
-                        filtered_items.append(item)
-                
-                if not filtered_items:
-                    click.echo(click.style(f"❌ Brak elementów typu '{filter_type}'", fg="red"))
-                    continue
-                
-                click.echo(f"\n{click.style(f'🔍 FILTR: {filter_type}', fg='magenta', bold=True)}")
-                for i, item in enumerate(filtered_items[:CONSTANT_50], 1):
-                    risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
-                    original_idx = analyzer.items.index(item) + 1
-                    click.echo(f"  [{original_idx:3d}] {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
-                
-                total_filter = sum(item.size_bytes for item in filtered_items)
-                click.echo(click.style(f"\n  💰 Łącznie: {_format_bytes(total_filter)}", fg="green"))
-                continue
-            
-            # Parse selection
-            selected_indices = set()
-            for part in nums.split(','):
-                part = part.strip()
-                if '-' in part:
-                    # Range
-                    try:
-                        start, end = part.split('-')
-                        selected_indices.update(range(int(start), int(end) + 1))
-                    except ValueError:
-                        pass
-                else:
-                    try:
-                        selected_indices.add(int(part))
-                    except ValueError:
-                        pass
-            
-            # Get selected items
-            for i in selected_indices:
-                if 1 <= i <= len(analyzer.items):
-                    items_to_clean.append(analyzer.items[i - 1])
-            
-            if items_to_clean:
-                break
-        
-        if not items_to_clean:
-            click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
-            return
-        
-        # Remove duplicates
-        items_to_clean = list(dict.fromkeys(items_to_clean))
-        
-        # Show selected items and ask for confirmation
-        total_selected = sum(item.size_bytes for item in items_to_clean)
-        click.echo(f"\n{click.style('📋 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
-        for i, item in enumerate(items_to_clean, 1):
-            risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
-            click.echo(f"  {i:3d}. {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
-            click.echo(f"       → {click.style(item.path, fg='cyan', dim=True)}")
-        
-        click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_selected)}")
-        
-        # Final confirmation
-        if not dry_run:
-            if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
-                click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
-                return
-        else:
-            click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
-    
-    # Execute cleanup
-    else:
-        items_to_clean = []
-        
-        if selection == 'safe':
-            items_to_clean = safe_items
-        elif selection == 'all':
-            items_to_clean = analyzer.items
-        elif selection == 'large':
-            # Items > 1 GB
-            items_to_clean = [item for item in analyzer.items if item.size_bytes > CONSTANT_1024**CONSTANT_3]
-            total_large = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n🔴 Duże elementy (>1 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_large)}", fg="red"))
-        elif selection == 'huge':
-            # Items > 5 GB
-            items_to_clean = [item for item in analyzer.items if item.size_bytes > CONSTANT_5 * CONSTANT_1024**CONSTANT_3]
-            total_huge = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n🔴 Bardzo duże elementy (>CONSTANT_5 GB): {len(items_to_clean)} sztuk, {_format_bytes(total_huge)}", fg="red"))
-        elif selection == 'old':
-            # Items not modified in 30+ days
-            from datetime import datetime, timedelta
-            cutoff = datetime.now() - timedelta(days=CONSTANT_30)
-            items_to_clean = [
-                item for item in analyzer.items
-                if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
-            ]
-            total_old = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n🕐 Stare elementy (>30 dni): {len(items_to_clean)} sztuk, {_format_bytes(total_old)}", fg="cyan"))
-        elif selection == 'stale':
-            # Items not modified in 90+ days
-            from datetime import datetime, timedelta
-            cutoff = datetime.now() - timedelta(days=CONSTANT_90)
-            items_to_clean = [
-                item for item in analyzer.items
-                if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff
-            ]
-            total_stale = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n🕐 Bardzo stare elementy (>90 dni): {len(items_to_clean)} sztuk, {_format_bytes(total_stale)}", fg="cyan"))
-        elif selection.startswith('top:'):
-            # Top N largest items
-            try:
-                n = int(selection[CONSTANT_4:])
-                items_to_clean = analyzer.items[:n]
-                total_top = sum(item.size_bytes for item in items_to_clean)
-                click.echo(click.style(f"\n🏆 Top {n} największych: {_format_bytes(total_top)}", fg="yellow"))
-            except ValueError:
-                click.echo(click.style("❌ Nieprawidłowy format. Użyj top:N (np. top:20)", fg="red"))
-                return
-        elif selection.startswith('category:'):
-            # Filter by category
-            selected_category = selection[CONSTANT_9:].strip()
-            items_to_clean = [item for item in analyzer.items if item.category == selected_category]
-            
-            if not items_to_clean:
-                available = set(item.category for item in analyzer.items)
-                click.echo(click.style(f"\n❌ Nie znaleziono kategorii '{selected_category}'", fg="red"))
-                click.echo(click.style(f"Dostępne kategorie: {', '.join(sorted(available))}", fg="white"))
-                return
-            
-            total_cat = sum(item.size_bytes for item in items_to_clean)
-            click.echo(click.style(f"\n📁 Kategoria '{selected_category}': {len(items_to_clean)} elementów, {_format_bytes(total_cat)}", fg="blue"))
-        elif selection.startswith('type:'):
-            # Filter by type (single or multiple)
-            selected_types = [t.strip() for t in selection[CONSTANT_5:].split(',')]
-            
-            for item in analyzer.items:
-                item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
-                for selected_type in selected_types:
-                    if item_type == selected_type or selected_type in item_type:
-                        items_to_clean.append(item)
-                        break
-            
-            if not items_to_clean:
-                click.echo(click.style(f"\n❌ Nie znaleziono typów: {', '.join(selected_types)}", fg="red"))
-                return
-            
-            total_type = sum(item.size_bytes for item in items_to_clean)
-            types_str = ', '.join(selected_types)
-            click.echo(click.style(f"\n📦 Typy [{types_str}]: {len(items_to_clean)} folderów, {_format_bytes(total_type)}", fg="magenta"))
-    
+        if _handle_select_query(nums, analyzer):
+            continue
+        for i in _parse_numeric_range_set(nums):
+            if 1 <= i <= len(analyzer.items):
+                items_to_clean.append(analyzer.items[i - 1])
+        if items_to_clean:
+            break
+
     if not items_to_clean:
-        return
-    
+        click.echo(click.style("⏭️ Nie wybrano żadnych elementów.", fg="yellow"))
+        return []
+
+    items_to_clean = list(dict.fromkeys(items_to_clean))
+    total_selected = sum(item.size_bytes for item in items_to_clean)
+    click.echo(f"\n{click.style('📋 WYBRANE ELEMENTY DO USUNIĘCIA:', fg='red', bold=True)}")
+    for i, item in enumerate(items_to_clean, 1):
+        risk_icon = {"none": "✅", "low": "🟢", "medium": "🟡", "high": "🔴"}.get(item.risk, "•")
+        click.echo(f"  {i:3d}. {risk_icon} {item.name}: {_format_bytes(item.size_bytes)}")
+        click.echo(f"       → {click.style(item.path, fg='cyan', dim=True)}")
+    click.echo(f"\n{click.style('💰 Łącznie do usunięcia:', fg='red', bold=True)} {_format_bytes(total_selected)}")
+
+    if dry_run:
+        click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
+        return items_to_clean
+    if not click.confirm(click.style("\n⚠️ Potwierdzasz usunięcie tych elementów?", fg="yellow"), default=False):
+        click.echo(click.style("⏭️ Anulowano.", fg="yellow"))
+        return []
+    return items_to_clean
+
+
+def _select_cleanup_items_by_filter(selection: str, analyzer, safe_items: list) -> list:
+    """Map a filter keyword to a list of items from the analyzer."""
+    from datetime import datetime, timedelta
+
+    if selection == 'safe':
+        return safe_items
+    if selection == 'all':
+        return analyzer.items
+    if selection == 'large':
+        items = [item for item in analyzer.items if item.size_bytes > CONSTANT_1024**CONSTANT_3]
+        click.echo(click.style(f"\n🔴 Duże elementy (>1 GB): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="red"))
+        return items
+    if selection == 'huge':
+        items = [item for item in analyzer.items if item.size_bytes > CONSTANT_5 * CONSTANT_1024**CONSTANT_3]
+        click.echo(click.style(f"\n🔴 Bardzo duże elementy (>5 GB): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="red"))
+        return items
+    if selection == 'old':
+        cutoff = datetime.now() - timedelta(days=CONSTANT_30)
+        items = [item for item in analyzer.items if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff]
+        click.echo(click.style(f"\n🕐 Stare elementy (>30 dni): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="cyan"))
+        return items
+    if selection == 'stale':
+        cutoff = datetime.now() - timedelta(days=CONSTANT_90)
+        items = [item for item in analyzer.items if hasattr(item, 'last_modified') and item.last_modified and item.last_modified < cutoff]
+        click.echo(click.style(f"\n🕐 Bardzo stare elementy (>90 dni): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="cyan"))
+        return items
+    if selection.startswith('top:'):
+        try:
+            n = int(selection[CONSTANT_4:])
+            items = analyzer.items[:n]
+            click.echo(click.style(f"\n🏆 Top {n} największych: {_format_bytes(sum(i.size_bytes for i in items))}", fg="yellow"))
+            return items
+        except ValueError:
+            click.echo(click.style("❌ Nieprawidłowy format. Użyj top:N (np. top:20)", fg="red"))
+            return []
+    if selection.startswith('category:'):
+        selected_category = selection[CONSTANT_9:].strip()
+        items = [item for item in analyzer.items if item.category == selected_category]
+        if not items:
+            available = set(item.category for item in analyzer.items)
+            click.echo(click.style(f"\n❌ Nie znaleziono kategorii '{selected_category}'", fg="red"))
+            click.echo(click.style(f"Dostępne kategorie: {', '.join(sorted(available))}", fg="white"))
+            return []
+        click.echo(click.style(f"\n📁 Kategoria '{selected_category}': {len(items)} elementów, {_format_bytes(sum(i.size_bytes for i in items))}", fg="blue"))
+        return items
+    if selection.startswith('type:'):
+        selected_types = [t.strip() for t in selection[CONSTANT_5:].split(',')]
+        items = []
+        for item in analyzer.items:
+            item_type = item.name.split(' (')[0] if ' (' in item.name else item.name
+            if any(item_type == st or st in item_type for st in selected_types):
+                items.append(item)
+        if not items:
+            click.echo(click.style(f"\n❌ Nie znaleziono typów: {', '.join(selected_types)}", fg="red"))
+            return []
+        click.echo(click.style(f"\n📦 Typy [{', '.join(selected_types)}]: {len(items)} folderów, {_format_bytes(sum(i.size_bytes for i in items))}", fg="magenta"))
+        return items
+    return []
+
+
+def _execute_full_cleanup(items_to_clean: list, dry_run: bool) -> None:
+    """Execute cleanup commands for a list of StorageItems."""
     click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("🚀 WYKONYWANIE CZYSZCZENIA", fg="cyan", bold=True))
     click.echo(click.style("="*CONSTANT_60, fg="cyan") + "\n")
-    
+
     results = {"success": 0, "failed": 0, "space_reclaimed": 0}
-    
     for item in items_to_clean:
         click.echo(f"\n• {item.name} ({_format_bytes(item.size_bytes)})")
-        
         if dry_run:
             click.echo(click.style(f"  [DRY-RUN] Wykonano by: {item.cleanup_command}", fg="cyan"))
             results['success'] += 1
             results['space_reclaimed'] += item.size_bytes
-        else:
-            # Ask for confirmation on medium risk
-            if item.risk == 'medium':
-                if not click.confirm(f"  Wykonać {item.cleanup_command}?", default=False):
-                    click.echo("  ⏭️ Pominięto")
-                    continue
-            
-            # Execute
-            click.echo(f"  🚀 Wykonuję: {item.cleanup_command}")
-            try:
-                result = subprocess.run(
-                    item.cleanup_command.split(),
-                    capture_output=True,
-                    text=True,
-                    timeout=CONSTANT_300,
-                )
-                if result.returncode == 0:
-                    click.echo(click.style("  ✅ Sukces", fg="green"))
-                    results['success'] += 1
-                    results['space_reclaimed'] += item.size_bytes
-                else:
-                    click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
-                    results['failed'] += 1
-            except Exception as e:
-                click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+            continue
+        if item.risk == 'medium':
+            if not click.confirm(f"  Wykonać {item.cleanup_command}?", default=False):
+                click.echo("  ⏭️ Pominięto")
+                continue
+        click.echo(f"  🚀 Wykonuję: {item.cleanup_command}")
+        try:
+            result = subprocess.run(
+                item.cleanup_command.split(),
+                capture_output=True, text=True, timeout=CONSTANT_300,
+            )
+            if result.returncode == 0:
+                click.echo(click.style("  ✅ Sukces", fg="green"))
+                results['success'] += 1
+                results['space_reclaimed'] += item.size_bytes
+            else:
+                click.echo(click.style(f"  ❌ Błąd: {result.stderr[:100]}", fg="red"))
                 results['failed'] += 1
-    
-    # Summary
+        except Exception as e:
+            click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
+            results['failed'] += 1
+
     click.echo("\n" + click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(click.style("📊 PODSUMOWANIE", fg="cyan", bold=True))
     click.echo(click.style("="*CONSTANT_60, fg="cyan"))
     click.echo(f"   ✅ Sukces: {results['success']}")
     click.echo(f"   ❌ Błędy: {results['failed']}")
-    
     if dry_run:
         click.echo(click.style(f"\n   💰 [DRY-RUN] Zwolniono by: {_format_bytes(results['space_reclaimed'])}", fg="cyan"))
     else:
         click.echo(click.style(f"\n   💰 Odzyskano: {_format_bytes(results['space_reclaimed'])}", fg="green"))
-    
     click.echo(click.style("="*CONSTANT_60 + "\n", fg="cyan"))
+
+
+def _cleanup_full_system(json_output: bool, dry_run: bool):
+    """
+    Full system storage analysis and cleanup.
+
+    Analizuje cały system: DNF, kernels, logs, Docker, Podman, cache, etc.
+    """
+    from fixos.diagnostics.storage_analyzer import StorageAnalyzer
+
+    analyzer = StorageAnalyzer()
+    click.echo(click.style("\n🔍 Analizuję system...", fg="cyan"))
+    analysis = analyzer.analyze_full()
+
+    if json_output:
+        import json
+        click.echo(json.dumps(analysis, indent=2, default=str))
+        return
+
+    click.echo(analyzer.get_summary())
+    if not analysis['items']:
+        return
+
+    safe_items = [item for item in analyzer.items if item.risk in ['none', 'low']]
+    medium_items = [item for item in analyzer.items if item.risk == 'medium']
+
+    selection = _display_full_system_menu(analyzer, analysis, safe_items, medium_items, dry_run)
+
+    if selection in ['none', 'n', '']:
+        click.echo(click.style("\n⏭️ Nie wybrano żadnych akcji.", fg="yellow"))
+        return
+
+    if selection == 'types':
+        dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
+        dep_types = _build_dep_types(dev_items)
+        click.echo(f"\n{click.style('📦 SZCZEGÓŁY TYPÓW:', fg='magenta', bold=True)}")
+        for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
+            click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {len(data['items'])} folderów, {_format_bytes(data['total'])}")
+            for item in data["items"][:CONSTANT_5]:
+                click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
+            if len(data['items']) > CONSTANT_5:
+                click.echo(f"  ... i {len(data['items']) - CONSTANT_5} więcej")
+        return
+
+    if selection == 'snap':
+        _handle_snap_management(analyzer, dry_run)
+        return
+
+    if selection == 'home':
+        _handle_home_analysis(analyzer, dry_run)
+        return
+
+    if selection == 'select':
+        items_to_clean = _handle_interactive_select(analyzer, dry_run)
+    else:
+        items_to_clean = _select_cleanup_items_by_filter(selection, analyzer, safe_items)
+
+    if items_to_clean:
+        _execute_full_cleanup(items_to_clean, dry_run)
 
 
 def _parse_size_to_gb(size_str: str) -> float:

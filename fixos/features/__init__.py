@@ -122,35 +122,28 @@ class SystemDetector:
             pass
         return []
 
+    _DE_KEYWORDS: list[tuple[list[str], str]] = [
+        (["gnome"], "gnome"),
+        (["kde", "plasma"], "kde"),
+        (["xfce"], "xfce"),
+        (["sway"], "sway"),
+        (["hyprland"], "hyprland"),
+        (["i3"], "i3"),
+        (["cinnamon"], "cinnamon"),
+        (["mate"], "mate"),
+        (["budgie"], "budgie"),
+    ]
+
     def _detect_de(self) -> str:
         """Detect desktop environment."""
         de = os.environ.get("XDG_CURRENT_DESKTOP", "").lower()
         session = os.environ.get("DESKTOP_SESSION", "").lower()
-        wayland_display = os.environ.get("WAYLAND_DISPLAY", "")
-        
-        if "gnome" in de:
-            return "gnome"
-        elif "kde" in de or "plasma" in de:
-            return "kde"
-        elif "xfce" in de:
-            return "xfce"
-        elif "sway" in de or "sway" in session:
-            return "sway"
-        elif "hyprland" in de:
-            return "hyprland"
-        elif "i3" in de or "i3" in session:
-            return "i3"
-        elif "cinnamon" in de:
-            return "cinnamon"
-        elif "mate" in de:
-            return "mate"
-        elif "budgie" in de:
-            return "budgie"
-        
-        # If graphical session but no DE detected
+        combined = de + " " + session
+        for keywords, name in self._DE_KEYWORDS:
+            if any(kw in combined for kw in keywords):
+                return name
         if self._detect_display_server() != "none":
             return de or "other"
-        
         return "none"
 
     def _detect_display_server(self) -> str:

@@ -11,7 +11,7 @@ def config() -> None:
 
 
 @config.command("show")
-def config_show():
+def config_show() -> None:
     """Pokaż aktualną konfigurację."""
     from fixos.config import FixOsConfig
 
@@ -37,7 +37,7 @@ def config_show():
 
 @config.command("init")
 @click.option("--force", is_flag=True, help="Nadpisz istniejący plik")
-def config_init(force):
+def config_init(force) -> None:
     """Zainicjalizuj plik konfiguracyjny .env."""
     from pathlib import Path
 
@@ -69,7 +69,7 @@ GEMINI_API_KEY=
 @config.command("set")
 @click.argument("key")
 @click.argument("value")
-def config_set(key, value):
+def config_set(key, value) -> None:
     """Ustaw wartość konfiguracyjną w .env."""
     from pathlib import Path
     from dotenv import set_key

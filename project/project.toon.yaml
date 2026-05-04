@@ -1,27 +1,27 @@
-# fixOS | 732 func | 77f | 46687L | python | 2026-05-04
+# fixOS | 757 func | 77f | 46940L | python | 2026-05-04
 
 HEALTH:
-  CC̄=3.5  critical=64 (limit:10)  dup=1  cycles=0
+  CC̄=3.4  critical=62 (limit:10)  dup=1  cycles=0
 
 ALERTS[20]:
   !!! cc_exceeded      _select_cleanup_items_by_filter = 41 (limit:15)
-  !!! cc_exceeded      FlatpakAnalyzer.get_cleanup_recommendations = 27 (limit:15)
   !!! cc_exceeded      FeatureInstaller._install_package = 27 (limit:15)
   !!! cc_exceeded      _handle_snap_management = 26 (limit:15)
-  !!! high_fan_out     orchestrate = 24 (limit:10)
   !!! high_fan_out     StorageAnalyzer.analyze_full = 24 (limit:10)
+  !!! high_fan_out     orchestrate = 24 (limit:10)
   !!! high_fan_out     run_llm_shell = 23 (limit:10)
   !!! high_fan_out     fix = 21 (limit:10)
   !!! high_fan_out     _cleanup_flatpak_detailed = 21 (limit:10)
   !!! high_fan_out     diagnose_system = 20 (limit:10)
+  !!  cc_exceeded      _handle_home_analysis = 23 (limit:15)
 
 MODULES[135] (top by size):
   M[planfile.yaml] 2450L C:0 F:0 CC↑0 D:0 (yaml)
-  M[project/calls.yaml] 2201L C:0 F:0 CC↑0 D:0 (yaml)
+  M[project/calls.yaml] 2345L C:0 F:0 CC↑0 D:0 (yaml)
   M[fixos/cli/cleanup_cmd.py] 1139L C:0 F:26 CC↑41 D:0 (python)
   M[fixos/diagnostics/storage_analyzer.py] 1075L C:2 F:38 CC↑16 D:0 (python)
-  M[fixos/diagnostics/flatpak_analyzer.py] 944L C:3 F:24 CC↑27 D:0 (python)
-  M[project/map.toon.yaml] 672L C:0 F:208 CC↑0 D:5 (yaml)
+  M[fixos/diagnostics/flatpak_analyzer.py] 940L C:3 F:34 CC↑14 D:0 (python)
+  M[project/map.toon.yaml] 687L C:0 F:223 CC↑0 D:0 (yaml)
   M[fixos/diagnostics/service_cleanup.py] 473L C:1 F:10 CC↑14 D:0 (python)
   M[fixos/agent/autonomous_session.py] 433L C:3 F:22 CC↑8 D:0 (python)
   M[fixos/diagnostics/disk_analyzer.py] 430L C:1 F:15 CC↑13 D:0 (python)
@@ -34,12 +34,12 @@ MODULES[135] (top by size):
   LANGS: python:90/yaml:24/other:11/yml:3/txt:3/shell:2/toml:1/ini:1
 
 HOTSPOTS[10]:
+  ★ StorageAnalyzer.analyze_full fan=24  // Analysis pipeline, 24 stages
   ★ orchestrate fan=24  // Zaawansowana orkiestracja napraw z grafem problemów.
 
 
 Różnica od 'fix':
   - Bu
-  ★ StorageAnalyzer.analyze_full fan=24  // Analysis pipeline, 24 stages
   ★ run_llm_shell fan=23  // Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
 
 Args:
@@ -54,11 +54,11 @@ Tryby:
 Wyświetla menu z opcj
 
 REFACTOR[15]:
-  [1] H/L Split FlatpakAnalyzer.get_cleanup_recommendations (CC=27)
-  [2] H/L Split FeatureInstaller._install_package (CC=27)
-  [3] H/L Split _handle_snap_management (CC=26)
-  [4] H/L Split _select_cleanup_items_by_filter (CC=41)
-  [5] H/H Split god module fixos/cli/cleanup_cmd.py (1139L, 0 classes)
+  [1] H/L Split FeatureInstaller._install_package (CC=27)
+  [2] H/L Split _handle_snap_management (CC=26)
+  [3] H/L Split _select_cleanup_items_by_filter (CC=41)
+  [4] H/H Split god module fixos/cli/cleanup_cmd.py (1139L, 0 classes)
+  [5] H/H Split god module fixos/diagnostics/storage_analyzer.py (1075L, 2 classes)
 
 EVOLUTION:
-  2026-05-04 CC̄=3.5 crit=64 46687L // Automated analysis
+  2026-05-04 CC̄=3.4 crit=62 46940L // Automated analysis

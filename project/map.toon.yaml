@@ -1,4 +1,4 @@
-# fixOS | 114f 19708L | python:111,shell:2,less:1 | 2026-05-04
+# fixOS | 114f 19697L | python:111,shell:2,less:1 | 2026-05-04
 # stats: 238 func | 123 cls | 114 mod | CC̄=4.7 | critical:28 | cycles:0
 # alerts[5]: CC _select_cleanup_items_by_filter=41; CC _handle_snap_management=26; CC _handle_home_analysis=23; CC _handle_select_query=20; CC _match_heuristic_command=18
 # hotspots[5]: orchestrate fan=24; run_llm_shell fan=23; fix fan=21; diagnose_system fan=20; _cleanup_flatpak_detailed fan=19
@@ -52,13 +52,13 @@ M[114]:
   fixos/diagnostics/checks/thumbnails.py,63
   fixos/diagnostics/dev_project_analyzer.py,404
   fixos/diagnostics/disk_analyzer.py,431
-  fixos/diagnostics/flatpak_analyzer.py,945
+  fixos/diagnostics/flatpak_analyzer.py,941
   fixos/diagnostics/service_cleanup.py,474
   fixos/diagnostics/service_details.py,231
   fixos/diagnostics/service_scanner.py,250
   fixos/diagnostics/storage_analyzer.py,1076
   fixos/diagnostics/system_checks.py,74
-  fixos/features/__init__.py,268
+  fixos/features/__init__.py,261
   fixos/features/auditor.py,128
   fixos/features/catalog.py,120
   fixos/features/installer.py,197
@@ -363,7 +363,7 @@ D:
     e: analyze_flatpak_for_cleanup,FlatpakItemType,FlatpakItemInfo,FlatpakAnalyzer
     FlatpakItemType:
     FlatpakItemInfo: to_dict(0)  # Detailed info about a Flatpak item (app, runtime, or data)
-    FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1),_load_installed_refs(0),_find_unused_runtimes(0),_find_leftover_data(0),_find_orphaned_apps(0),_find_duplicate_apps(0),_analyze_repo_size(0),_get_flatpak_size_note(3),get_largest_apps(1),get_cleanup_summary(0),get_cleanup_recommendations(0),ask_user_and_cleanup(1),_execute_cleanup_action(1),_execute_flatpak_uninstall_unused(0),_execute_flatpak_repair(0),_execute_flatpak_vacuum(0),_execute_flatpak_uninstall_all(0),_execute_leftover_data_cleanup(1)  # Advanced analyzer for Flatpak cleanup decisions
+    FlatpakAnalyzer: __init__(0),analyze(0),_run_flatpak_command(1),_parse_size(1),_format_size(1),_load_installed_refs(0),_find_unused_runtimes(0),_dir_total_size(1),_find_leftover_data(0),_find_orphaned_apps(0),_find_duplicate_apps(0),_get_dir_size_du(1),_get_dir_size_walk(1),_measure_path_size(1),_analyze_repo_size(0),_get_flatpak_size_note(3),get_largest_apps(1),get_cleanup_summary(0),_rec_repo_bloat(0),_rec_duplicates(0),_rec_unused_runtimes(0),_rec_large_apps(0),_rec_leftover_and_orphaned(0),_rec_hard_reset(0),get_cleanup_recommendations(0),ask_user_and_cleanup(1),_execute_cleanup_action(1),_execute_flatpak_uninstall_unused(0),_execute_flatpak_repair(0),_execute_flatpak_vacuum(0),_execute_flatpak_uninstall_all(0),_execute_leftover_data_cleanup(1)  # Advanced analyzer for Flatpak cleanup decisions
     analyze_flatpak_for_cleanup()
   fixos/diagnostics/service_cleanup.py:
     e: ServiceCleaner

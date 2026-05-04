@@ -10,18 +10,15 @@ flowchart TD
     fixos__plugins["fixos.plugins<br/>44 funcs"]
     fixos__system_checks["fixos.system_checks<br/>8 funcs"]
     fixos__utils["fixos.utils<br/>33 funcs"]
-    project__map["project.map<br/>208 funcs"]
     fixos__plugins ==>|32| fixos__platform_utils
-    fixos__agent ==>|10| fixos__utils
+    fixos__agent ==>|14| fixos__utils
     fixos__agent ==>|9| fixos__platform_utils
     fixos__agent ==>|8| fixos__anonymizer
-    fixos__agent ==>|6| project__map
     fixos__orchestrator ==>|4| fixos__anonymizer
-    fixos__orchestrator ==>|4| project__map
-    fixos__cli -->|2| fixos__config
+    fixos__orchestrator ==>|4| fixos__utils
     fixos__cli -->|2| fixos__system_checks
+    fixos__cli -->|2| fixos__config
     fixos__llm_shell -->|1| fixos__anonymizer
-    fixos__cli -->|1| project__map
     fixos__cli -->|1| fixos__anonymizer
     fixos__cli -->|1| docs__examples
     fixos__cli -->|1| fixos__agent

@@ -38,7 +38,7 @@ def profile_list() -> None:
 
 @profile.command("show")
 @click.argument("name")
-def profile_show(name):
+def profile_show(name) -> None:
     """Pokaż szczegóły profilu diagnostycznego."""
     from fixos.profiles import Profile
     import yaml

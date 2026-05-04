@@ -26,7 +26,7 @@ def features():
 @features.command("audit")
 @click.option("--profile", "-p", help="Profil użytkownika (developer, sysadmin, gamer, itd.)")
 @click.option("--json-output", is_flag=True, help="Output JSON")
-def features_audit(profile: Optional[str], json_output: bool):
+def features_audit(profile: Optional[str], json_output: bool) -> None:
     """Sprawdź brakujące pakiety dla profilu."""
     system = SystemDetector().detect()
 
@@ -37,7 +37,7 @@ def features_audit(profile: Optional[str], json_output: bool):
         prof = UserProfile.load(profile)
     except FileNotFoundError:
         console.print(f"[red]❌ Profil '{profile}' nie istnieje.[/red]")
-        console.print("Dostępne profile: " + ", ".join(UserProfile.list_available()))
+        console.print(f"Dostępne profile: {', '.join(UserProfile.list_available())}")
         return
 
     catalog = PackageCatalog.load()
@@ -55,7 +55,7 @@ def features_audit(profile: Optional[str], json_output: bool):
 @click.option("--dry-run", is_flag=True, help="Symulacja bez instalacji")
 @click.option("--yes", "-y", is_flag=True, help="Bez potwierdzenia")
 @click.option("--category", "-c", multiple=True, help="Tylko wybrane kategorie")
-def features_install(profile: str, dry_run: bool, yes: bool, category: tuple):
+def features_install(profile: str, dry_run: bool, yes: bool, category: tuple) -> None:
     """Zainstaluj brakujące pakiety dla profilu."""
     system = SystemDetector().detect()
 
@@ -63,7 +63,7 @@ def features_install(profile: str, dry_run: bool, yes: bool, category: tuple):
         prof = UserProfile.load(profile)
     except FileNotFoundError:
         console.print(f"[red]❌ Profil '{profile}' nie istnieje.[/red]")
-        console.print("Dostępne profile: " + ", ".join(UserProfile.list_available()))
+        console.print(f"Dostępne profile: {', '.join(UserProfile.list_available())}")
         return
 
     catalog = PackageCatalog.load()
@@ -109,7 +109,7 @@ def features_install(profile: str, dry_run: bool, yes: bool, category: tuple):
 
 
 @features.command("profiles")
-def features_profiles():
+def features_profiles() -> None:
     """Lista dostępnych profili."""
     profiles = UserProfile.list_available()
 
@@ -128,7 +128,7 @@ def features_profiles():
 
 
 @features.command("system")
-def features_system():
+def features_system() -> None:
     """Pokaż wykryty system."""
     system = SystemDetector().detect()
     FeatureRenderer.render_system_info(system)

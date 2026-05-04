@@ -36,7 +36,7 @@ CONSTANT_1024 = 1024
               help="Tylko wyświetl listę bez interakcji")
 @click.option("--full", "-f", "full_analysis", is_flag=True, default=False,
               help="Pełna analiza systemu (DNF, kernels, logs, Docker, cache)")
-def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only, full_analysis):
+def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only, full_analysis) -> None:
     """
     Skanuje i czyści dane usług przekraczające próg.
 
@@ -256,7 +256,7 @@ def _cleanup_single_service(service_name: str, scanner, json_output: bool, dry_r
             click.echo(f"Output: {result['output']}")
 
 
-def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool):
+def _cleanup_flatpak_detailed(scanner, json_output: bool, dry_run: bool) -> None:
     """
     Detailed interactive Flatpak cleanup with menu selection.
     
@@ -1056,7 +1056,7 @@ def _execute_full_cleanup(items_to_clean: list, dry_run: bool) -> None:
     click.echo(click.style("="*CONSTANT_60 + "\n", fg="cyan"))
 
 
-def _cleanup_full_system(json_output: bool, dry_run: bool):
+def _cleanup_full_system(json_output: bool, dry_run: bool) -> None:
     """
     Full system storage analysis and cleanup.
 

@@ -10,7 +10,7 @@ from fixos.config import FixOsConfig
 @click.pass_context
 @click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
 @click.option("--version", "-v", is_flag=True, default=False, help="Pokaż wersję fixos")
-def cli(ctx, dry_run, version):
+def cli(ctx, dry_run, version) -> None:
     """
     fixos – AI-powered diagnostyka i naprawa Linux, Windows, macOS.
 
@@ -39,7 +39,7 @@ def cli(ctx, dry_run, version):
         _print_welcome()
 
 
-def _print_welcome():
+def _print_welcome() -> None:
     """Display welcome screen when no subcommand is specified."""
     click.echo(click.style(BANNER, fg="cyan"))
 
@@ -117,7 +117,7 @@ def _print_welcome():
     click.echo()
 
 
-def main():
+def main() -> None:
     """Entry point for fixOS CLI."""
     cli()
 

@@ -150,6 +150,28 @@ fix(goal): code analysis engine
 - **refactor(cli):** Usunięto zduplikowany kod ujednolicając funkcje analizy dysku do wspólnego helpera `_run_disk_analysis`.
 - **refactor(ui):** Usunięto ikony Unicode z CLI i sformatowano wyjście `stderr` oraz standardowego logowania na czysty kod Markdown dla poprawy czytelności w oknach terminalowych.
 
+## [2.2.15] - 2026-05-04
+
+### Docs
+- Update README.md
+- Update SUMD.md
+- Update SUMR.md
+- Update project/README.md
+- Update project/context.md
+
+### Other
+- Update app.doql.less
+- Update fixos/agent/autonomous_session.py
+- Update fixos/cli/cleanup_cmd.py
+- Update fixos/cli/config_cmd.py
+- Update fixos/cli/features_cmd.py
+- Update fixos/cli/main.py
+- Update fixos/cli/profile_cmd.py
+- Update fixos/diagnostics/flatpak_analyzer.py
+- Update project/analysis.toon.yaml
+- Update project/calls.mmd
+- ... and 15 more files
+
 ## [2.2.14] - 2026-05-04
 
 ### Docs

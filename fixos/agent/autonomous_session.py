@@ -134,7 +134,7 @@ class AutonomousSession:
 
     def _confirm_start(self) -> bool:
         """Ask user for confirmation before starting autonomous mode."""
-        print("\n" + "═" * UI_BORDER_WIDTH)
+        print(f"\n{'═' * UI_BORDER_WIDTH}")
         print("  ⚠️  TRYB AUTONOMICZNY – agent sam wykonuje komendy!")
         print("  Naciśnij Ctrl+C w dowolnym momencie aby przerwać.")
         print("═" * UI_BORDER_WIDTH)
@@ -228,7 +228,7 @@ class AutonomousSession:
             return cmd
         for prefix in SUDO_PREFIXES:
             if cmd.strip().startswith(prefix):
-                return "sudo " + cmd.strip()
+                return f"sudo {cmd.strip()}"
         return cmd
 
     def _execute_command(self, cmd: str) -> tuple[bool, str]:
@@ -414,7 +414,7 @@ class AutonomousSession:
         print("  📊 RAPORT SESJI AUTONOMICZNEJ")
         print("═" * UI_BORDER_WIDTH)
         print(self.report.summary())
-        print("═" * UI_BORDER_WIDTH + "\n")
+        print(f"{'═' * UI_BORDER_WIDTH}\n")
 
 
 def run_autonomous_session(

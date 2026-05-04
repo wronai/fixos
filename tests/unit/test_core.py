@@ -122,3 +122,88 @@ class TestWebSearch:
         from fixos.utils.web_search import _http_get
         result = _http_get("http://240.0.0.1/nonexistent", timeout=1)
         assert result is None
+
+
+class TestSortFixesByPriority:
+    def test_cleanup_before_upgrade(self):
+        from fixos.agent.session_handlers import _sort_fixes_by_priority
+        fixes = [
+            ("sudo dnf upgrade -y", "upgrade"),
+            ("sudo journalctl --vacuum-size=200M", "clean logs"),
+        ]
+        result = _sort_fixes_by_priority(fixes)
+        assert result[0][0] == "sudo journalctl --vacuum-size=200M"
+        assert result[1][0] == "sudo dnf upgrade -y"
+
+    def test_disk_hungry_sorted_to_end(self):
+        from fixos.agent.session_handlers import _sort_fixes_by_priority
+        fixes = [
+            ("sudo dnf upgrade -y", "upgrade"),
+            ("sudo apt full-upgrade -y", "upgrade"),
+            ("sudo dnf remove oldkernel", "remove"),
+            ("sudo rm -rf /var/cache", "clean cache"),
+        ]
+        result = _sort_fixes_by_priority(fixes)
+        # Both remove and rm are cleanup (score 0), upgrades are score 2.
+        # Stable sort preserves original order among equal scores.
+        assert result[0][0] == "sudo dnf remove oldkernel"
+        assert result[1][0] == "sudo rm -rf /var/cache"
+        assert result[2][0] == "sudo dnf upgrade -y"
+        assert result[3][0] == "sudo apt full-upgrade -y"
+
+    def test_unknown_commands_mid_priority(self):
+        from fixos.agent.session_handlers import _sort_fixes_by_priority
+        fixes = [
+            ("sudo dnf upgrade -y", "upgrade"),
+            ("echo 'restart service'", "info"),
+        ]
+        result = _sort_fixes_by_priority(fixes)
+        assert result[0][0] == "echo 'restart service'"
+        assert result[1][0] == "sudo dnf upgrade -y"
+
+
+class TestDiagnosticOnlyCommand:
+    def test_simple_diagnostic_is_filtered(self):
+        from fixos.agent.session_core import _is_diagnostic_only_command
+        assert _is_diagnostic_only_command("df -h") is True
+        assert _is_diagnostic_only_command("free -h") is True
+        assert _is_diagnostic_only_command("systemctl status auditd") is True
+
+    def test_repair_command_is_not_diagnostic(self):
+        from fixos.agent.session_core import _is_diagnostic_only_command
+        assert _is_diagnostic_only_command("sudo systemctl restart auditd") is False
+        assert _is_diagnostic_only_command("dnf upgrade -y") is False
+        assert _is_diagnostic_only_command("rm -rf /var/cache") is False
+
+    def test_journalctl_vacuum_is_not_diagnostic(self):
+        from fixos.agent.session_core import _is_diagnostic_only_command
+        assert _is_diagnostic_only_command("journalctl --vacuum-size=200M") is False
+        assert _is_diagnostic_only_command("journalctl --flush") is False
+
+    def test_compound_command_any_repair_keeps_all(self):
+        from fixos.agent.session_core import _is_diagnostic_only_command
+        # Compound with both diagnostic and repair → not filtered
+        assert _is_diagnostic_only_command("df -h && sudo dnf remove kernel") is False
+        assert _is_diagnostic_only_command("cat /etc/fstab || systemctl restart auditd") is False
+
+    def test_compound_all_diagnostic_is_filtered(self):
+        from fixos.agent.session_core import _is_diagnostic_only_command
+        assert _is_diagnostic_only_command("df -h && free -h") is True
+
+
+class TestInteractiveBlocker:
+    def test_newgrp_blocked(self):
+        from fixos.platform_utils import is_interactive_blocker
+        assert is_interactive_blocker("sudo usermod -aG video $USER && newgrp video") is not None
+
+    def test_su_dash_blocked(self):
+        from fixos.platform_utils import is_interactive_blocker
+        assert is_interactive_blocker("su - tom") is not None
+
+    def test_top_not_blocked_if_batch(self):
+        from fixos.platform_utils import is_interactive_blocker
+        assert is_interactive_blocker("top -b -n1") is None
+
+    def test_regular_command_not_blocked(self):
+        from fixos.platform_utils import is_interactive_blocker
+        assert is_interactive_blocker("dnf upgrade -y") is None

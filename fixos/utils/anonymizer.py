@@ -116,6 +116,33 @@ def anonymize(data_str: str) -> tuple[str, AnonymizationReport]:
     return data_str, report
 
 
+def deanonymize(text: str) -> str:
+    """
+    Reverses anonymization placeholders back to real values for execution.
+    Handles [USER], [HOSTNAME], and [HOME].
+    """
+    if not isinstance(text, str):
+        return text
+        
+    sensitive = _get_sensitive()
+    
+    # 1. Hostname
+    if sensitive.get("hostname"):
+        text = text.replace("[HOSTNAME]", sensitive["hostname"])
+        
+    # 2. Home directory
+    if sensitive.get("home"):
+        text = text.replace("[HOME]", sensitive["home"])
+        # Some LLMs might use /home/[USER] literally
+        # We replace [USER] next, which covers /home/[USER]
+        
+    # 3. Username
+    if sensitive.get("username"):
+        text = text.replace("[USER]", sensitive["username"])
+        
+    return text
+
+
 def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_lines: int = 80):
     """
     Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.

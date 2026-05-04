@@ -95,7 +95,7 @@ def is_interactive_blocker(cmd: str) -> Optional[str]:
         (r"\bnewgrp\b", "newgrp replaces the shell and waits for input"),
         (r"\bsu\s+-(\s+|$)", "su - starts a new login shell"),
         (r"\bexec\s+bash\b", "exec replaces the process"),
-        (r"\btop\b(?!.*\b-b\b)", "top is interactive unless run in batch mode (-b)"),
+        (r"\btop\b(?!.*\s-b(?:\s|$))", "top is interactive unless run in batch mode (-b)"),
         (r"\bvim?\b", "editors require terminal interaction"),
         (r"\bnano\b", "editors require terminal interaction"),
         (r"\bless\b", "pagers require terminal interaction"),

@@ -804,7 +804,7 @@ wheels = [
 
 [[package]]
 name = "fixos"
-version = "2.2.23"
+version = "2.2.24"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

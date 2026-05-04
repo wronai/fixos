@@ -18,7 +18,7 @@ from ..constants import (
 from ..platform_utils import (
     is_dangerous, is_interactive_blocker, elevate_cmd, run_command,
 )
-from ..utils.anonymizer import anonymize
+from ..utils.anonymizer import anonymize, deanonymize
 from ..utils.web_search import search_all, format_results_for_llm
 from . import session_io as io
 from .session_core import CmdResult, extract_fixes
@@ -223,6 +223,7 @@ def handle_free_text(user_in: str, messages: list) -> bool:
 
 def run_single_command(cmd: str, comment: str) -> CmdResult:
     """Run a command with full transparency and safety checks."""
+    cmd = deanonymize(cmd)
     cmd = elevate_cmd(cmd)
     
     # Check for dangerous commands

@@ -7,7 +7,7 @@ import time
 from typing import Dict, Any, List, Tuple
 
 from ..providers.llm import LLMClient, LLMError
-from ..utils.anonymizer import anonymize, display_anonymized_preview
+from ..utils.anonymizer import anonymize, deanonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
 from ..config import FixOsConfig
 from ..constants import (
@@ -150,7 +150,8 @@ class HITLSession:
         io.clear_thinking()
 
         io.print_llm_reply(reply)
-        self.last_fixes = extract_fixes(reply)
+        raw_fixes = extract_fixes(reply)
+        self.last_fixes = [(deanonymize(cmd), comment) for cmd, comment in raw_fixes]
 
         if self._check_low_confidence(reply):
             return True

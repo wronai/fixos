@@ -29,6 +29,12 @@
 - **Action**: Removed generic `CONSTANT_N` placeholders and replaced with meaningful constants or clear literals.
 - **Status**: ✅ Complete
 
+### 7. Fixed Placeholder Substitution (De-anonymization)
+- **Files**: [fixos/utils/anonymizer.py](fixos/utils/anonymizer.py), [fixos/agent/hitl_session.py](fixos/agent/hitl_session.py), [fixos/agent/autonomous_session.py](fixos/agent/autonomous_session.py)
+- **Issue**: Commands with `[USER]` or `[HOSTNAME]` failed because placeholders weren't replaced with real values.
+- **Solution**: Implemented `deanonymize()` utility and integrated it into HITL and Autonomous command extraction/execution flows.
+- **Status**: ✅ Complete
+
 ---
 
 ## 📊 Statistics

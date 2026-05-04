@@ -1,2 +1,2 @@
 """fixos – AI-powered Linux/Windows diagnostics and repair."""
-__version__ = "2.2.24"
+__version__ = "2.2.25"

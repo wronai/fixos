@@ -44,64 +44,46 @@ class FeatureInstaller:
 
         return results
 
-    def _install_package(self, pkg: PackageInfo) -> str:
-        """Install a single package. Returns: installed|failed|skipped"""
-        # Determine best installation method
+    def _build_install_methods(self, pkg: PackageInfo) -> list:
+        """Return ordered list of (method, value) pairs available for this package."""
         methods = []
-
-        # 1. Native package manager
         distro_name = pkg.get_distro_name(self.system.distro)
         if distro_name:
             methods.append(("native", distro_name))
-
-        # 2. Flatpak
         if pkg.flatpak and self.system.has_flatpak:
             methods.append(("flatpak", pkg.flatpak))
-
-        # 3. pip
         if pkg.pip and self.system.has_pip:
             methods.append(("pip", pkg.pip))
-
-        # 4. cargo
         if pkg.cargo and self.system.has_cargo:
             methods.append(("cargo", pkg.cargo))
-
-        # 5. npm
         if pkg.npm and self.system.has_npm:
             methods.append(("npm", pkg.npm))
-
-        # 6. Install script
         if pkg.install_script:
             methods.append(("script", pkg.install_script))
+        return methods
 
+    def _install_package(self, pkg: PackageInfo) -> str:
+        """Install a single package. Returns: installed|failed|skipped"""
+        methods = self._build_install_methods(pkg)
         if not methods:
             return "skipped"
 
-        # Try methods in order
+        method_dispatch = {
+            "native":  self._install_native,
+            "flatpak": self._install_flatpak,
+            "pip":     self._install_pip,
+            "cargo":   self._install_cargo,
+            "npm":     self._install_npm,
+            "script":  self._run_script,
+        }
+
         for method, value in methods:
             if self.dry_run:
                 print(f"  [DRY-RUN] Would install {pkg.id} via {method}: {value}")
                 return "installed"
-
             try:
-                if method == "native":
-                    if self._install_native(value):
-                        return "installed"
-                elif method == "flatpak":
-                    if self._install_flatpak(value):
-                        return "installed"
-                elif method == "pip":
-                    if self._install_pip(value):
-                        return "installed"
-                elif method == "cargo":
-                    if self._install_cargo(value):
-                        return "installed"
-                elif method == "npm":
-                    if self._install_npm(value):
-                        return "installed"
-                elif method == "script":
-                    if self._run_script(value):
-                        return "installed"
+                if method_dispatch[method](value):
+                    return "installed"
             except Exception as e:
                 print(f"  Failed to install {pkg.id} via {method}: {e}")
                 continue

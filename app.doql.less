@@ -2,7 +2,7 @@
 
 app {
   name: fixos;
-  version: 2.2.14;
+  version: 2.2.16;
 }
 
 dependencies {
@@ -197,7 +197,7 @@ workflow[name="build"] {
   trigger: manual;
   step-1: run cmd=echo "🔨 Budowanie paczki (cache enabled)...";
   step-2: run cmd=.venv/bin/pip install --quiet --upgrade build;
-  step-3: run cmd=.venv/bin/python -m build --parallel -n auto;
+  step-3: run cmd=.venv/bin/python -m build;
   step-4: run cmd=echo "✅ Paczka gotowa w dist/";
 }
 

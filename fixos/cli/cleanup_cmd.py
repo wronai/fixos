@@ -21,6 +21,21 @@ CONSTANT_500 = 500
 CONSTANT_1024 = 1024
 
 
+def _run_interactive_cleanup(plan: dict, list_only: bool, scanner) -> None:
+    """Offer interactive safe cleanup and display unsafe services."""
+    if not list_only and plan["safe_to_cleanup"]:
+        safe_total = sum(s['size_gb'] for s in plan["safe_to_cleanup"])
+        click.echo(click.style("Bezpieczne do wyczyszczenia:", fg="green"))
+        for svc in plan["safe_to_cleanup"]:
+            size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
+            click.echo(f"  • {svc['name']}: {size_str}")
+        click.echo()
+        if click.confirm(f"Wyczyścić bezpieczne usługi? (zwolni {safe_total:.2f} GB)"):
+            _execute_safe_cleanup(plan["safe_to_cleanup"], scanner)
+    if plan["requires_review"] and not list_only:
+        _display_unsafe_services(plan["requires_review"])
+
+
 @click.command("cleanup")
 @click.option("--threshold", "-t", default=CONSTANT_500, type=int,
               help="Próg wielkości w MB (domyślnie 500MB)")
@@ -55,56 +70,35 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
       fixos cleanup -c docker --dry-run  # symulacja czyszczenia Dockera
       fixos cleanup --full              # pełna analiza systemu
     """
-    # Full system analysis
     if full_analysis:
         _cleanup_full_system(json_output, dry_run)
         return
-    
+
     scanner = ServiceDataScanner(threshold_mb=threshold)
 
-    # Handle single service cleanup
     if cleanup:
         if cleanup == "flatpak":
             _cleanup_flatpak_detailed(scanner, json_output, dry_run)
-            return
-        
-        _cleanup_single_service(cleanup, scanner, json_output, dry_run)
+        else:
+            _cleanup_single_service(cleanup, scanner, json_output, dry_run)
         return
 
-    # Parse services filter
     service_filter = services.split(",") if services else None
     plan = scanner.get_cleanup_plan(selected_services=service_filter)
 
-    # JSON output mode
     if json_output:
         import json
         click.echo(json.dumps(plan, indent=2, default=str))
         return
 
-    # Display results
     _display_cleanup_summary(plan, threshold)
-    
     if plan["services_found"] == 0:
         return
 
     for svc in plan["services"]:
         _display_service_item(svc)
 
-    # Interactive cleanup mode
-    if not list_only and plan["safe_to_cleanup"]:
-        safe_total = sum(s['size_gb'] for s in plan["safe_to_cleanup"])
-        click.echo(click.style("Bezpieczne do wyczyszczenia:", fg="green"))
-        for svc in plan["safe_to_cleanup"]:
-            size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
-            click.echo(f"  • {svc['name']}: {size_str}")
-
-        click.echo()
-        if click.confirm(f"Wyczyścić bezpieczne usługi? (zwolni {safe_total:.2f} GB)"):
-            _execute_safe_cleanup(plan["safe_to_cleanup"], scanner)
-
-    # Show unsafe services
-    if plan["requires_review"] and not list_only:
-        _display_unsafe_services(plan["requires_review"])
+    _run_interactive_cleanup(plan, list_only, scanner)
 
 
 def _display_cleanup_summary(plan: dict, threshold: int) -> None:
@@ -647,10 +641,45 @@ def _snap_remove_packages(packages_to_remove: list) -> None:
             click.echo(click.style(f"  ❌ Błąd: {e}", fg="red"))
 
 
+_SNAP_CORE_PACKAGES = {'core', 'core18', 'core20', 'core22', 'snapd'}
+
+
+def _snap_display_packages(active_packages: list) -> None:
+    """Print numbered list of active snap packages."""
+    click.echo(f"\n{click.style('📦 ZAINSTALOWANE PAKIETY SNAP:', fg='magenta', bold=True)}")
+    click.echo(click.style("Wybierz numery pakietów do odinstalowania", fg="white"))
+    for i, pkg in enumerate(active_packages, 1):
+        size_str = _format_bytes(pkg.get('size', 0)) if pkg.get('size', 0) > 0 else "? MB"
+        click.echo(f"  [{i:3d}] {click.style(pkg['name'], fg='yellow')} (v{pkg['version']}, rev {pkg['rev']}): {size_str}")
+    click.echo(f"\n  💰 Łącznie pakietów: {len(active_packages)}")
+
+
+def _snap_select_packages(active_packages: list) -> list:
+    """Prompt user to select packages; return list to remove or empty."""
+    nums = click.prompt(click.style("\nWybierz numery do odinstalowania (np. 1,3,5-10)", fg="cyan"), default="")
+    if not nums.strip():
+        click.echo(click.style("⏭️ Nie wybrano żadnych pakietów.", fg="yellow"))
+        return []
+    selected_indices = _parse_numeric_range_set(nums)
+    packages_to_remove = [active_packages[i - 1] for i in selected_indices if 1 <= i <= len(active_packages)]
+    if not packages_to_remove:
+        click.echo(click.style("❌ Nie wybrano żadnych pakietów.", fg="red"))
+    return packages_to_remove
+
+
+def _snap_warn_dangerous(packages_to_remove: list) -> None:
+    """Warn if any selected package is a core snap component."""
+    dangerous = [p for p in packages_to_remove if p['name'] in _SNAP_CORE_PACKAGES]
+    if dangerous:
+        click.echo(click.style("\n⚠️ UWAGA: Wybrane pakiety zawierają komponenty systemowe:", fg="red", bold=True))
+        for pkg in dangerous:
+            click.echo(f"  • {pkg['name']}")
+        click.echo(click.style("Ich usunięcie może wpłynąć na działanie innych pakietów Snap!", fg="red"))
+
+
 def _handle_snap_management(analyzer, dry_run: bool) -> None:
     """Handle Snap package management selection."""
     snap_packages = _snap_fetch_packages(analyzer)
-
     if not snap_packages:
         click.echo(click.style("\n❌ Brak zainstalowanych pakietów Snap lub snapd niedostępny.", fg="red"))
         return
@@ -660,36 +689,16 @@ def _handle_snap_management(analyzer, dry_run: bool) -> None:
         click.echo(click.style("\n❌ Brak aktywnych pakietów Snap do odinstalowania.", fg="red"))
         return
 
-    click.echo(f"\n{click.style('📦 ZAINSTALOWANE PAKIETY SNAP:', fg='magenta', bold=True)}")
-    click.echo(click.style("Wybierz numery pakietów do odinstalowania", fg="white"))
-    for i, pkg in enumerate(active_packages, 1):
-        size_str = _format_bytes(pkg.get('size', 0)) if pkg.get('size', 0) > 0 else "? MB"
-        click.echo(f"  [{i:3d}] {click.style(pkg['name'], fg='yellow')} (v{pkg['version']}, rev {pkg['rev']}): {size_str}")
-    click.echo(f"\n  💰 Łącznie pakietów: {len(active_packages)}")
-
-    nums = click.prompt(click.style("\nWybierz numery do odinstalowania (np. 1,3,5-10)", fg="cyan"), default="")
-    if not nums.strip():
-        click.echo(click.style("⏭️ Nie wybrano żadnych pakietów.", fg="yellow"))
-        return
-
-    selected_indices = _parse_numeric_range_set(nums)
-    packages_to_remove = [active_packages[i - 1] for i in selected_indices if 1 <= i <= len(active_packages)]
-
+    _snap_display_packages(active_packages)
+    packages_to_remove = _snap_select_packages(active_packages)
     if not packages_to_remove:
-        click.echo(click.style("❌ Nie wybrano żadnych pakietów.", fg="red"))
         return
 
     click.echo(f"\n{click.style('📦 WYBRANE PAKIETY DO ODINSTALOWANIA:', fg='red', bold=True)}")
     for i, pkg in enumerate(packages_to_remove, 1):
         click.echo(f"  {i:3d}. {click.style(pkg['name'], fg='yellow')} (v{pkg['version']})")
 
-    core_packages = ['core', 'core18', 'core20', 'core22', 'snapd']
-    dangerous = [p for p in packages_to_remove if p['name'] in core_packages]
-    if dangerous:
-        click.echo(click.style("\n⚠️ UWAGA: Wybrane pakiety zawierają komponenty systemowe:", fg="red", bold=True))
-        for pkg in dangerous:
-            click.echo(f"  • {pkg['name']}")
-        click.echo(click.style("Ich usunięcie może wpłynąć na działanie innych pakietów Snap!", fg="red"))
+    _snap_warn_dangerous(packages_to_remove)
 
     if dry_run:
         click.echo(click.style("\n[DRY-RUN] - symulacja, nic nie zostanie usunięte", fg="cyan"))
@@ -1049,32 +1058,37 @@ def _filter_by_prefix_type(selection: str, analyzer) -> list:
     return items
 
 
+def _filter_large(analyzer, threshold_bytes: int, label: str) -> list:
+    """Filter items above threshold_bytes and print summary."""
+    items = [item for item in analyzer.items if item.size_bytes > threshold_bytes]
+    click.echo(click.style(f"\n🔴 {label}: {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="red"))
+    return items
+
+
+_FILTER_PREFIX_DISPATCH = {
+    'top:':      _filter_by_prefix_top,
+    'category:': _filter_by_prefix_category,
+    'type:':     _filter_by_prefix_type,
+}
+
+
 def _select_cleanup_items_by_filter(selection: str, analyzer, safe_items: list) -> list:
     """Map a filter keyword to a list of items from the analyzer."""
-    # Simple keyword dispatch
     if selection == 'safe':
         return safe_items
     if selection == 'all':
         return analyzer.items
     if selection == 'large':
-        items = [item for item in analyzer.items if item.size_bytes > CONSTANT_1024 ** CONSTANT_3]
-        click.echo(click.style(f"\n🔴 Duże elementy (>1 GB): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="red"))
-        return items
+        return _filter_large(analyzer, CONSTANT_1024 ** CONSTANT_3, "Duże elementy (>1 GB)")
     if selection == 'huge':
-        items = [item for item in analyzer.items if item.size_bytes > CONSTANT_5 * CONSTANT_1024 ** CONSTANT_3]
-        click.echo(click.style(f"\n🔴 Bardzo duże elementy (>5 GB): {len(items)} sztuk, {_format_bytes(sum(i.size_bytes for i in items))}", fg="red"))
-        return items
+        return _filter_large(analyzer, CONSTANT_5 * CONSTANT_1024 ** CONSTANT_3, "Bardzo duże elementy (>5 GB)")
     if selection == 'old':
         return _filter_by_age(analyzer, CONSTANT_30, "Stare elementy")
     if selection == 'stale':
         return _filter_by_age(analyzer, CONSTANT_90, "Bardzo stare elementy")
-    # Prefix dispatch
-    if selection.startswith('top:'):
-        return _filter_by_prefix_top(selection, analyzer)
-    if selection.startswith('category:'):
-        return _filter_by_prefix_category(selection, analyzer)
-    if selection.startswith('type:'):
-        return _filter_by_prefix_type(selection, analyzer)
+    for prefix, handler in _FILTER_PREFIX_DISPATCH.items():
+        if selection.startswith(prefix):
+            return handler(selection, analyzer)
     return []
 
 
@@ -1125,6 +1139,38 @@ def _execute_full_cleanup(items_to_clean: list, dry_run: bool) -> None:
     click.echo(click.style("="*CONSTANT_60 + "\n", fg="cyan"))
 
 
+def _show_dep_types(analyzer) -> None:
+    """Display detailed breakdown of dev project dependency types."""
+    dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
+    dep_types = _build_dep_types(dev_items)
+    click.echo(f"\n{click.style('📦 SZCZEGÓŁY TYPÓW:', fg='magenta', bold=True)}")
+    for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
+        click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {len(data['items'])} folderów, {_format_bytes(data['total'])}")
+        for item in data["items"][:CONSTANT_5]:
+            click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
+        if len(data['items']) > CONSTANT_5:
+            click.echo(f"  ... i {len(data['items']) - CONSTANT_5} więcej")
+
+
+def _dispatch_system_selection(selection: str, analyzer, safe_items: list, dry_run: bool) -> None:
+    """Route a system menu selection to the appropriate handler."""
+    if selection == 'types':
+        _show_dep_types(analyzer)
+        return
+    if selection == 'snap':
+        _handle_snap_management(analyzer, dry_run)
+        return
+    if selection == 'home':
+        _handle_home_analysis(analyzer, dry_run)
+        return
+    if selection == 'select':
+        items_to_clean = _handle_interactive_select(analyzer, dry_run)
+    else:
+        items_to_clean = _select_cleanup_items_by_filter(selection, analyzer, safe_items)
+    if items_to_clean:
+        _execute_full_cleanup(items_to_clean, dry_run)
+
+
 def _cleanup_full_system(json_output: bool, dry_run: bool) -> None:
     """
     Full system storage analysis and cleanup.
@@ -1155,33 +1201,7 @@ def _cleanup_full_system(json_output: bool, dry_run: bool) -> None:
         click.echo(click.style("\n⏭️ Nie wybrano żadnych akcji.", fg="yellow"))
         return
 
-    if selection == 'types':
-        dev_items = [item for item in analyzer.items if item.category == 'dev_projects']
-        dep_types = _build_dep_types(dev_items)
-        click.echo(f"\n{click.style('📦 SZCZEGÓŁY TYPÓW:', fg='magenta', bold=True)}")
-        for dep_type, data in sorted(dep_types.items(), key=lambda x: -x[1]["total"]):
-            click.echo(f"\n{click.style(dep_type, fg='yellow', bold=True)}: {len(data['items'])} folderów, {_format_bytes(data['total'])}")
-            for item in data["items"][:CONSTANT_5]:
-                click.echo(f"  • {item.path}: {_format_bytes(item.size_bytes)}")
-            if len(data['items']) > CONSTANT_5:
-                click.echo(f"  ... i {len(data['items']) - CONSTANT_5} więcej")
-        return
-
-    if selection == 'snap':
-        _handle_snap_management(analyzer, dry_run)
-        return
-
-    if selection == 'home':
-        _handle_home_analysis(analyzer, dry_run)
-        return
-
-    if selection == 'select':
-        items_to_clean = _handle_interactive_select(analyzer, dry_run)
-    else:
-        items_to_clean = _select_cleanup_items_by_filter(selection, analyzer, safe_items)
-
-    if items_to_clean:
-        _execute_full_cleanup(items_to_clean, dry_run)
+    _dispatch_system_selection(selection, analyzer, safe_items, dry_run)
 
 
 def _parse_size_to_gb(size_str: str) -> float:

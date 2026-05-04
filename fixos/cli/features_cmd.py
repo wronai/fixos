@@ -50,6 +50,36 @@ def features_audit(profile: Optional[str], json_output: bool) -> None:
         FeatureRenderer.render_audit(result)
 
 
+def _show_install_plan(to_install: list, yes: bool, dry_run: bool) -> bool:
+    """Display install plan and ask for confirmation. Returns False to abort."""
+    console.print()
+    console.print(f"[bold]Zostaną zainstalowane {len(to_install)} pakiety:[/bold]")
+    for pkg in to_install[:10]:
+        console.print(f"  • {pkg.id} - {pkg.description[:40]}")
+    if len(to_install) > 10:
+        console.print(f"  ... i {len(to_install) - 10} więcej")
+    console.print()
+    if not yes and not dry_run:
+        if not click.confirm("Kontynuować instalację?"):
+            console.print("[yellow]Anulowano.[/yellow]")
+            return False
+    return True
+
+
+def _show_install_results(install_result: dict) -> None:
+    """Display installation results summary."""
+    console.print()
+    if install_result["installed"]:
+        console.print(f"[green]✅ Zainstalowano: {len(install_result['installed'])}[/green]")
+    if install_result["failed"]:
+        console.print(f"[red]❌ Nie udało się: {len(install_result['failed'])}[/red]")
+        for pkg_id in install_result["failed"][:5]:
+            console.print(f"   - {pkg_id}")
+    if install_result["skipped"]:
+        console.print(f"[yellow]⏭️ Pominięto: {len(install_result['skipped'])}[/yellow]")
+    console.print()
+
+
 @features.command("install")
 @click.option("--profile", "-p", required=True, help="Profil użytkownika")
 @click.option("--dry-run", is_flag=True, help="Symulacja bez instalacji")
@@ -78,34 +108,11 @@ def features_install(profile: str, dry_run: bool, yes: bool, category: tuple) ->
         console.print("[green]✅ Wszystkie pakiety z profilu są zainstalowane![/green]")
         return
 
-    # Show what will be installed
-    console.print()
-    console.print(f"[bold]Zostaną zainstalowane {len(to_install)} pakiety:[/bold]")
-    for pkg in to_install[:10]:
-        console.print(f"  • {pkg.id} - {pkg.description[:40]}")
-    if len(to_install) > 10:
-        console.print(f"  ... i {len(to_install) - 10} więcej")
-    console.print()
-
-    if not yes and not dry_run:
-        if not click.confirm("Kontynuować instalację?"):
-            console.print("[yellow]Anulowano.[/yellow]")
-            return
+    if not _show_install_plan(to_install, yes, dry_run):
+        return
 
     installer = FeatureInstaller(system, dry_run=dry_run)
-    install_result = installer.install(to_install)
-
-    # Show results
-    console.print()
-    if install_result["installed"]:
-        console.print(f"[green]✅ Zainstalowano: {len(install_result['installed'])}[/green]")
-    if install_result["failed"]:
-        console.print(f"[red]❌ Nie udało się: {len(install_result['failed'])}[/red]")
-        for pkg_id in install_result["failed"][:5]:
-            console.print(f"   - {pkg_id}")
-    if install_result["skipped"]:
-        console.print(f"[yellow]⏭️ Pominięto: {len(install_result['skipped'])}[/yellow]")
-    console.print()
+    _show_install_results(installer.install(to_install))
 
 
 @features.command("profiles")

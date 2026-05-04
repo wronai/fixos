@@ -28,10 +28,26 @@ _ACTION_KEYWORDS = {
 }
 
 
+_OBJECT_KEYWORDS: list[tuple[list[str], tuple]] = [
+    (["docker", "kontener", "container"], ("docker", ["ps", "-aq"])),
+    (["audio", "dzwięk", "sound"],        ("fixos", ["fix", "--modules", "audio"])),
+    (["siec", "network", "internet"],     ("fixos", ["scan", "--modules", "system"])),
+    (["bezpieczenstwo", "security"],      ("fixos", ["scan", "--modules", "security"])),
+]
+
+
+def _object_based_match(prompt_lower: str):
+    """Fallback object-based matching when no action keyword is found."""
+    for keywords, cmd in _OBJECT_KEYWORDS:
+        if any(kw in prompt_lower for kw in keywords):
+            return cmd
+    return None
+
+
 def _match_heuristic_command(prompt_lower: str) -> object:
     """
     Match user prompt against heuristic keyword mappings.
-    
+
     Returns:
         - str: Direct shell command
         - tuple: (program, args) for subprocess
@@ -41,21 +57,9 @@ def _match_heuristic_command(prompt_lower: str) -> object:
         if any(kw in prompt_lower for kw in keywords):
             if cmd is not None:
                 return cmd
-            # For "lista" - check if it's docker-related
             if "docker" in prompt_lower or "kontener" in prompt_lower:
                 return ("docker", ["ps", "-a"])
-    
-    # Object-based matching (no action keyword found)
-    if "docker" in prompt_lower or "kontener" in prompt_lower or "container" in prompt_lower:
-        return ("docker", ["ps", "-aq"])
-    elif "audio" in prompt_lower or "dzwięk" in prompt_lower or "sound" in prompt_lower:
-        return ("fixos", ["fix", "--modules", "audio"])
-    elif "siec" in prompt_lower or "network" in prompt_lower or "internet" in prompt_lower:
-        return ("fixos", ["scan", "--modules", "system"])
-    elif "bezpieczenstwo" in prompt_lower or "security" in prompt_lower:
-        return ("fixos", ["scan", "--modules", "security"])
-    
-    return None
+    return _object_based_match(prompt_lower)
 
 
 def _format_command(matched_cmd) -> str:

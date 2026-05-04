@@ -11,6 +11,51 @@ class Plugin(DiagnosticPlugin):
     description = "Diagnostyka bezpieczeństwa (firewall, porty, SELinux, SSH)"
     platforms = ["linux"]
 
+    def _selinux_findings(self, selinux: dict) -> list:
+        """Return findings for SELinux status."""
+        status = selinux.get("status")
+        if status == "disabled":
+            return [Finding(
+                title="SELinux wyłączony",
+                severity=Severity.WARNING,
+                description="SELinux jest wyłączony — brak obowiązkowej kontroli dostępu.",
+                suggestion="Rozważ włączenie SELinux w trybie enforcing.",
+            )]
+        if status == "permissive":
+            return [Finding(
+                title="SELinux w trybie permissive",
+                severity=Severity.INFO,
+                description="SELinux loguje naruszenia ale ich nie blokuje.",
+            )]
+        return []
+
+    def _fail2ban_findings(self, f2b: dict) -> list:
+        """Return findings for fail2ban status."""
+        if not f2b.get("installed"):
+            return [Finding(
+                title="Fail2ban nie zainstalowany",
+                severity=Severity.INFO,
+                description="Fail2ban chroni przed atakami brute-force na SSH.",
+                suggestion="Zainstaluj fail2ban.",
+                command="sudo dnf install -y fail2ban",
+            )]
+        if not f2b.get("active"):
+            return [Finding(
+                title="Fail2ban nieaktywny",
+                severity=Severity.WARNING,
+                description="Fail2ban jest zainstalowany ale nie działa.",
+                command="sudo systemctl enable --now fail2ban",
+            )]
+        return []
+
+    def _overall_status(self, findings: list):
+        """Derive overall severity from findings list."""
+        if any(f.severity == Severity.CRITICAL for f in findings):
+            return Severity.CRITICAL
+        if any(f.severity == Severity.WARNING for f in findings):
+            return Severity.WARNING
+        return Severity.OK
+
     def diagnose(self) -> DiagnosticResult:
         findings = []
         raw_data = {}
@@ -30,19 +75,7 @@ class Plugin(DiagnosticPlugin):
         # SELinux
         selinux = self._check_selinux()
         raw_data["selinux"] = selinux
-        if selinux.get("status") == "disabled":
-            findings.append(Finding(
-                title="SELinux wyłączony",
-                severity=Severity.WARNING,
-                description="SELinux jest wyłączony — brak obowiązkowej kontroli dostępu.",
-                suggestion="Rozważ włączenie SELinux w trybie enforcing.",
-            ))
-        elif selinux.get("status") == "permissive":
-            findings.append(Finding(
-                title="SELinux w trybie permissive",
-                severity=Severity.INFO,
-                description="SELinux loguje naruszenia ale ich nie blokuje.",
-            ))
+        findings.extend(self._selinux_findings(selinux))
 
         # Open ports
         ports = self._check_open_ports()
@@ -77,31 +110,11 @@ class Plugin(DiagnosticPlugin):
         # Fail2ban
         f2b = self._check_fail2ban()
         raw_data["fail2ban"] = f2b
-        if not f2b.get("installed"):
-            findings.append(Finding(
-                title="Fail2ban nie zainstalowany",
-                severity=Severity.INFO,
-                description="Fail2ban chroni przed atakami brute-force na SSH.",
-                suggestion="Zainstaluj fail2ban.",
-                command="sudo dnf install -y fail2ban",
-            ))
-        elif not f2b.get("active"):
-            findings.append(Finding(
-                title="Fail2ban nieaktywny",
-                severity=Severity.WARNING,
-                description="Fail2ban jest zainstalowany ale nie działa.",
-                command="sudo systemctl enable --now fail2ban",
-            ))
-
-        status = Severity.OK
-        if any(f.severity == Severity.CRITICAL for f in findings):
-            status = Severity.CRITICAL
-        elif any(f.severity == Severity.WARNING for f in findings):
-            status = Severity.WARNING
+        findings.extend(self._fail2ban_findings(f2b))
 
         return DiagnosticResult(
             plugin_name=self.name,
-            status=status,
+            status=self._overall_status(findings),
             findings=findings,
             raw_data=raw_data,
         )

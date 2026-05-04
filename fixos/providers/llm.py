@@ -42,6 +42,44 @@ class LLMClient:
         )
         self._total_tokens = 0
 
+    def _handle_api_error(self, e: Exception, attempt: int) -> bool:
+        """
+        Handle a known openai API error.
+        Returns True if the caller should retry, False never (raises on fatal errors).
+        Raises LLMError for fatal conditions.
+        """
+        _type = type(e).__name__
+        _mod = type(e).__module__
+        if not (_mod.startswith("openai") or _type in (
+            "AuthenticationError", "RateLimitError", "NotFoundError",
+            "APIConnectionError", "APITimeoutError",
+        )):
+            raise LLMError(f"Nieoczekiwany błąd API: {e}") from e
+
+        if _type == "AuthenticationError":
+            raise LLMError(f"Błąd autoryzacji – sprawdź klucz API: {e}") from e
+        if _type == "RateLimitError":
+            wait = 10 * (attempt + 1)
+            print(f"\n  ⚠️  Rate limit – czekam {wait}s...")
+            time.sleep(wait)
+            if attempt == 2:
+                raise LLMError("Rate limit – przekroczono liczbę prób")
+            return True
+        if _type == "NotFoundError":
+            raise LLMError(
+                f"Model '{self.config.model}' nie istnieje dla providera "
+                f"'{self.config.provider}': {e}"
+            ) from e
+        if _type in ("APIConnectionError", "APITimeoutError"):
+            if attempt == 2:
+                raise LLMError(
+                    f"Błąd połączenia z {self.config.base_url}: {e}" if _type == "APIConnectionError"
+                    else "Timeout połączenia z API"
+                )
+            time.sleep(5)
+            return True
+        raise LLMError(f"Nieoczekiwany błąd API: {e}") from e
+
     def chat(
         self,
         messages: list[dict],
@@ -65,42 +103,9 @@ class LLMClient:
                 )
                 if response.usage:
                     self._total_tokens += response.usage.total_tokens
-
-                content = response.choices[0].message.content or ""
-                return content
-
+                return response.choices[0].message.content or ""
             except Exception as e:
-                _type = type(e).__name__
-                _mod = type(e).__module__
-                if _mod.startswith("openai") or _type in (
-                    "AuthenticationError", "RateLimitError", "NotFoundError",
-                    "APIConnectionError", "APITimeoutError",
-                ):
-                    if _type == "AuthenticationError":
-                        raise LLMError(f"Błąd autoryzacji – sprawdź klucz API: {e}") from e
-                    if _type == "RateLimitError":
-                        wait = 10 * (attempt + 1)
-                        print(f"\n  ⚠️  Rate limit – czekam {wait}s...")
-                        time.sleep(wait)
-                        if attempt == 2:
-                            raise LLMError("Rate limit – przekroczono liczbę prób")
-                        continue
-                    if _type == "NotFoundError":
-                        raise LLMError(
-                            f"Model '{self.config.model}' nie istnieje dla providera "
-                            f"'{self.config.provider}': {e}"
-                        ) from e
-                    if _type == "APIConnectionError":
-                        if attempt == 2:
-                            raise LLMError(f"Błąd połączenia z {self.config.base_url}: {e}") from e
-                        time.sleep(5)
-                        continue
-                    if _type == "APITimeoutError":
-                        if attempt == 2:
-                            raise LLMError("Timeout połączenia z API")
-                        time.sleep(5)
-                        continue
-                raise LLMError(f"Nieoczekiwany błąd API: {e}") from e
+                self._handle_api_error(e, attempt)
 
         raise LLMError("Nie udało się uzyskać odpowiedzi po 3 próbach")
 

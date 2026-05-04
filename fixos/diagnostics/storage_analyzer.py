@@ -277,6 +277,21 @@ class StorageAnalyzer:
         except ValueError:
             return 0
 
+    _DOCKER_DF_SECTIONS = {
+        "Images space usage:": "images",
+        "Containers space usage:": "containers",
+        "Local Volumes space usage:": "volumes",
+        "Build Cache": "build_cache",
+    }
+
+    @staticmethod
+    def _detect_docker_section(line: str) -> str | None:
+        """Return the section name if *line* is a section header, else None."""
+        for prefix, section in StorageAnalyzer._DOCKER_DF_SECTIONS.items():
+            if line.startswith(prefix):
+                return section
+        return None
+
     @staticmethod
     def _parse_docker_df_output(output: str) -> dict:
         """Parse 'docker system df -v' output into image/cache stats."""
@@ -286,17 +301,13 @@ class StorageAnalyzer:
         build_cache = 0
         current_section = None
 
-        for line in output.split('\n'):
-            line = line.strip()
-            if line.startswith("Images space usage:"):
-                current_section = "images"
-            elif line.startswith("Containers space usage:"):
-                current_section = "containers"
-            elif line.startswith("Local Volumes space usage:"):
-                current_section = "volumes"
-            elif line.startswith("Build Cache"):
-                current_section = "build_cache"
-            elif current_section == "images" and line and not line.startswith("REPOSITORY"):
+        for raw_line in output.split('\n'):
+            line = raw_line.strip()
+            section = StorageAnalyzer._detect_docker_section(line)
+            if section:
+                current_section = section
+                continue
+            if current_section == "images" and line and not line.startswith("REPOSITORY"):
                 parts = line.split()
                 if len(parts) >= CONSTANT_4:
                     if parts[0] == "<none>" or parts[1] == "<none>":

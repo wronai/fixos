@@ -97,6 +97,62 @@ def execute_command(cmd: str) -> tuple[bool, str]:
 
 
 # ── Główna funkcja sesji LLM ────────────────────────────────────────────────
+def _llm_call(client, model: str, messages: list) -> Optional[str]:
+    """Call the LLM; return reply text, '' on rate-limit, None on fatal error."""
+    try:
+        response = client.chat.completions.create(
+            model=model, messages=messages, max_tokens=2000, temperature=0.3,
+        )
+        return response.choices[0].message.content
+    except openai.AuthenticationError:
+        print("\n❌ Błąd autoryzacji – sprawdź token API.")
+        return None
+    except openai.RateLimitError:
+        print("\n⚠️ Rate limit – poczekaj chwilę...")
+        time.sleep(10)
+        return ""
+    except Exception as e:
+        print(f"\n❌ Błąd API: {e}")
+        return None
+
+
+def _handle_user_turn(session, messages: list, remaining: int, verbose: bool) -> str:
+    """Read user input, update messages. Returns 'quit', 'break', 'continue', or 'ok'."""
+    try:
+        user_input = session.prompt(
+            HTML(f"\n<prompt>fixos</prompt> <timer>[{format_time(remaining)}]</timer> ❯ ")
+        ).strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\n\nSesja przerwana przez użytkownika.")
+        return "break"
+
+    if not user_input:
+        return "continue"
+    if user_input.lower() in ('q', 'quit', 'exit', 'koniec'):
+        print("\n✅ Sesja zakończona przez użytkownika.")
+        return "quit"
+
+    if user_input.startswith('!'):
+        cmd = user_input[1:].strip()
+        _, output = execute_command(cmd)
+        feedback = f"Wynik komendy `{cmd}`:\n{output}"
+        messages.append({"role": "user", "content": feedback})
+        if verbose:
+            print(f"\n[DEBUG] Dodano wynik do historii: {feedback[:100]}...")
+        return "continue"
+
+    messages.append({"role": "user", "content": user_input})
+    if user_input.isdigit() or user_input.lower() == 'all':
+        messages.append({
+            "role": "user",
+            "content": (
+                f"Podaj TYLKO konkretną komendę shell do naprawy problemu {user_input}. "
+                f"Format: `komenda`. Bez opisu."
+            )
+        })
+    return "ok"
+
+
 def run_llm_shell(
     diagnostics_data: dict,
     token: str,
@@ -107,7 +163,7 @@ def run_llm_shell(
 ):
     """
     Uruchamia interaktywny shell LLM z przekazanymi danymi diagnostycznymi.
-    
+
     Args:
         diagnostics_data: Słownik z danymi diagnostycznymi (przed anonimizacją)
         token: Klucz API OpenAI lub kompatybilnego serwisu
@@ -116,38 +172,27 @@ def run_llm_shell(
         verbose: Czy wyświetlać dodatkowe informacje debugowania
         base_url: Opcjonalny URL dla alternatywnych API (np. xAI, Ollama)
     """
-    # Anonimizuj dane przed wysłaniem
     anon_data, _ = anonymize(str(diagnostics_data))
 
-    # Konfiguracja klienta OpenAI
-    client_kwargs = {"api_key": token}
+    client_kwargs: dict = {"api_key": token}
     if base_url:
         client_kwargs["base_url"] = base_url
     client = openai.OpenAI(**client_kwargs)
 
-    # Konfiguracja timeout
     signal.signal(signal.SIGALRM, _timeout_handler)
     signal.alarm(timeout)
     start_time = time.time()
 
-    # Historia konwersacji
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "user",
-            "content": (
-                f"Oto anonimizowane dane diagnostyczne mojego systemu system:\n\n"
-                f"```\n{anon_data}\n```\n\n"
-                f"Przeanalizuj je i przedstaw wykryte problemy."
-            )
-        }
+        {"role": "user", "content": (
+            f"Oto anonimizowane dane diagnostyczne mojego systemu system:\n\n"
+            f"```\n{anon_data}\n```\n\n"
+            f"Przeanalizuj je i przedstaw wykryte problemy."
+        )},
     ]
 
-    # Styl prompt_toolkit
-    style = Style.from_dict({
-        'prompt': '#00aa00 bold',
-        'timer': '#888888',
-    })
+    style = Style.from_dict({'prompt': '#00aa00 bold', 'timer': '#888888'})
     session = PromptSession(style=style)
 
     print("\n" + "═" * 60)
@@ -155,35 +200,21 @@ def run_llm_shell(
     print(f"  ⏰ Sesja: max {format_time(timeout)}  |  Wpisz 'q' aby wyjść")
     print("═" * 60 + "\n")
 
+    elapsed = 0
     try:
         while True:
-            # Oblicz pozostały czas
             elapsed = int(time.time() - start_time)
             remaining = timeout - elapsed
             if remaining <= 0:
                 raise SessionTimeout()
 
-            # Wywołanie LLM
             print("🧠 LLM analizuje... ", end="", flush=True)
-            try:
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    max_tokens=2000,
-                    temperature=0.3,
-                )
-                reply = response.choices[0].message.content
-                messages.append({"role": "assistant", "content": reply})
-            except openai.AuthenticationError:
-                print("\n❌ Błąd autoryzacji – sprawdź token API.")
+            reply = _llm_call(client, model, messages)
+            if reply is None:
                 break
-            except openai.RateLimitError:
-                print("\n⚠️ Rate limit – poczekaj chwilę...")
-                time.sleep(10)
+            if reply == "":
                 continue
-            except Exception as e:
-                print(f"\n❌ Błąd API: {e}")
-                break
+            messages.append({"role": "assistant", "content": reply})
 
             print("\r" + " " * 25 + "\r", end="")  # wyczyść "analizuje..."
             print(f"\n{'─' * 60}")
@@ -191,44 +222,9 @@ def run_llm_shell(
             print(f"{'─' * 60}")
             print(f"  ⏰ Pozostały czas: {format_time(remaining)}")
 
-            # Input użytkownika
-            try:
-                user_input = session.prompt(
-                    HTML(f"\n<prompt>fixos</prompt> <timer>[{format_time(remaining)}]</timer> ❯ ")
-                ).strip()
-            except (EOFError, KeyboardInterrupt):
-                print("\n\nSesja przerwana przez użytkownika.")
+            action = _handle_user_turn(session, messages, remaining, verbose)
+            if action in ("quit", "break"):
                 break
-
-            if not user_input:
-                continue
-            if user_input.lower() in ('q', 'quit', 'exit', 'koniec'):
-                print("\n✅ Sesja zakończona przez użytkownika.")
-                break
-
-            # Sprawdź czy użytkownik chce wykonać konkretną komendę
-            if user_input.startswith('!'):
-                cmd = user_input[1:].strip()
-                success, output = execute_command(cmd)
-                feedback = f"Wynik komendy `{cmd}`:\n{output}"
-                messages.append({"role": "user", "content": feedback})
-                if verbose:
-                    print(f"\n[DEBUG] Dodano wynik do historii: {feedback[:100]}...")
-                continue
-
-            # Normalny input → dodaj do historii i kontynuuj
-            messages.append({"role": "user", "content": user_input})
-
-            # Jeśli LLM sugeruje komendę i użytkownik podał numer/all
-            if user_input.isdigit() or user_input.lower() == 'all':
-                # Poproś LLM o konkretną komendę dla wybranego punktu
-                messages.append({
-                    "role": "user",
-                    "content": (
-                        f"Podaj TYLKO konkretną komendę shell do naprawy problemu {user_input}. "
-                        f"Format: `komenda`. Bez opisu."
-                    )
-                })
 
     except SessionTimeout:
         print(f"\n\n⏰ Sesja wygasła po {format_time(timeout)}. Połączenie zakończone.")

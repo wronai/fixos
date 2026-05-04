@@ -318,68 +318,64 @@ class CleanupPlanner:
         }
         return scores.get(priority, 1)
     
-    def _generate_recommendations(self, grouped: Dict[str, List[CleanupAction]], 
-                                prioritized: List[CleanupAction]) -> List[Dict]:
+    @staticmethod
+    def _rec_safe_high_impact(prioritized: List[CleanupAction]) -> List[Dict]:
+        actions = [a for a in prioritized
+                   if a.safe and a.size_gb > 0.5 and a.priority in [Priority.HIGH, Priority.CRITICAL]]
+        if not actions:
+            return []
+        total = sum(a.size_gb for a in actions)
+        return [{"type": "safe_cleanup", "priority": "high",
+                 "title": "Safe High-Impact Cleanup Available",
+                 "description": f"Can safely free {total:.1f} GB with {len(actions)} actions",
+                 "actions_count": len(actions), "space_gb": round(total, 2)}]
+
+    @staticmethod
+    def _rec_cache(grouped: Dict[str, List[CleanupAction]]) -> List[Dict]:
+        actions = grouped.get("cache", [])
+        if not actions:
+            return []
+        size = sum(a.size_gb for a in actions)
+        if size <= 0.5:
+            return []
+        return [{"type": "cache_cleanup", "priority": "medium",
+                 "title": "Cache Cleanup Recommended",
+                 "description": f"Clear application cache to free {size:.1f} GB",
+                 "actions_count": len(actions), "space_gb": round(size, 2)}]
+
+    @staticmethod
+    def _rec_logs(grouped: Dict[str, List[CleanupAction]]) -> List[Dict]:
+        actions = grouped.get("logs", [])
+        if not actions:
+            return []
+        size = sum(a.size_gb for a in actions)
+        if size <= 0.2:
+            return []
+        return [{"type": "log_cleanup", "priority": "low",
+                 "title": "Log Files Can Be Cleaned",
+                 "description": f"Clean old logs to free {size:.1f} GB",
+                 "actions_count": len(actions), "space_gb": round(size, 2)}]
+
+    @staticmethod
+    def _rec_manual(prioritized: List[CleanupAction]) -> List[Dict]:
+        actions = [a for a in prioritized if not a.safe and a.size_gb > 1.0]
+        if not actions:
+            return []
+        size = sum(a.size_gb for a in actions)
+        return [{"type": "manual_review", "priority": "medium",
+                 "title": "Manual Review Required",
+                 "description": f"{len(actions)} large files ({size:.1f} GB) need manual review",
+                 "actions_count": len(actions), "space_gb": round(size, 2)}]
+
+    def _generate_recommendations(self, grouped: Dict[str, List[CleanupAction]],
+                                   prioritized: List[CleanupAction]) -> List[Dict]:
         """Generate cleanup recommendations"""
-        recommendations = []
-        
-        # High-impact safe actions
-        safe_high_impact = [a for a in prioritized 
-                          if a.safe and a.size_gb > 0.5 and a.priority in [Priority.HIGH, Priority.CRITICAL]]
-        
-        if safe_high_impact:
-            total_safe = sum(a.size_gb for a in safe_high_impact)
-            recommendations.append({
-                "type": "safe_cleanup",
-                "priority": "high",
-                "title": f"Safe High-Impact Cleanup Available",
-                "description": f"Can safely free {total_safe:.1f} GB with {len(safe_high_impact)} actions",
-                "actions_count": len(safe_high_impact),
-                "space_gb": round(total_safe, 2)
-            })
-        
-        # Cache cleanup recommendation
-        cache_actions = grouped.get("cache", [])
-        if cache_actions:
-            cache_size = sum(a.size_gb for a in cache_actions)
-            if cache_size > 0.5:
-                recommendations.append({
-                    "type": "cache_cleanup",
-                    "priority": "medium",
-                    "title": "Cache Cleanup Recommended",
-                    "description": f"Clear application cache to free {cache_size:.1f} GB",
-                    "actions_count": len(cache_actions),
-                    "space_gb": round(cache_size, 2)
-                })
-        
-        # Log cleanup recommendation
-        log_actions = grouped.get("logs", [])
-        if log_actions:
-            log_size = sum(a.size_gb for a in log_actions)
-            if log_size > 0.2:
-                recommendations.append({
-                    "type": "log_cleanup", 
-                    "priority": "low",
-                    "title": "Log Files Can Be Cleaned",
-                    "description": f"Clean old logs to free {log_size:.1f} GB",
-                    "actions_count": len(log_actions),
-                    "space_gb": round(log_size, 2)
-                })
-        
-        # Manual review needed
-        manual_review = [a for a in prioritized if not a.safe and a.size_gb > 1.0]
-        if manual_review:
-            manual_size = sum(a.size_gb for a in manual_review)
-            recommendations.append({
-                "type": "manual_review",
-                "priority": "medium",
-                "title": "Manual Review Required",
-                "description": f"{len(manual_review)} large files ({manual_size:.1f} GB) need manual review",
-                "actions_count": len(manual_review),
-                "space_gb": round(manual_size, 2)
-            })
-        
-        return recommendations
+        recs: List[Dict] = []
+        recs.extend(self._rec_safe_high_impact(prioritized))
+        recs.extend(self._rec_cache(grouped))
+        recs.extend(self._rec_logs(grouped))
+        recs.extend(self._rec_manual(prioritized))
+        return recs
 
 
 def main():

@@ -48,6 +48,32 @@ def _get_sensitive() -> dict:
     return result
 
 
+# (pattern, replacement, flags, report_label) — applied in order after literal replacements
+_REGEX_REPLACEMENTS: list[tuple[str, str, int, str]] = [
+    (r"/home/(?!\[USER\])[^\s\"'\\]+",                                    "/home/[USER]/...", 0,           "Ścieżki /home"),
+    (r"\b(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}\b",                       r"\1.XXX.XXX",     0,           "Adresy IPv4"),
+    (r"\b([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",                      "XX:XX:XX:XX:XX:XX", 0,         "Adresy MAC"),
+    (r"(?<![A-Za-z0-9])(?:sk-|xai-|AIzaSy[A-Za-z0-9_-]+|Bearer\s+)[A-Za-z0-9\-_.]{15,}",
+                                                                           "[API_TOKEN_REDACTED]", 0,      "Tokeny API"),
+    (r"(?i)(password|passwd|secret|token|api_key|apikey|auth)\s*[=:]\s*\S+",
+                                                                           r"\1=[REDACTED]", re.IGNORECASE, "Hasła/sekrety"),
+    (r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b",
+                                                                           "[UUID-REDACTED]", 0,           "UUID (serial/hardware)"),
+    (r"\b(?:S/N|Serial|SN)[\s:]+[A-Z0-9]{6,20}\b",                       "Serial: [SERIAL-REDACTED]",
+                                                                                              re.IGNORECASE, "Numery seryjne"),
+]
+
+
+def _apply_regex_replacements(data_str: str, report: AnonymizationReport) -> str:
+    """Apply all regex-based anonymization patterns from _REGEX_REPLACEMENTS."""
+    for pattern, replacement, flags, label in _REGEX_REPLACEMENTS:
+        matches = len(re.findall(pattern, data_str, flags))
+        if matches:
+            data_str = re.sub(pattern, replacement, data_str, flags=flags)
+            report.add(label, matches)
+    return data_str
+
+
 def anonymize(data_str: str) -> tuple[str, AnonymizationReport]:
     """
     Anonimizuje wrażliwe dane.
@@ -61,76 +87,30 @@ def anonymize(data_str: str) -> tuple[str, AnonymizationReport]:
     report = AnonymizationReport(original_length=len(data_str))
     sensitive = _get_sensitive()
 
-    # 1. Hostname
+    # 1. Hostname (literal)
     if sensitive.get("hostname"):
         count = data_str.count(sensitive["hostname"])
         if count:
             data_str = data_str.replace(sensitive["hostname"], "[HOSTNAME]")
             report.add("Hostname", count)
 
-    # 2. Katalog domowy (pełna ścieżka – PRZED zastąpieniem username)
+    # 2. Katalog domowy — pełna ścieżka (PRZED zastąpieniem username)
     if sensitive.get("home"):
         count = data_str.count(sensitive["home"])
         if count:
             data_str = data_str.replace(sensitive["home"], "/home/[USER]")
             report.add("Ścieżka domowa", count)
 
-    # 3. Ścieżki /home/<user>/... – dowolna głębokość (po literalnym zastąpieniu)
-    home_pattern = r"/home/(?!\[USER\])[^\s\"'\\]+"
-    matches = len(re.findall(home_pattern, data_str))
-    if matches:
-        data_str = re.sub(home_pattern, "/home/[USER]/...", data_str)
-        report.add("Ścieżki /home", matches)
+    # 3–10. Regex-based replacements (home paths, IPs, MACs, tokens, etc.)
+    data_str = _apply_regex_replacements(data_str, report)
 
-    # 4. Username (konkretna nazwa) – po zastąpieniu ścieżek
+    # Username (konkretna nazwa) — po zastąpieniu ścieżek przez regex
     if sensitive.get("username"):
         pattern = rf"\b{re.escape(sensitive['username'])}\b"
         matches = len(re.findall(pattern, data_str))
         if matches:
             data_str = re.sub(pattern, "[USER]", data_str)
             report.add("Username", matches)
-
-    # 5. Adresy IPv4 (zachowaj 2 pierwsze oktety)
-    ipv4_pattern = r"\b(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}\b"
-    matches = len(re.findall(ipv4_pattern, data_str))
-    if matches:
-        data_str = re.sub(ipv4_pattern, r"\1.XXX.XXX", data_str)
-        report.add("Adresy IPv4", matches)
-
-    # 6. Adresy MAC
-    mac_pattern = r"\b([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b"
-    matches = len(re.findall(mac_pattern, data_str))
-    if matches:
-        data_str = re.sub(mac_pattern, "XX:XX:XX:XX:XX:XX", data_str)
-        report.add("Adresy MAC", matches)
-
-    # 7. Tokeny API (sk-, xai-, AIzaSy-, Bearer)
-    token_pattern = r"(?<![A-Za-z0-9])(?:sk-|xai-|AIzaSy[A-Za-z0-9_-]+|Bearer\s+)[A-Za-z0-9\-_.]{15,}"
-    matches = len(re.findall(token_pattern, data_str))
-    if matches:
-        data_str = re.sub(token_pattern, "[API_TOKEN_REDACTED]", data_str)
-        report.add("Tokeny API", matches)
-
-    # 8. Hasła/sekrety w zmiennych
-    secret_pattern = r"(?i)(password|passwd|secret|token|api_key|apikey|auth)\s*[=:]\s*\S+"
-    matches = len(re.findall(secret_pattern, data_str))
-    if matches:
-        data_str = re.sub(secret_pattern, r"\1=[REDACTED]", data_str)
-        report.add("Hasła/sekrety", matches)
-
-    # 9. UUIDs (mogą identyfikować sprzęt)
-    uuid_pattern = r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
-    matches = len(re.findall(uuid_pattern, data_str))
-    if matches:
-        data_str = re.sub(uuid_pattern, "[UUID-REDACTED]", data_str)
-        report.add("UUID (serial/hardware)", matches)
-
-    # 10. Serial numbers (typowy format np. PF1234567)
-    serial_pattern = r"\b(?:S/N|Serial|SN)[\s:]+[A-Z0-9]{6,20}\b"
-    matches = len(re.findall(serial_pattern, data_str, re.IGNORECASE))
-    if matches:
-        data_str = re.sub(serial_pattern, "Serial: [SERIAL-REDACTED]", data_str, flags=re.IGNORECASE)
-        report.add("Numery seryjne", matches)
 
     report.anonymized_length = len(data_str)
     return data_str, report

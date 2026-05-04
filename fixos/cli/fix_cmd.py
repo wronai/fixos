@@ -14,6 +14,55 @@ from fixos.agent.hitl import run_hitl_session
 from fixos.agent.autonomous import run_autonomous_session
 
 
+def _collect_diagnostics(modules: str, disc: bool, json_output: bool, output: str) -> dict:
+    """Run diagnostics collection and optionally disk analysis. Returns data dict."""
+    selected_modules = modules.split(",") if modules else None
+
+    if disc and not modules:
+        data: dict = {}
+    else:
+        click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
+        def progress(name, desc):
+            click.echo(f"  → {desc}...")
+        from fixos.diagnostics import get_full_diagnostics
+        data = get_full_diagnostics(selected_modules, progress_callback=progress)
+
+    if disc:
+        from fixos.cli.scan_cmd import _run_disk_analysis
+        _run_disk_analysis(data, json_output=json_output, is_fix_mode=True)
+
+    if output:
+        from fixos.utils.anonymizer import anonymize
+        anon_str, _ = anonymize(str(data))
+        try:
+            Path(output).write_text(
+                json.dumps({"anonymized": anon_str, "raw": data}, ensure_ascii=False, indent=2, default=str),
+                encoding="utf-8"
+            )
+            click.echo(click.style(f"Raport: {output}", fg="green"))
+        except Exception as e:
+            click.echo(f"Błąd zapisu: {e}")
+
+    return data
+
+
+def _run_agent_session(cfg, data: dict, max_fixes: int) -> None:
+    """Dispatch to the appropriate agent session based on cfg.agent_mode."""
+    if cfg.agent_mode == "autonomous":
+        run_autonomous_session(
+            diagnostics=data,
+            config=cfg,
+            show_data=cfg.show_anonymized_data,
+            max_fixes=max_fixes,
+        )
+    else:
+        run_hitl_session(
+            diagnostics=data,
+            config=cfg,
+            show_data=cfg.show_anonymized_data,
+        )
+
+
 @click.command()
 @add_common_options
 @click.option("--mode", type=click.Choice(["hitl", "autonomous"]), default=None,
@@ -58,7 +107,6 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
     if not no_banner:
         click.echo(click.style(BANNER, fg="cyan"))
 
-    # Load configuration
     cfg = FixOsConfig.load(
         provider=provider,
         api_key=token,
@@ -68,13 +116,11 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
         show_anonymized_data=not no_show_data,
     )
 
-    # Override mode if provided
     if mode:
         cfg.agent_mode = mode
 
     errors = cfg.validate()
     if errors:
-        # No API key - propose interactive provider selection
         click.echo(click.style("\nBrak konfiguracji LLM.", fg="yellow"))
         new_cfg = interactive_provider_setup()
         if new_cfg is None:
@@ -89,62 +135,18 @@ def fix(provider, token, model, no_banner, mode, timeout, modules, no_show_data,
 
     click.echo(click.style("\nKonfiguracja:", fg="cyan"))
     click.echo(cfg.summary())
-    
     if dry_run:
         click.echo(click.style("  Tryb: DRY-RUN (komendy nie będą wykonywane)", fg="yellow"))
     if disc:
         click.echo(click.style("  Analiza dysku: Włączona", fg="blue"))
 
-    # Diagnostics
-    selected_modules = modules.split(",") if modules else None
-    
-    if disc and not modules:
-        # Skip heavy system diagnostics if only disk is requested implicitly
-        data = {}
-    else:
-        click.echo(click.style("\nZbieranie diagnostyki...", fg="yellow"))
-        def progress(name, desc):
-            click.echo(f"  → {desc}...")
-        from fixos.diagnostics import get_full_diagnostics
-        data = get_full_diagnostics(selected_modules, progress_callback=progress)
-    
-    # Add disk analysis if --disc flag is used
-    if disc:
-        from fixos.cli.scan_cmd import _run_disk_analysis
-        _run_disk_analysis(data, json_output=json_output, is_fix_mode=True)
-
-    if output:
-        from fixos.utils.anonymizer import anonymize
-        anon_str, _ = anonymize(str(data))
-        try:
-            Path(output).write_text(
-                json.dumps({"anonymized": anon_str, "raw": data}, ensure_ascii=False, indent=2, default=str),
-                encoding="utf-8"
-            )
-            click.echo(click.style(f"Raport: {output}", fg="green"))
-        except Exception as e:
-            click.echo(f"Błąd zapisu: {e}")
-
+    data = _collect_diagnostics(modules, disc, json_output, output)
     click.echo(click.style("Diagnostyka gotowa.\n", fg="green"))
 
-    # Handle disk analysis mode
     if disc and "disk_analysis" in data:
         return handle_disk_cleanup_mode(data["disk_analysis"], cfg, dry_run, interactive, json_output, llm_fallback)
 
-    # Run appropriate agent mode
-    if cfg.agent_mode == "autonomous":
-        run_autonomous_session(
-            diagnostics=data,
-            config=cfg,
-            show_data=cfg.show_anonymized_data,
-            max_fixes=max_fixes,
-        )
-    else:
-        run_hitl_session(
-            diagnostics=data,
-            config=cfg,
-            show_data=cfg.show_anonymized_data,
-        )
+    _run_agent_session(cfg, data, max_fixes)
 
 
 def handle_disk_cleanup_mode(disk_analysis: Dict[str, Any], cfg, dry_run: bool,

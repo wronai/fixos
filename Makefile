@@ -161,7 +161,7 @@ run-fix:
 build: clean
 	@echo "🔨 Budowanie paczki (cache enabled)..."
 	.venv/bin/pip install --quiet --upgrade build
-	.venv/bin/python -m build --parallel -n auto
+	.venv/bin/python -m build
 	@echo "✅ Paczka gotowa w dist/"
 
 publish: build

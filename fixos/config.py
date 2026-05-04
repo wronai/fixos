@@ -51,7 +51,7 @@ PROVIDER_DEFAULTS = {
     },
     "openrouter": {
         "base_url": "https://openrouter.ai/api/v1",
-        "model": "openai/gpt-4o-mini",
+        "model": "deepseek/deepseek-chat-v3-0324:free",
         "key_env": "OPENROUTER_API_KEY",
         "key_url": "https://openrouter.ai/settings/keys",
         "free_tier": True,
@@ -310,6 +310,86 @@ KEY_PREFIXES: list[tuple[str, str]] = [
     ("hf_", "together"),
     ("sk-cohere-", "cohere"),
 ]
+
+
+PROVIDER_MODELS: dict[str, list[str]] = {
+    "gemini": [
+        "gemini-2.5-flash-preview-04-17",
+        "gemini-2.0-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+    ],
+    "openai": [
+        "gpt-4o-mini",
+        "gpt-4o",
+        "gpt-4-turbo",
+        "gpt-3.5-turbo",
+    ],
+    "openrouter": [
+        "deepseek/deepseek-chat-v3-0324:free",
+        "qwen/qwen3-235b-a22b:free",
+        "meta-llama/llama-3.3-70b-instruct",
+        "meta-llama/llama-3.1-8b-instruct:free",
+        "mistralai/mistral-small-3.1-24b-instruct:free",
+        "google/gemini-2.0-flash-001",
+        "google/gemini-flash-1.5",
+        "openai/gpt-4o-mini",
+        "openai/gpt-4o",
+    ],
+    "anthropic": [
+        "claude-3-haiku-20240307",
+        "claude-3-5-haiku-20241022",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-opus-20240229",
+    ],
+    "mistral": [
+        "mistral-small-latest",
+        "mistral-medium-latest",
+        "mistral-large-latest",
+        "open-mixtral-8x22b",
+    ],
+    "groq": [
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "llama3-70b-8192",
+        "gemma2-9b-it",
+        "mixtral-8x7b-32768",
+    ],
+    "together": [
+        "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+        "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
+        "mistralai/Mixtral-8x22B-Instruct-v0.1",
+    ],
+    "cohere": [
+        "command-r",
+        "command-r-plus",
+        "command-a-03-2025",
+    ],
+    "deepseek": [
+        "deepseek-chat",
+        "deepseek-reasoner",
+    ],
+    "cerebras": [
+        "llama3.1-8b",
+        "llama-3.3-70b",
+        "llama3.1-70b",
+    ],
+    "xai": [
+        "grok-beta",
+        "grok-2-1212",
+        "grok-2-vision-1212",
+    ],
+    "ollama": [
+        "llama3.2",
+        "llama3.1",
+        "mistral",
+        "gemma2",
+        "qwen2.5",
+        "phi3",
+        "deepseek-r1",
+    ],
+}
 
 
 def detect_provider_from_key(key: str) -> Optional[str]:

@@ -1,23 +1,23 @@
-# redup/duplication | 4 groups | 91f 16348L | 2026-05-04
+# redup/duplication | 5 groups | 93f 16888L | 2026-05-04
 
 SUMMARY:
-  files_scanned: 91
-  total_lines:   16348
-  dup_groups:    4
-  dup_fragments: 15
-  saved_lines:   44
-  scan_ms:       3355
+  files_scanned: 93
+  total_lines:   16888
+  dup_groups:    5
+  dup_fragments: 17
+  saved_lines:   50
+  scan_ms:       2894
 
 HOTSPOTS[7] (files with most duplication):
   fixos/utils/terminal.py  dup=28L  groups=2  frags=3  (0.2%)
   fixos/agent/session_io.py  dup=18L  groups=1  frags=6  (0.1%)
+  fixos/diagnostics/dev_project_analyzer.py  dup=6L  groups=1  frags=1  (0.0%)
+  fixos/diagnostics/storage_analyzer.py  dup=6L  groups=1  frags=1  (0.0%)
   fixos/config.py  dup=6L  groups=1  frags=1  (0.0%)
   fixos/cli/config_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
   fixos/cli/features_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
-  fixos/cli/profile_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
-  fixos/cli/rollback_cmd.py  dup=3L  groups=1  frags=1  (0.0%)
 
-DUPLICATES[4] (ranked by impact):
+DUPLICATES[5] (ranked by impact):
   [8967cd01b62426bf]   STRU  print_timeout  L=3 N=6 saved=15 sim=1.00
       fixos/agent/session_io.py:191-193  (print_timeout)
       fixos/agent/session_io.py:196-198  (print_session_ended)
@@ -34,11 +34,14 @@ DUPLICATES[4] (ranked by impact):
   [21fbbebb19cf00fb]   STRU  print_stdout_box  L=11 N=2 saved=11 sim=1.00
       fixos/utils/terminal.py:193-203  (print_stdout_box)
       fixos/utils/terminal.py:206-216  (print_stderr_box)
+  [c1b7ec0e8067fdc2]   EXAC  _format_size  L=6 N=2 saved=6 sim=1.00
+      fixos/diagnostics/dev_project_analyzer.py:55-60  (_format_size)
+      fixos/diagnostics/storage_analyzer.py:53-58  (_format_size)
   [153ba9750386f724]   STRU  detect_provider_from_key  L=6 N=2 saved=6 sim=1.00
       fixos/config.py:395-400  (detect_provider_from_key)
       fixos/utils/terminal.py:87-92  (_get_severity_style)
 
-REFACTOR[4] (ranked by priority):
+REFACTOR[5] (ranked by priority):
   [1] ○ extract_function   → fixos/agent/utils/print_timeout.py
       WHY: 6 occurrences of 3-line block across 1 files — saves 15 lines
       FILES: fixos/agent/session_io.py
@@ -48,26 +51,32 @@ REFACTOR[4] (ranked by priority):
   [3] ○ extract_function   → fixos/utils/utils/print_stdout_box.py
       WHY: 2 occurrences of 11-line block across 1 files — saves 11 lines
       FILES: fixos/utils/terminal.py
-  [4] ○ extract_function   → fixos/utils/detect_provider_from_key.py
+  [4] ○ extract_function   → fixos/diagnostics/utils/_format_size.py
+      WHY: 2 occurrences of 6-line block across 2 files — saves 6 lines
+      FILES: fixos/diagnostics/dev_project_analyzer.py, fixos/diagnostics/storage_analyzer.py
+  [5] ○ extract_function   → fixos/utils/detect_provider_from_key.py
       WHY: 2 occurrences of 6-line block across 2 files — saves 6 lines
       FILES: fixos/config.py, fixos/utils/terminal.py
 
-QUICK_WINS[4] (low risk, high savings — do first):
+QUICK_WINS[5] (low risk, high savings — do first):
   [1] extract_function   saved=15L  → fixos/agent/utils/print_timeout.py
       FILES: session_io.py
   [2] extract_function   saved=12L  → fixos/cli/utils/config.py
       FILES: config_cmd.py, features_cmd.py, profile_cmd.py +2
   [3] extract_function   saved=11L  → fixos/utils/utils/print_stdout_box.py
       FILES: terminal.py
-  [4] extract_function   saved=6L  → fixos/utils/detect_provider_from_key.py
+  [4] extract_function   saved=6L  → fixos/diagnostics/utils/_format_size.py
+      FILES: dev_project_analyzer.py, storage_analyzer.py
+  [5] extract_function   saved=6L  → fixos/utils/detect_provider_from_key.py
       FILES: config.py, terminal.py
 
-EFFORT_ESTIMATE (total ≈ 1.5h):
+EFFORT_ESTIMATE (total ≈ 1.7h):
   medium print_timeout                       saved=15L  ~30min
   easy   config                              saved=12L  ~24min
   easy   print_stdout_box                    saved=11L  ~22min
+  easy   _format_size                        saved=6L  ~12min
   easy   detect_provider_from_key            saved=6L  ~12min
 
 METRICS-TARGET:
-  dup_groups:  4 → 0
-  saved_lines: 44 lines recoverable
+  dup_groups:  5 → 0
+  saved_lines: 50 lines recoverable

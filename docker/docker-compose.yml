@@ -1,4 +1,4 @@
-version: "3.9"
+# docker-compose.yml – fixos test environments
 
 # ═══════════════════════════════════════════════════════════
 #  fixos – środowiska testowe (Docker)
@@ -32,7 +32,6 @@ services:
       context: ..
       dockerfile: docker/base/Dockerfile
     image: fixos-base:latest
-    profiles: ["build-only"]
     command: echo "base image built"
 
   # ── Uszkodzony dźwięk ──────────────────────────────────
@@ -123,8 +122,7 @@ services:
           --cov-report=html:/reports/coverage
           -m 'not real_api'
       "
-    depends_on:
-      - base
+
 
   # ── Unit testy (bez Dockera środowisk) ────────────────
   unit-tests:

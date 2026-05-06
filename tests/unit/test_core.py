@@ -191,6 +191,93 @@ class TestDiagnosticOnlyCommand:
         assert _is_diagnostic_only_command("df -h && free -h") is True
 
 
+class TestExtractFixes:
+    """Regression tests for extract_fixes – covers multiple LLM output formats."""
+
+    def test_strict_bold_backticks(self):
+        """Pattern 1: **Komenda:** `command` **Co robi:** explanation"""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 **Problem 1: disk full**\n"
+            "   **Komenda:** `sudo dnf autoremove -y`\n"
+            "   **Co robi:** removes unused packages\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) == 1
+        assert fixes[0][0] == "sudo dnf autoremove -y"
+
+    def test_backticks_no_bold(self):
+        """Pattern 2: Komenda: `command` (backticks, no bold)"""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 Problem 1: disk full\n"
+            "Komenda: `sudo dnf autoremove -y`\n"
+            "Co robi: removes unused packages\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) == 1
+        assert fixes[0][0] == "sudo dnf autoremove -y"
+
+    def test_no_backticks_no_bold(self):
+        """Pattern 3: Komenda: command (plain text – deepseek bug scenario)"""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 **Problem 1: Krytyczne zapełnienie dysku.**\n"
+            "Komenda: sudo journalctl --vacuum-size=200M && sudo dnf autoremove -y\n"
+            "Co robi: Oczyszcza logi i pakiety.\n"
+            "🟡 **Problem 2: swap failed.**\n"
+            "Komenda: sudo systemctl restart swapfile.swap\n"
+            "Co robi: Restartuje swap.\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) == 2
+        assert "journalctl" in fixes[0][0]
+        assert "swapfile" in fixes[1][0]
+
+    def test_multiline_command_collapsed(self):
+        """Pattern 3 with multiline command – should be collapsed to single line."""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 **Problem 1: disk full.**\n"
+            "Komenda: sudo journalctl --vacuum-size=200M && sudo rm -rf\n"
+            "/var/cache/abrt-diag/* && sudo dnf autoremove -y\n"
+            "Co robi: cleanup\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) >= 1
+        cmd = fixes[0][0]
+        assert "\n" not in cmd
+        assert "journalctl" in cmd
+        assert "dnf autoremove" in cmd
+
+    def test_co_robi_extracted_as_comment(self):
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 Problem 1: disk\n"
+            "Komenda: `sudo dnf autoremove -y`\n"
+            "Co robi: removes unused packages\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) == 1
+        assert "removes" in fixes[0][1]
+
+    def test_diagnostic_only_filtered(self):
+        """Read-only commands should be filtered out."""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🔴 Problem 1: check disk\n"
+            "   **Komenda:** `df -h`\n"
+            "   **Co robi:** shows disk usage\n"
+        )
+        fixes = extract_fixes(reply)
+        assert len(fixes) == 0
+
+    def test_empty_reply(self):
+        from fixos.agent.session_core import extract_fixes
+        assert extract_fixes("") == []
+        assert extract_fixes("No problems found.") == []
+
+
 class TestInteractiveBlocker:
     def test_newgrp_blocked(self):
         from fixos.platform_utils import is_interactive_blocker

@@ -111,9 +111,17 @@ def _is_part_diagnostic_only(part: str) -> bool:
     return normalized.startswith(diagnostic_prefixes)
 
 
+def _extract_co_robi(text: str) -> str:
+    """Extract 'Co robi:' comment from text following a command match."""
+    m = re.search(r"\s*\*{0,2}Co robi:\*{0,2}\s*(.+?)(?:\n|$)", text, re.IGNORECASE)
+    return m.group(1).strip() if m else ""
+
+
 def extract_fixes(reply: str) -> List[Tuple[str, str]]:
     """Extract (command, comment) pairs from LLM reply."""
     fixes: List[Tuple[str, str]] = []
+
+    # Pattern 1: **Komenda:** `command` (strict: bold + backticks)
     for m in re.finditer(
         r"\*\*Komenda:\*\*\s*`([^`]+)`(?:[^\n]*?\*\*Co robi:\*\*\s*(.+?))?(?=\n|$)",
         reply, re.IGNORECASE,
@@ -121,12 +129,38 @@ def extract_fixes(reply: str) -> List[Tuple[str, str]]:
         cmd = m.group(1).strip()
         if cmd:
             fixes.append((cmd, (m.group(2) or "").strip()))
+
+    # Pattern 2: Komenda: `command` (backticks, optional bold)
+    if not fixes:
+        for m in re.finditer(
+            r"\*{0,2}Komenda:\*{0,2}\s*`([^`]+)`",
+            reply, re.IGNORECASE,
+        ):
+            cmd = m.group(1).strip()
+            if cmd:
+                fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+
+    # Pattern 3: Komenda: command (no backticks — command until Co robi:/next problem/section)
+    if not fixes:
+        for m in re.finditer(
+            r"\*{0,2}Komenda:\*{0,2}\s*"
+            r"(.+?)"
+            r"(?=\n\s*\*{0,2}Co robi:|\n[🔴🟡🟢]|\n━|\n─|\n\[[\dA-Z]|\Z)",
+            reply, re.IGNORECASE | re.DOTALL,
+        ):
+            cmd = re.sub(r"\s*\n\s*", " ", m.group(1)).strip()
+            if cmd:
+                fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+
+    # Fallback: → Fix: `command`
     if not fixes:
         for m in re.finditer(r"→\s*Fix:\s*`([^`]+)`", reply, re.IGNORECASE):
             fixes.append((m.group(1).strip(), ""))
+    # Fallback: [N] ... `command`
     if not fixes:
         for m in re.finditer(r"\[(\d+)\][^`\n]+`([^`]+)`", reply):
             fixes.append((m.group(2).strip(), f"Fix #{m.group(1)}"))
+    # Fallback: EXEC: `command`
     if not fixes:
         for m in re.finditer(r"EXEC:\s*`([^`]+)`", reply, re.IGNORECASE):
             fixes.append((m.group(1).strip(), ""))

@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+
+from fixos.diagnostics.utils import format_size as _format_size
 from ..constants import (
     DEV_PROJECT_MAX_DEPTH,
     DEV_PROJECT_MIN_SIZE_MB,
@@ -53,11 +55,7 @@ class ProjectDependency:
     
     @staticmethod
     def _format_size(size_bytes: int) -> str:
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-            if size_bytes < 1024:
-                return f"{size_bytes:.1f} {unit}"
-            size_bytes /= 1024
-        return f"{size_bytes:.1f} PB"
+        return _format_size(size_bytes)
 
 
 class DevProjectAnalyzer:

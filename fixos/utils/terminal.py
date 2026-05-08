@@ -190,30 +190,25 @@ def print_cmd_block(cmd: str, comment: str = "", dry_run: bool = False) -> None:
 
 # ── Result boxes ───────────────────────────────────────────────────────────
 
-def print_stdout_box(stdout: str, max_lines: int = 30) -> None:
-    """Print stdout in a rich Panel."""
-    lines = stdout.strip().splitlines()
+def _print_output_box(text: str, *, title: str, border: str, max_lines: int) -> None:
+    """Shared helper for stdout/stderr panels."""
+    lines = text.strip().splitlines()
     shown = lines[:max_lines]
     body = "\\n".join(shown)
     if len(lines) > max_lines:
         body += f"\\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
-    
-    # Wrap with Syntax for markdown block style
     syntax = Syntax(body, "bash", theme="monokai", word_wrap=True)
-    console.print(Panel(syntax, title="[dim]stdout[/dim]", border_style="dim green"))
+    console.print(Panel(syntax, title=f"[dim]{title}[/dim]", border_style=border))
+
+
+def print_stdout_box(stdout: str, max_lines: int = 30) -> None:
+    """Print stdout in a rich Panel."""
+    _print_output_box(stdout, title="stdout", border="dim green", max_lines=max_lines)
 
 
 def print_stderr_box(stderr: str, max_lines: int = 15) -> None:
     """Print stderr in a rich Panel."""
-    lines = stderr.strip().splitlines()
-    shown = lines[:max_lines]
-    body = "\\n".join(shown)
-    if len(lines) > max_lines:
-        body += f"\\n[dim]... ({len(lines) - max_lines} więcej linii)[/dim]"
-    
-    # Wrap with Syntax for markdown block style
-    syntax = Syntax(body, "bash", theme="monokai", word_wrap=True)
-    console.print(Panel(syntax, title="[dim]stderr[/dim]", border_style="dim red"))
+    _print_output_box(stderr, title="stderr", border="dim red", max_lines=max_lines)
 
 
 # ── Problem header ─────────────────────────────────────────────────────────

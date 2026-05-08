@@ -9,6 +9,9 @@ from .hardware import diagnose_hardware
 from .system_core import diagnose_system
 from .security import diagnose_security
 from .resources import diagnose_resources
+from .packages import diagnose_packages
+from .storage_optimization import diagnose_storage
+from .file_analysis import diagnose_files
 
 __all__ = [
     "diagnose_audio",
@@ -17,4 +20,7 @@ __all__ = [
     "diagnose_system",
     "diagnose_security",
     "diagnose_resources",
+    "diagnose_packages",
+    "diagnose_storage",
+    "diagnose_files",
 ]

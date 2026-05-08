@@ -1,4 +1,2 @@
-from .knowledge_base import KNOWN_BUGS
-from .heuristics import HeuristicMatcher, MatchedFix
-
-__all__ = ["KNOWN_BUGS", "HeuristicMatcher", "MatchedFix"]
+# Placeholder – knowledge_base and heuristics modules not yet implemented.
+__all__: list[str] = []

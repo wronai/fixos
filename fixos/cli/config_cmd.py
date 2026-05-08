@@ -152,15 +152,8 @@ def config_model(provider: str) -> None:
     click.echo()
 
 
-@config.command("provider")
-def config_provider() -> None:
-    """Interaktywnie wybierz providera LLM z listy."""
-    from fixos.config import FixOsConfig, PROVIDER_DEFAULTS
-
-    cfg = FixOsConfig.load()
-    free = [(n, d) for n, d in PROVIDER_DEFAULTS.items() if d.get("free_tier")]
-    paid = [(n, d) for n, d in PROVIDER_DEFAULTS.items() if not d.get("free_tier")]
-
+def _display_provider_menu(cfg, free, paid) -> dict[int, str]:
+    """Display provider menu and return number→name mapping."""
     click.echo(click.style("\n⚙️  Wybór providera LLM", fg="cyan", bold=True))
     click.echo(click.style(f"   Aktualny: {cfg.provider} ({cfg.model})", fg="white"))
     click.echo(click.style("─" * 60, fg="cyan"))
@@ -186,35 +179,56 @@ def config_provider() -> None:
     click.echo()
     click.echo("  [ 0] Anuluj")
     click.echo()
+    return num_map
 
+
+def _prompt_provider_choice(num_map: dict[int, str]) -> str | None:
+    """Prompt user to pick a provider; returns name or None if cancelled."""
     while True:
         raw = click.prompt(click.style("Wybierz numer providera", fg="cyan"), default="0")
         if raw == "0":
             click.echo(click.style("Anulowano.", fg="yellow"))
-            return
+            return None
         if raw.isdigit() and int(raw) in num_map:
-            chosen = num_map[int(raw)]
-            break
+            return num_map[int(raw)]
         click.echo(click.style(f"  ❌ Wpisz numer 0–{len(num_map)}", fg="red"))
 
-    pdef = PROVIDER_DEFAULTS[chosen]
+
+def _save_provider_choice(chosen: str, provider_defaults: dict) -> None:
+    """Save provider to .env and optionally prompt for API key."""
+    import os
+
+    pdef = provider_defaults[chosen]
     key_env = pdef.get("key_env")
 
     env_file = _set_env_key("LLM_PROVIDER", chosen)
     click.echo()
     click.echo(click.style(f"  ✅ Ustawiono LLM_PROVIDER={chosen}", fg="green"))
 
-    if chosen != "ollama" and key_env:
-        import os
-        existing_key = os.environ.get(key_env, "")
-        if not existing_key:
-            click.echo(click.style(f"  ℹ️  Pobierz klucz API: {pdef.get('key_url', '')}", fg="cyan"))
-            if click.confirm(click.style(f"  Chcesz teraz wpisać klucz {key_env}?", fg="yellow"), default=False):
-                key = click.prompt(f"  Wklej klucz {key_env}", hide_input=True)
-                if key.strip():
-                    _set_env_key(key_env, key.strip())
-                    click.echo(click.style(f"  ✅ Zapisano {key_env}", fg="green"))
+    if chosen != "ollama" and key_env and not os.environ.get(key_env, ""):
+        click.echo(click.style(f"  ℹ️  Pobierz klucz API: {pdef.get('key_url', '')}", fg="cyan"))
+        if click.confirm(click.style(f"  Chcesz teraz wpisać klucz {key_env}?", fg="yellow"), default=False):
+            key = click.prompt(f"  Wklej klucz {key_env}", hide_input=True)
+            if key.strip():
+                _set_env_key(key_env, key.strip())
+                click.echo(click.style(f"  ✅ Zapisano {key_env}", fg="green"))
 
     click.echo(click.style(f"  💾 Zapisano → {env_file}", fg="cyan"))
     click.echo(click.style(f"\n  Następny krok – wybierz model: fixos config model", fg="white"))
     click.echo()
+
+
+@config.command("provider")
+def config_provider() -> None:
+    """Interaktywnie wybierz providera LLM z listy."""
+    from fixos.config import FixOsConfig, PROVIDER_DEFAULTS
+
+    cfg = FixOsConfig.load()
+    free = [(n, d) for n, d in PROVIDER_DEFAULTS.items() if d.get("free_tier")]
+    paid = [(n, d) for n, d in PROVIDER_DEFAULTS.items() if not d.get("free_tier")]
+
+    num_map = _display_provider_menu(cfg, free, paid)
+    chosen = _prompt_provider_choice(num_map)
+    if chosen is None:
+        return
+    _save_provider_choice(chosen, PROVIDER_DEFAULTS)

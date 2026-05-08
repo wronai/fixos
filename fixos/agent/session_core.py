@@ -51,6 +51,31 @@ IMPORTANT RULES:
 - When disk usage is critically high (>90%), ALWAYS propose cleanup commands FIRST.
 - NEVER suggest package upgrades or installations BEFORE cleanup has freed sufficient space and been verified.
 
+PACKAGE ANALYSIS rules (when "packages" data is present):
+- For orphaned packages: propose `sudo dnf autoremove` or specific `sudo dnf remove <pkg>`.
+- For debug/devel packages on desktop: propose `sudo dnf remove '*-debuginfo*'` or specific removals.
+- For duplicate RPM+Flatpak apps: propose removing one version (prefer Flatpak for GUI apps).
+- For unused Flatpak runtimes: propose `flatpak uninstall --unused`.
+- For leaf packages not used in 90+ days: propose specific `sudo dnf remove <pkg>`.
+- Always warn user about dependencies that will be removed.
+
+STORAGE OPTIMIZATION rules (when "storage" data is present):
+- If unallocated disk space exists: propose `sudo growpart` or `sudo lvextend + resize2fs/xfs_growfs`.
+- For btrfs without compression: propose adding `compress=zstd:1` to fstab.
+- For old btrfs snapshots: propose `sudo snapper delete <id>` for specific old snapshots.
+- For swap/zram optimization: propose tuning swappiness or enabling zram.
+- If fstrim.timer is disabled on SSD: propose `sudo systemctl enable --now fstrim.timer`.
+
+FILE ANALYSIS rules (when "files" data is present):
+- For large files >200MB: list them and propose review/deletion commands.
+- For duplicate files: propose `fdupes -d` or `rdfind` commands for interactive dedup.
+- For media files (ebooks, mp3, mp4, images): propose organizing/archiving commands:
+  - `mkdir -p ~/Archive/{ebooks,muzyka,wideo,obrazy}` + `mv` commands.
+  - For compression: `tar czf ~/Archive/ebooks.tar.gz ~/path/to/ebooks/`.
+- For old downloads (>30 days): propose cleanup of ~/Downloads.
+- For trash: propose `rm -rf ~/.local/share/Trash/files/*`.
+- Always group suggestions by category (video, music, ebooks, archives, etc.).
+
 Always end with:
 ━━━ DOSTĘPNE AKCJE ━━━
 [1] Fix problem 1 – `command`
@@ -117,11 +142,9 @@ def _extract_co_robi(text: str) -> str:
     return m.group(1).strip() if m else ""
 
 
-def extract_fixes(reply: str) -> List[Tuple[str, str]]:
-    """Extract (command, comment) pairs from LLM reply."""
+def _pattern_strict_bold(reply: str) -> List[Tuple[str, str]]:
+    """Pattern 1: **Komenda:** `command` (strict: bold + backticks)."""
     fixes: List[Tuple[str, str]] = []
-
-    # Pattern 1: **Komenda:** `command` (strict: bold + backticks)
     for m in re.finditer(
         r"\*\*Komenda:\*\*\s*`([^`]+)`(?:[^\n]*?\*\*Co robi:\*\*\s*(.+?))?(?=\n|$)",
         reply, re.IGNORECASE,
@@ -129,45 +152,72 @@ def extract_fixes(reply: str) -> List[Tuple[str, str]]:
         cmd = m.group(1).strip()
         if cmd:
             fixes.append((cmd, (m.group(2) or "").strip()))
+    return fixes
 
-    # Pattern 2: Komenda: `command` (backticks, optional bold)
-    if not fixes:
-        for m in re.finditer(
-            r"\*{0,2}Komenda:\*{0,2}\s*`([^`]+)`",
-            reply, re.IGNORECASE,
-        ):
-            cmd = m.group(1).strip()
-            if cmd:
-                fixes.append((cmd, _extract_co_robi(reply[m.end():])))
 
-    # Pattern 3: Komenda: command (no backticks — command until Co robi:/next problem/section)
-    if not fixes:
-        for m in re.finditer(
-            r"\*{0,2}Komenda:\*{0,2}\s*"
-            r"(.+?)"
-            r"(?=\n\s*\*{0,2}Co robi:|\n[🔴🟡🟢]|\n━|\n─|\n\[[\dA-Z]|\Z)",
-            reply, re.IGNORECASE | re.DOTALL,
-        ):
-            cmd = re.sub(r"\s*\n\s*", " ", m.group(1)).strip()
-            if cmd:
-                fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+def _pattern_backticks(reply: str) -> List[Tuple[str, str]]:
+    """Pattern 2: Komenda: `command` (backticks, optional bold)."""
+    fixes: List[Tuple[str, str]] = []
+    for m in re.finditer(
+        r"\*{0,2}Komenda:\*{0,2}\s*`([^`]+)`",
+        reply, re.IGNORECASE,
+    ):
+        cmd = m.group(1).strip()
+        if cmd:
+            fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+    return fixes
 
-    # Fallback: → Fix: `command`
-    if not fixes:
-        for m in re.finditer(r"→\s*Fix:\s*`([^`]+)`", reply, re.IGNORECASE):
-            fixes.append((m.group(1).strip(), ""))
-    # Fallback: [N] ... `command`
+
+def _pattern_no_backticks(reply: str) -> List[Tuple[str, str]]:
+    """Pattern 3: Komenda: command (no backticks — until next section)."""
+    fixes: List[Tuple[str, str]] = []
+    for m in re.finditer(
+        r"\*{0,2}Komenda:\*{0,2}\s*"
+        r"(.+?)"
+        r"(?=\n\s*\*{0,2}Co robi:|\n[🔴🟡🟢]|\n━|\n─|\n\[[\dA-Z]|\Z)",
+        reply, re.IGNORECASE | re.DOTALL,
+    ):
+        cmd = re.sub(r"\s*\n\s*", " ", m.group(1)).strip()
+        if cmd:
+            fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+    return fixes
+
+
+def _pattern_fallbacks(reply: str) -> List[Tuple[str, str]]:
+    """Fallback patterns: → Fix, [N] command, EXEC."""
+    fixes: List[Tuple[str, str]] = []
+    for m in re.finditer(r"→\s*Fix:\s*`([^`]+)`", reply, re.IGNORECASE):
+        fixes.append((m.group(1).strip(), ""))
     if not fixes:
         for m in re.finditer(r"\[(\d+)\][^`\n]+`([^`]+)`", reply):
             fixes.append((m.group(2).strip(), f"Fix #{m.group(1)}"))
-    # Fallback: EXEC: `command`
     if not fixes:
         for m in re.finditer(r"EXEC:\s*`([^`]+)`", reply, re.IGNORECASE):
             fixes.append((m.group(1).strip(), ""))
+    return fixes
 
-    # Keep only actionable commands in menu; diagnostic-only commands are noise.
+
+def _deduplicate(fixes: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+    """Remove diagnostic-only commands and deduplicate."""
     filtered = [(cmd, comment) for cmd, comment in fixes if not _is_diagnostic_only_command(cmd)]
-    return filtered
+    seen: set[str] = set()
+    unique: List[Tuple[str, str]] = []
+    for cmd, comment in filtered:
+        if cmd not in seen:
+            seen.add(cmd)
+            unique.append((cmd, comment))
+    return unique
+
+
+def extract_fixes(reply: str) -> List[Tuple[str, str]]:
+    """Extract (command, comment) pairs from LLM reply."""
+    fixes = (
+        _pattern_strict_bold(reply)
+        or _pattern_backticks(reply)
+        or _pattern_no_backticks(reply)
+        or _pattern_fallbacks(reply)
+    )
+    return _deduplicate(fixes)
 
 
 def extract_search_topic(llm_reply: str) -> str:

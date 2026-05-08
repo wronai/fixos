@@ -14,6 +14,9 @@ from .checks import (
     diagnose_system,
     diagnose_security,
     diagnose_resources,
+    diagnose_packages,
+    diagnose_storage,
+    diagnose_files,
 )
 
 # Module registry for diagnostic orchestration
@@ -24,6 +27,9 @@ DIAGNOSTIC_MODULES = {
     "hardware": ("🔧 Sprzęt (kamera/touchpad/ACPI/DMI)", diagnose_hardware),
     "security": ("🔒 Bezpieczeństwo (firewall/porty/SELinux/SSH)", diagnose_security),
     "resources": ("📊 Zasoby (dysk/pamięć/procesy/autostart)", diagnose_resources),
+    "packages": ("📦 Pakiety (nieużywane/osierocone/duplikaty)", diagnose_packages),
+    "storage": ("💾 Dyski/partycje (resize/btrfs/optymalizacja)", diagnose_storage),
+    "files": ("📂 Pliki (duże/duplikaty/media/archiwizacja)", diagnose_files),
 }
 
 
@@ -69,5 +75,8 @@ __all__ = [
     "diagnose_system",
     "diagnose_security",
     "diagnose_resources",
+    "diagnose_packages",
+    "diagnose_storage",
+    "diagnose_files",
     "DIAGNOSTIC_MODULES",
 ]

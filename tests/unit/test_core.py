@@ -272,10 +272,41 @@ class TestExtractFixes:
         fixes = extract_fixes(reply)
         assert len(fixes) == 0
 
+    def test_duplicate_commands_deduplicated(self):
+        """Same command for multiple problems should appear only once."""
+        from fixos.agent.session_core import extract_fixes
+        reply = (
+            "🟡 Problem 3: pending updates\n"
+            "Komenda: sudo dnf upgrade -y\n"
+            "Co robi: updates packages\n"
+            "🟡 Problem 4: security patches\n"
+            "Komenda: sudo dnf upgrade -y\n"
+            "Co robi: same\n"
+        )
+        fixes = extract_fixes(reply)
+        cmds = [cmd for cmd, _ in fixes]
+        assert cmds.count("sudo dnf upgrade -y") == 1
+
     def test_empty_reply(self):
         from fixos.agent.session_core import extract_fixes
         assert extract_fixes("") == []
         assert extract_fixes("No problems found.") == []
+
+
+class TestAllModulesRegistered:
+    """Verify all 9 diagnostic modules are registered."""
+
+    def test_all_nine_modules_present(self):
+        from fixos.diagnostics.system_checks import DIAGNOSTIC_MODULES
+        expected = {"system", "audio", "thumbnails", "hardware",
+                    "security", "resources", "packages", "storage", "files"}
+        assert set(DIAGNOSTIC_MODULES.keys()) == expected
+
+    def test_all_modules_callable(self):
+        from fixos.diagnostics.system_checks import DIAGNOSTIC_MODULES
+        for key, (desc, fn) in DIAGNOSTIC_MODULES.items():
+            assert callable(fn), f"Module {key} function is not callable"
+            assert isinstance(desc, str) and len(desc) > 0, f"Module {key} has empty description"
 
 
 class TestInteractiveBlocker:

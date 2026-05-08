@@ -13,13 +13,18 @@ from fixos.cli.output_formatter import OutputFormatter
 @click.option("--thumbnails", "modules", flag_value="thumbnails", help="Tylko podglądy plików")
 @click.option("--hardware", "modules", flag_value="hardware", help="Tylko sprzęt")
 @click.option("--system", "modules", flag_value="system", help="Tylko system")
+@click.option("--security", "modules", flag_value="security", help="Tylko bezpieczeństwo")
+@click.option("--resources", "modules", flag_value="resources", help="Tylko zasoby (CPU/RAM/procesy)")
+@click.option("--packages", "modules", flag_value="packages", help="Tylko pakiety (nieużywane/osierocone)")
+@click.option("--storage", "modules", flag_value="storage", help="Tylko dyski/partycje (resize/optymalizacja)")
+@click.option("--files", "modules", flag_value="files", help="Tylko pliki (duże/duplikaty/media)")
 @click.option("--all", "modules", flag_value="all", default=True, help="Wszystkie moduły (domyślnie)")
 @add_shared_options
 @click.option("--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos")
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
 @click.option("--modules-list", "-M", "modules_csv", default=None,
-              help="Moduły diagnostyki (CSV): audio,thumbnails,hardware,system,security,resources")
+              help="Moduły diagnostyki (CSV): audio,thumbnails,hardware,system,security,resources,packages,storage,files")
 def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
          dry_run: bool, interactive: bool, json_output: bool, yaml_output: bool,
          llm_fallback: bool, profile: str, modules_csv: str) -> None:

@@ -9,9 +9,7 @@ import subprocess
 from typing import Dict, Any, List
 from ..constants import (
     DEFAULT_COMMAND_TIMEOUT,
-    SIZE_THRESHOLD_GB_DEFAULT,
 )
-
 
 
 class ServiceCleaner:
@@ -26,7 +24,9 @@ class ServiceCleaner:
         services = self.scanner.scan_all_services()
 
         if selected_services:
-            services = [s for s in services if s.service_type.value in selected_services]
+            services = [
+                s for s in services if s.service_type.value in selected_services
+            ]
 
         total_size_gb = sum(s.size_gb for s in services)
         safe_services = [s for s in services if s.safe_to_cleanup]
@@ -45,7 +45,9 @@ class ServiceCleaner:
 
         return plan
 
-    def cleanup_service(self, service_type: str, dry_run: bool = False) -> Dict[str, Any]:
+    def cleanup_service(
+        self, service_type: str, dry_run: bool = False
+    ) -> Dict[str, Any]:
         """Execute cleanup for a specific service."""
         from .service_scanner import ServiceType
 
@@ -81,7 +83,7 @@ class ServiceCleaner:
                 shell=True,
                 capture_output=True,
                 text=True,
-                timeout=DEFAULT_COMMAND_TIMEOUT
+                timeout=DEFAULT_COMMAND_TIMEOUT,
             )
 
             # Check new size
@@ -138,7 +140,9 @@ class ServiceCleaner:
                 "Service Worker",
             }
 
-            if normalized_path == chrome_cache_root or normalized_path.startswith(f"{chrome_cache_root}/"):
+            if normalized_path == chrome_cache_root or normalized_path.startswith(
+                f"{chrome_cache_root}/"
+            ):
                 return True
 
             if os.path.basename(normalized_path) in chrome_cache_names:
@@ -148,21 +152,34 @@ class ServiceCleaner:
 
         safe_services = {
             # Package caches (can be re-downloaded)
-            ServiceType.NPM, ServiceType.YARN, ServiceType.PNPM,
-            ServiceType.PIP, ServiceType.POETRY,
-            ServiceType.GRADLE, ServiceType.MAVEN, ServiceType.CARGO,
+            ServiceType.NPM,
+            ServiceType.YARN,
+            ServiceType.PNPM,
+            ServiceType.PIP,
+            ServiceType.POETRY,
+            ServiceType.GRADLE,
+            ServiceType.MAVEN,
+            ServiceType.CARGO,
             ServiceType.GO,
             # System caches
-            ServiceType.APT, ServiceType.DNF, ServiceType.PACMAN,
-            ServiceType.YUM, ServiceType.ZYPPER,
+            ServiceType.APT,
+            ServiceType.DNF,
+            ServiceType.PACMAN,
+            ServiceType.YUM,
+            ServiceType.ZYPPER,
             # Browser caches
-            ServiceType.FIREFOX, ServiceType.EDGE,
+            ServiceType.FIREFOX,
+            ServiceType.EDGE,
             # App caches
-            ServiceType.THUMBNAILS, ServiceType.LOGS,
+            ServiceType.THUMBNAILS,
+            ServiceType.LOGS,
             # Cloud CLI caches
-            ServiceType.AWS, ServiceType.GCLOUD, ServiceType.AZURE,
+            ServiceType.AWS,
+            ServiceType.GCLOUD,
+            ServiceType.AZURE,
             # IaC caches
-            ServiceType.TERRAFORM, ServiceType.PULUMI,
+            ServiceType.TERRAFORM,
+            ServiceType.PULUMI,
         }
         return service_type in safe_services
 
@@ -170,66 +187,74 @@ class ServiceCleaner:
     def get_cleanup_hints(service_type, size_gb: float) -> List[str]:
         """Get helpful hints for cleaning services that require manual review."""
         from .service_scanner import ServiceType
-        
+
         hints = []
-        
+
         if service_type == ServiceType.FLATPAK:
-            hints.extend([
-                "🔥 FLATPAK CLEANUP (most common solution):",
-                "  flatpak uninstall --unused -y",
-                "  # Safe: removes unused runtimes and old versions",
-                "  # Often recovers 10-50 GB",
-                "",
-                "  flatpak repair",
-                "  # Optional: repairs Flatpak installation",
-                "",
-                "📊 To investigate further:",
-                "  du -h /var/lib/flatpak | sort -h | tail -20",
-                "  # Shows largest directories",
-                "",
-                "  flatpak list --app --columns=name,size",
-                "  # Lists apps with sizes",
-                "",
-                "⚠️  Note: Runtime removal won't affect used apps",
-                "    Each app depends on specific runtime versions",
-                "    Unused runtimes accumulate over time",
-            ])
-            
-            if size_gb > 50:
-                hints.extend([
+            hints.extend(
+                [
+                    "🔥 FLATPAK CLEANUP (most common solution):",
+                    "  flatpak uninstall --unused -y",
+                    "  # Safe: removes unused runtimes and old versions",
+                    "  # Often recovers 10-50 GB",
                     "",
-                    f"💡 With {size_gb:.1f} GB used, you likely have:",
-                    "   - Multiple GNOME runtime versions (2-3 GB each)",
-                    "   - freedesktop runtime versions",
-                    "   - Old app versions",
-                    "   - Possibly unused SDKs",
-                ])
-        
+                    "  flatpak repair",
+                    "  # Optional: repairs Flatpak installation",
+                    "",
+                    "📊 To investigate further:",
+                    "  du -h /var/lib/flatpak | sort -h | tail -20",
+                    "  # Shows largest directories",
+                    "",
+                    "  flatpak list --app --columns=name,size",
+                    "  # Lists apps with sizes",
+                    "",
+                    "⚠️  Note: Runtime removal won't affect used apps",
+                    "    Each app depends on specific runtime versions",
+                    "    Unused runtimes accumulate over time",
+                ]
+            )
+
+            if size_gb > 50:
+                hints.extend(
+                    [
+                        "",
+                        f"💡 With {size_gb:.1f} GB used, you likely have:",
+                        "   - Multiple GNOME runtime versions (2-3 GB each)",
+                        "   - freedesktop runtime versions",
+                        "   - Old app versions",
+                        "   - Possibly unused SDKs",
+                    ]
+                )
+
         elif service_type == ServiceType.DOCKER:
-            hints.extend([
-                "🐳 DOCKER CLEANUP:",
-                "  docker system prune -a -f",
-                "  # Removes all unused images, containers, networks",
-                "",
-                "  docker volume prune -f",
-                "  # Removes unused volumes (check first!)",
-                "",
-                "📊 Check usage:",
-                "  docker system df",
-            ])
-        
+            hints.extend(
+                [
+                    "🐳 DOCKER CLEANUP:",
+                    "  docker system prune -a -f",
+                    "  # Removes all unused images, containers, networks",
+                    "",
+                    "  docker volume prune -f",
+                    "  # Removes unused volumes (check first!)",
+                    "",
+                    "📊 Check usage:",
+                    "  docker system df",
+                ]
+            )
+
         elif service_type == ServiceType.OLLAMA:
-            hints.extend([
-                "🤖 OLLAMA CLEANUP:",
-                "  ollama list",
-                "  # See installed models",
-                "",
-                "  ollama rm <model_name>",
-                "  # Remove specific model",
-                "",
-                "💡 Models can be 5-50 GB each",
-            ])
-        
+            hints.extend(
+                [
+                    "🤖 OLLAMA CLEANUP:",
+                    "  ollama list",
+                    "  # See installed models",
+                    "",
+                    "  ollama rm <model_name>",
+                    "  # Remove specific model",
+                    "",
+                    "💡 Models can be 5-50 GB each",
+                ]
+            )
+
         return hints
 
     @staticmethod
@@ -334,7 +359,7 @@ class ServiceCleaner:
             ServiceType.DART: "rm -rf ~/.pub-cache",
             ServiceType.ANDROID: "rm -rf ~/.android/build-cache ~/Android/Sdk/build-tools/*/preview",
             # System packages
-            ServiceType.SNAP: "snap list --all | awk '/disabled/{print $1, $3}' | while read snapname revision; do sudo snap remove \"$snapname\" --revision=\"$revision\"; done",
+            ServiceType.SNAP: 'snap list --all | awk \'/disabled/{print $1, $3}\' | while read snapname revision; do sudo snap remove "$snapname" --revision="$revision"; done',
             ServiceType.FLATPAK: "flatpak uninstall --unused -y && flatpak repair",
             ServiceType.APPIMAGE: "rm -rf ~/.local/share/AppImage ~/.cache/AppImage",
             ServiceType.APT: "sudo apt-get clean && sudo apt-get autoclean",
@@ -395,7 +420,9 @@ class ServiceCleaner:
             "ShaderCache",
             "Service Worker",
         ]
-        find_expr = " -o ".join(f"-name {shlex.quote(name)}" for name in cache_dir_names)
+        find_expr = " -o ".join(
+            f"-name {shlex.quote(name)}" for name in cache_dir_names
+        )
         return (
             "rm -rf ~/.cache/google-chrome && "
             f"find {quoted_path} -type d \\( {find_expr} \\) -prune -exec rm -rf {{}} +"
@@ -471,4 +498,6 @@ class ServiceCleaner:
             ServiceType.TRASH: "du -sh ~/.local/share/Trash 2>/dev/null || du -sh ~/.Trash",
             ServiceType.LOGS: "find ~/.cache/log ~/.local/state /var/log ~/.var/log 2>/dev/null -name '*.log' | wc -l && du -sh ~/.cache/log 2>/dev/null || du -sh /var/log 2>/dev/null",
         }
-        return previews.get(service_type, f"du -sh {path} 2>/dev/null && ls -la {path} | head -20")
+        return previews.get(
+            service_type, f"du -sh {path} 2>/dev/null && ls -la {path} | head -20"
+        )

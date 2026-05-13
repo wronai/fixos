@@ -42,8 +42,10 @@ class WatchDaemon:
     def run(self):
         """Główna pętla monitorowania."""
         mods = ", ".join(self.modules) if self.modules else "all"
-        print(f"fixOS watch: co {self.interval}s, moduły: {mods}, alert: {self.alert_on.value}")
-        print(f"Naciśnij Ctrl+C aby zakończyć.\n")
+        print(
+            f"fixOS watch: co {self.interval}s, moduły: {mods}, alert: {self.alert_on.value}"
+        )
+        print("Naciśnij Ctrl+C aby zakończyć.\n")
 
         try:
             while self._running:
@@ -66,7 +68,9 @@ class WatchDaemon:
                     total_findings = sum(len(r.findings) for r in results)
                     print(f"  OK — {total_findings} findings, brak nowych alertów.")
 
-                if self._running and (not self.max_iterations or self._iteration < self.max_iterations):
+                if self._running and (
+                    not self.max_iterations or self._iteration < self.max_iterations
+                ):
                     time.sleep(self.interval)
 
         except KeyboardInterrupt:
@@ -110,7 +114,8 @@ class WatchDaemon:
             elif system == "Darwin":
                 subprocess.run(
                     [
-                        "osascript", "-e",
+                        "osascript",
+                        "-e",
                         f'display notification "{message[:256]}" with title "fixOS"',
                     ],
                     capture_output=True,

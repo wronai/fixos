@@ -15,7 +15,7 @@ from .file_analysis import diagnose_files
 
 __all__ = [
     "diagnose_audio",
-    "diagnose_thumbnails", 
+    "diagnose_thumbnails",
     "diagnose_hardware",
     "diagnose_system",
     "diagnose_security",

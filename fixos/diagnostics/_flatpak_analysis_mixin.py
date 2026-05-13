@@ -1,10 +1,11 @@
 """Analysis methods for FlatpakAnalyzer (load refs, find unused/orphaned/duplicates, repo size)."""
+
 from __future__ import annotations
 
 import json
 import os
 import subprocess
-from typing import Dict, List, Optional, Any
+from typing import Dict
 
 from fixos.constants import (
     FLATPAK_BLOAT_RATIO_CRITICAL,
@@ -21,7 +22,9 @@ class _FlatpakAnalysisMixin:
         from fixos.diagnostics.flatpak_analyzer import FlatpakItemInfo, FlatpakItemType
 
         # Get installed apps with details
-        apps_json = self._run_flatpak_command(["list", "--app", "--columns=all", "--json"])
+        apps_json = self._run_flatpak_command(
+            ["list", "--app", "--columns=all", "--json"]
+        )
         if apps_json:
             try:
                 apps_data = json.loads(apps_json)
@@ -46,7 +49,9 @@ class _FlatpakAnalysisMixin:
                 pass
 
         # Get installed runtimes with details
-        runtimes_json = self._run_flatpak_command(["list", "--runtime", "--columns=all", "--json"])
+        runtimes_json = self._run_flatpak_command(
+            ["list", "--runtime", "--columns=all", "--json"]
+        )
         if runtimes_json:
             try:
                 runtimes_data = json.loads(runtimes_json)
@@ -94,7 +99,9 @@ class _FlatpakAnalysisMixin:
         for runtime in self.installed_runtimes:
             if runtime.ref not in required_refs:
                 runtime.is_used = False
-                runtime.description = f"Unused runtime: {runtime.name} (not required by any app)"
+                runtime.description = (
+                    f"Unused runtime: {runtime.name} (not required by any app)"
+                )
                 self.unused_runtimes.append(runtime)
 
     @staticmethod
@@ -118,6 +125,7 @@ class _FlatpakAnalysisMixin:
 
         try:
             import glob
+
             var_app_path = os.path.expanduser("~/.var/app")
             if not os.path.exists(var_app_path):
                 return
@@ -138,16 +146,18 @@ class _FlatpakAnalysisMixin:
                     continue
                 total_size = self._dir_total_size(data_dir)
                 if total_size > 0:
-                    self.leftover_data.append(FlatpakItemInfo(
-                        ref=f"{app_name}/data",
-                        name=app_name,
-                        item_type=FlatpakItemType.DATA,
-                        size_bytes=total_size,
-                        size_human=self._format_size(total_size),
-                        is_used=False,
-                        description=f"Leftover data from uninstalled app: {app_name}",
-                        cleanup_command=f"rm -rf {data_dir}",
-                    ))
+                    self.leftover_data.append(
+                        FlatpakItemInfo(
+                            ref=f"{app_name}/data",
+                            name=app_name,
+                            item_type=FlatpakItemType.DATA,
+                            size_bytes=total_size,
+                            size_human=self._format_size(total_size),
+                            is_used=False,
+                            description=f"Leftover data from uninstalled app: {app_name}",
+                            cleanup_command=f"rm -rf {data_dir}",
+                        )
+                    )
         except Exception:
             pass
 
@@ -162,7 +172,9 @@ class _FlatpakAnalysisMixin:
         for app in self.installed_apps:
             if app.origin and app.origin not in available_remotes:
                 app.is_used = False
-                app.description = f"Orphaned app: {app.name} (origin '{app.origin}' not available)"
+                app.description = (
+                    f"Orphaned app: {app.name} (origin '{app.origin}' not available)"
+                )
                 self.orphaned_apps.append(app)
 
     def _find_duplicate_apps(self):
@@ -170,7 +182,7 @@ class _FlatpakAnalysisMixin:
         app_groups: Dict[str, list] = {}
 
         for app in self.installed_apps:
-            base_name = app.ref.split('/')[0] if '/' in app.ref else app.ref
+            base_name = app.ref.split("/")[0] if "/" in app.ref else app.ref
 
             if base_name not in app_groups:
                 app_groups[base_name] = []
@@ -179,16 +191,18 @@ class _FlatpakAnalysisMixin:
         for base_name, apps in app_groups.items():
             if len(apps) > 1:
                 total_size = sum(a.size_bytes for a in apps)
-                versions = [a.branch or 'unknown' for a in apps]
+                versions = [a.branch or "unknown" for a in apps]
 
-                self.duplicate_apps.append({
-                    "name": base_name,
-                    "count": len(apps),
-                    "versions": versions,
-                    "total_size": total_size,
-                    "apps": [a.to_dict() for a in apps],
-                    "cleanup_hint": f"Możesz usunąć starsze wersje: flatpak uninstall {base_name}",
-                })
+                self.duplicate_apps.append(
+                    {
+                        "name": base_name,
+                        "count": len(apps),
+                        "versions": versions,
+                        "total_size": total_size,
+                        "apps": [a.to_dict() for a in apps],
+                        "cleanup_hint": f"Możesz usunąć starsze wersje: flatpak uninstall {base_name}",
+                    }
+                )
 
     @staticmethod
     def _get_dir_size_du(path: str) -> int:
@@ -196,7 +210,9 @@ class _FlatpakAnalysisMixin:
         try:
             result = subprocess.run(
                 ["du", "-sb", path],
-                capture_output=True, text=True, timeout=FAST_COMMAND_TIMEOUT,
+                capture_output=True,
+                text=True,
+                timeout=FAST_COMMAND_TIMEOUT,
             )
             if result.returncode == 0:
                 return int(result.stdout.split()[0])
@@ -255,7 +271,10 @@ class _FlatpakAnalysisMixin:
         if actual_disk_usage > 0 and total_reported_size > 0:
             ratio = actual_disk_usage / total_reported_size
 
-            if ratio > FLATPAK_BLOAT_RATIO_CRITICAL and (actual_disk_usage - expected_max_size) > 1024**3:
+            if (
+                ratio > FLATPAK_BLOAT_RATIO_CRITICAL
+                and (actual_disk_usage - expected_max_size) > 1024**3
+            ):
                 bloat_detected = True
                 wasted_size = actual_disk_usage - expected_max_size
             elif ratio > 2.0:
@@ -277,7 +296,9 @@ class _FlatpakAnalysisMixin:
             "wasted_size": wasted_size,
             "wasted_size_human": self._format_size(wasted_size),
             "recommendation": "flatpak repair --vacuum" if bloat_detected else None,
-            "note": self._get_flatpak_size_note(ratio, actual_disk_usage, total_reported_size),
+            "note": self._get_flatpak_size_note(
+                ratio, actual_disk_usage, total_reported_size
+            ),
         }
 
     def _get_flatpak_size_note(self, ratio: float, actual: int, reported: int) -> str:

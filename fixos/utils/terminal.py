@@ -29,28 +29,33 @@ from rich.theme import Theme
 
 # ── Shared console ─────────────────────────────────────────────────────────
 
-_theme = Theme({
-    "critical": "bold red",
-    "warning":  "bold yellow",
-    "info":     "bold green",
-    "cmd":      "bold cyan",
-    "dim":      "dim",
-    "stdout":   "green",
-    "stderr":   "red",
-})
+_theme = Theme(
+    {
+        "critical": "bold red",
+        "warning": "bold yellow",
+        "info": "bold green",
+        "cmd": "bold cyan",
+        "dim": "dim",
+        "stdout": "green",
+        "stderr": "red",
+    }
+)
 
 console = Console(theme=_theme, highlight=False)
 
 
 # ── Legacy _C stub (backward compat – callers that still use _C.RED etc.) ──
 
+
 class _C:
     """No-op stubs – kept so existing callers don't break at import time."""
+
     RED = GREEN = YELLOW = BLUE = MAGENTA = CYAN = WHITE = ""
     BOLD = DIM = RESET = BG_DARK = ""
 
 
 # ── Inline colorization (plain-text passthrough for rich) ──────────────────
+
 
 def colorize(line: str) -> str:
     """Return line unchanged – rich handles markup in render_md()."""
@@ -59,14 +64,15 @@ def colorize(line: str) -> str:
 
 # ── Markdown renderer ──────────────────────────────────────────────────────
 
+
 def _is_divider_line(stripped: str) -> bool:
     """Return True if the stripped line is a section divider (━━━ / === / ---)."""
-    return bool(re.match(r'^[━═─]{3,}', stripped))
+    return bool(re.match(r"^[━═─]{3,}", stripped))
 
 
 def _handle_divider_line(stripped: str) -> None:
     """Print a rich Rule for a section divider line."""
-    inner = re.sub(r'^[━═─\s]+|[━═─\s]+$', '', stripped)
+    inner = re.sub(r"^[━═─\s]+|[━═─\s]+$", "", stripped)
     if inner:
         console.print(Rule(f"[bold cyan]{inner}[/bold cyan]", style="cyan"))
     else:
@@ -137,7 +143,11 @@ def render_md(text: str) -> None:
                     line_numbers=False,
                     word_wrap=True,
                 )
-                console.print(Panel(syntax, title=f"[dim]{code_lang}[/dim]", border_style="dim cyan"))
+                console.print(
+                    Panel(
+                        syntax, title=f"[dim]{code_lang}[/dim]", border_style="dim cyan"
+                    )
+                )
                 code_lines = []
             continue
 
@@ -161,7 +171,7 @@ def render_md(text: str) -> None:
             continue
 
         # ── Action items [N] / [A] / [S] / [Q] ────────────────────
-        if re.match(r'^\s*\[([\dASDQ?!])\]', line):
+        if re.match(r"^\s*\[([\dASDQ?!])\]", line):
             _flush_md()
             console.print(Text(line, style="bold yellow"))
             continue
@@ -174,6 +184,7 @@ def render_md(text: str) -> None:
 
 # ── Command preview box ────────────────────────────────────────────────────
 
+
 def print_cmd_block(cmd: str, comment: str = "", dry_run: bool = False) -> None:
     """Print a framed command preview panel."""
     label = "DRY-RUN" if dry_run else "🔧 KOMENDA DO WYKONANIA"
@@ -182,13 +193,21 @@ def print_cmd_block(cmd: str, comment: str = "", dry_run: bool = False) -> None:
     content = syntax
     if comment:
         from rich.console import Group
+
         note = Text(f"📝 Co robi: {comment}", style="dim")
         content = Group(syntax, note)
     console.print()
-    console.print(Panel(content, title=f"[bold {border}]{label}[/bold {border}]", border_style=border))
+    console.print(
+        Panel(
+            content,
+            title=f"[bold {border}]{label}[/bold {border}]",
+            border_style=border,
+        )
+    )
 
 
 # ── Result boxes ───────────────────────────────────────────────────────────
+
 
 def _print_output_box(text: str, *, title: str, border: str, max_lines: int) -> None:
     """Shared helper for stdout/stderr panels."""
@@ -215,21 +234,21 @@ def print_stderr_box(stderr: str, max_lines: int = 15) -> None:
 
 SEVERITY_COLOR = {
     "critical": "red",
-    "warning":  "yellow",
-    "info":     "green",
+    "warning": "yellow",
+    "info": "green",
 }
 SEVERITY_ICON = {
     "critical": "🔴",
-    "warning":  "🟡",
-    "info":     "🟢",
+    "warning": "🟡",
+    "info": "🟢",
 }
 STATUS_ICON = {
-    "pending":     "⏳",
+    "pending": "⏳",
     "in_progress": "🔄",
-    "resolved":    "✅",
-    "failed":      "❌",
-    "blocked":     "🚫",
-    "skipped":     "⏭️ ",
+    "resolved": "✅",
+    "failed": "❌",
+    "blocked": "🚫",
+    "skipped": "⏭️ ",
 }
 
 
@@ -259,6 +278,7 @@ def print_problem_header(
 
 
 # ── Graph tree renderer ────────────────────────────────────────────────────
+
 
 def render_tree_colored(nodes: dict, execution_order: list[str]) -> str:
     """
@@ -304,6 +324,7 @@ def render_tree_colored(nodes: dict, execution_order: list[str]) -> str:
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
+
 
 def _wrap(text: str, width: int) -> list[str]:
     """Simple word-wrap."""

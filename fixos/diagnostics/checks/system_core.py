@@ -7,7 +7,14 @@ from datetime import datetime
 from typing import Any
 import platform
 
-from ._shared import _cmd, _psutil_required, IS_LINUX, IS_WINDOWS, IS_MAC, psutil_module as psutil
+from ._shared import (
+    _cmd,
+    _psutil_required,
+    IS_LINUX,
+    IS_WINDOWS,
+    IS_MAC,
+    psutil_module as psutil,
+)
 from ...constants import (
     MAX_PKG_HISTORY,
     MAX_LOG_ERRORS,
@@ -28,7 +35,9 @@ def _collect_os_info() -> tuple[str, str, str]:
         return (
             _cmd('powershell -Command "(Get-WmiObject Win32_OperatingSystem).Caption"'),
             _cmd('powershell -Command "(Get-WmiObject Win32_OperatingSystem).Version"'),
-            _cmd('powershell -Command "((Get-Date)-(gcim Win32_OperatingSystem).LastBootUpTime).ToString()"'),
+            _cmd(
+                'powershell -Command "((Get-Date)-(gcim Win32_OperatingSystem).LastBootUpTime).ToString()"'
+            ),
         )
     return (
         _cmd("sw_vers 2>/dev/null"),
@@ -45,31 +54,51 @@ def _collect_platform_details() -> dict[str, Any]:
                 "dnf check-update -q 2>/dev/null | grep -c '^[A-Za-z]' || "
                 "apt list --upgradable 2>/dev/null | grep -c upgradable || echo '0'"
             ),
-            "pkg_history": _cmd(f"dnf history list --last={MAX_PKG_HISTORY} 2>/dev/null || true"),
+            "pkg_history": _cmd(
+                f"dnf history list --last={MAX_PKG_HISTORY} 2>/dev/null || true"
+            ),
             "systemctl_failed": _cmd("systemctl --failed --no-legend 2>/dev/null"),
-            "journal_errors_24h": _cmd(f"journalctl -p err -n {MAX_LOG_ERRORS} --no-pager --since '24 hours ago' 2>/dev/null"),
-            "dmesg_errors": _cmd(f"dmesg --level=err,crit,emerg --notime 2>/dev/null | tail -{MAX_DMESG_ERRORS}"),
+            "journal_errors_24h": _cmd(
+                f"journalctl -p err -n {MAX_LOG_ERRORS} --no-pager --since '24 hours ago' 2>/dev/null"
+            ),
+            "dmesg_errors": _cmd(
+                f"dmesg --level=err,crit,emerg --notime 2>/dev/null | tail -{MAX_DMESG_ERRORS}"
+            ),
             "selinux": _cmd("getenforce 2>/dev/null || echo 'N/A'"),
             "firewall": _cmd("firewall-cmd --state 2>/dev/null || echo 'N/A'"),
         }
     if IS_WINDOWS:
         return {
-            "updates_pending": _cmd('powershell -Command "(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().Search(\"IsInstalled=0\").Updates.Count" 2>nul || echo "N/A"'),
-            "services_failed": _cmd('powershell -Command "Get-Service | Where-Object{$_.Status -eq \"Stopped\" -and $_.StartType -eq \"Automatic\"} | Select-Object Name | Format-List"'),
-            "event_errors": _cmd('powershell -Command "Get-EventLog -LogName System -EntryType Error -Newest 10 2>$null | Select-Object TimeGenerated,Source,Message | Format-List"'),
+            "updates_pending": _cmd(
+                'powershell -Command "(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().Search("IsInstalled=0").Updates.Count" 2>nul || echo "N/A"'
+            ),
+            "services_failed": _cmd(
+                'powershell -Command "Get-Service | Where-Object{$_.Status -eq "Stopped" -and $_.StartType -eq "Automatic"} | Select-Object Name | Format-List"'
+            ),
+            "event_errors": _cmd(
+                'powershell -Command "Get-EventLog -LogName System -EntryType Error -Newest 10 2>$null | Select-Object TimeGenerated,Source,Message | Format-List"'
+            ),
             "firewall": _cmd("netsh advfirewall show allprofiles state 2>nul"),
         }
     return {
-        "updates_pending": _cmd("softwareupdate -l 2>/dev/null | grep -c '\\*' || echo '0'"),
-        "launchd_failed": _cmd(f"launchctl list 2>/dev/null | grep -v '^-' | awk '$1 != 0 {{print}}' | head -{MAX_TOP_PROCESSES}"),
-        "firewall": _cmd("defaults read /Library/Preferences/com.apple.alf globalstate 2>/dev/null"),
+        "updates_pending": _cmd(
+            "softwareupdate -l 2>/dev/null | grep -c '\\*' || echo '0'"
+        ),
+        "launchd_failed": _cmd(
+            f"launchctl list 2>/dev/null | grep -v '^-' | awk '$1 != 0 {{print}}' | head -{MAX_TOP_PROCESSES}"
+        ),
+        "firewall": _cmd(
+            "defaults read /Library/Preferences/com.apple.alf globalstate 2>/dev/null"
+        ),
     }
 
 
 def diagnose_system() -> dict[str, Any]:
     """System metrics – cross-platform: CPU, RAM, disks, processes."""
     if not _psutil_required():
-        return {"error": "psutil is required for system diagnostics but is not installed"}
+        return {
+            "error": "psutil is required for system diagnostics but is not installed"
+        }
 
     vm = psutil.virtual_memory()
     sw = psutil.swap_memory()
@@ -79,7 +108,8 @@ def diagnose_system() -> dict[str, Any]:
         try:
             u = psutil.disk_usage(p.mountpoint)
             disks[p.mountpoint] = {
-                "device": p.device, "fstype": p.fstype,
+                "device": p.device,
+                "fstype": p.fstype,
                 "total_gb": round(u.total / 1024**3, 2),
                 "used_gb": round(u.used / 1024**3, 2),
                 "free_gb": round(u.free / 1024**3, 2),

@@ -15,6 +15,7 @@ import os
 @dataclass
 class SystemInfo:
     """Complete system information snapshot."""
+
     # OS
     os_family: str = "linux"
     distro: str = "unknown"
@@ -69,7 +70,9 @@ class SystemDetector:
         info.has_flatpak = shutil.which("flatpak") is not None
         info.has_snap = shutil.which("snap") is not None
         info.has_brew = shutil.which("brew") is not None
-        info.has_pip = shutil.which("pip3") is not None or shutil.which("pip") is not None
+        info.has_pip = (
+            shutil.which("pip3") is not None or shutil.which("pip") is not None
+        )
         info.has_cargo = shutil.which("cargo") is not None
         info.has_npm = shutil.which("npm") is not None
         info.installed_packages = self._get_installed_packages(info.pkg_manager)
@@ -150,7 +153,7 @@ class SystemDetector:
         """Detect display server (Wayland/X11)."""
         wayland_display = os.environ.get("WAYLAND_DISPLAY", "")
         display = os.environ.get("DISPLAY", "")
-        
+
         if wayland_display:
             return "wayland"
         elif display:
@@ -165,16 +168,20 @@ class SystemDetector:
                 ["lspci"], capture_output=True, text=True, timeout=5
             )
             lspci_output = result.stdout.lower()
-            
+
             if "nvidia" in lspci_output:
                 return "nvidia"
-            elif "amd" in lspci_output or "radeon" in lspci_output or "advanced micro devices" in lspci_output:
+            elif (
+                "amd" in lspci_output
+                or "radeon" in lspci_output
+                or "advanced micro devices" in lspci_output
+            ):
                 return "amd"
             elif "intel" in lspci_output:
                 return "intel"
         except Exception:
             pass
-        
+
         # Fallback: check /sys/class/drm
         try:
             for card in Path("/sys/class/drm").glob("card*"):
@@ -189,7 +196,7 @@ class SystemDetector:
                         return "intel"
         except Exception:
             pass
-        
+
         return "unknown"
 
     def _detect_gpu_model(self) -> str:
@@ -253,8 +260,14 @@ class SystemDetector:
         try:
             result = subprocess.run(
                 ["flatpak", "list", "--app", "--columns=application"],
-                capture_output=True, text=True, timeout=10
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
-            return set(line.strip() for line in result.stdout.strip().split("\n") if line.strip())
+            return set(
+                line.strip()
+                for line in result.stdout.strip().split("\n")
+                if line.strip()
+            )
         except Exception:
             return set()

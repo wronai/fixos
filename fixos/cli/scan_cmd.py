@@ -1,6 +1,7 @@
 """
 Scan command for fixOS CLI - system diagnostics
 """
+
 import click
 import json
 from pathlib import Path
@@ -9,25 +10,77 @@ from fixos.cli.output_formatter import OutputFormatter
 
 
 @click.command()
-@click.option("--audio", "modules", flag_value="audio", help="Tylko diagnostyka dźwięku")
-@click.option("--thumbnails", "modules", flag_value="thumbnails", help="Tylko podglądy plików")
+@click.option(
+    "--audio", "modules", flag_value="audio", help="Tylko diagnostyka dźwięku"
+)
+@click.option(
+    "--thumbnails", "modules", flag_value="thumbnails", help="Tylko podglądy plików"
+)
 @click.option("--hardware", "modules", flag_value="hardware", help="Tylko sprzęt")
 @click.option("--system", "modules", flag_value="system", help="Tylko system")
-@click.option("--security", "modules", flag_value="security", help="Tylko bezpieczeństwo")
-@click.option("--resources", "modules", flag_value="resources", help="Tylko zasoby (CPU/RAM/procesy)")
-@click.option("--packages", "modules", flag_value="packages", help="Tylko pakiety (nieużywane/osierocone)")
-@click.option("--storage", "modules", flag_value="storage", help="Tylko dyski/partycje (resize/optymalizacja)")
-@click.option("--files", "modules", flag_value="files", help="Tylko pliki (duże/duplikaty/media)")
-@click.option("--all", "modules", flag_value="all", default=True, help="Wszystkie moduły (domyślnie)")
+@click.option(
+    "--security", "modules", flag_value="security", help="Tylko bezpieczeństwo"
+)
+@click.option(
+    "--resources",
+    "modules",
+    flag_value="resources",
+    help="Tylko zasoby (CPU/RAM/procesy)",
+)
+@click.option(
+    "--packages",
+    "modules",
+    flag_value="packages",
+    help="Tylko pakiety (nieużywane/osierocone)",
+)
+@click.option(
+    "--storage",
+    "modules",
+    flag_value="storage",
+    help="Tylko dyski/partycje (resize/optymalizacja)",
+)
+@click.option(
+    "--files", "modules", flag_value="files", help="Tylko pliki (duże/duplikaty/media)"
+)
+@click.option(
+    "--all",
+    "modules",
+    flag_value="all",
+    default=True,
+    help="Wszystkie moduły (domyślnie)",
+)
 @add_shared_options
-@click.option("--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos")
+@click.option(
+    "--no-banner", "no_banner", is_flag=True, default=False, help="Ukryj baner fixos"
+)
 @click.option("--output", "-o", default=None, help="Zapisz wyniki do pliku")
-@click.option("--profile", "-p", default=None, help="Profil diagnostyczny (server/desktop/developer/minimal)")
-@click.option("--modules-list", "-M", "modules_csv", default=None,
-              help="Moduły diagnostyki (CSV): audio,thumbnails,hardware,system,security,resources,packages,storage,files")
-def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
-         dry_run: bool, interactive: bool, json_output: bool, yaml_output: bool,
-         llm_fallback: bool, profile: str, modules_csv: str) -> None:
+@click.option(
+    "--profile",
+    "-p",
+    default=None,
+    help="Profil diagnostyczny (server/desktop/developer/minimal)",
+)
+@click.option(
+    "--modules-list",
+    "-M",
+    "modules_csv",
+    default=None,
+    help="Moduły diagnostyki (CSV): audio,thumbnails,hardware,system,security,resources,packages,storage,files",
+)
+def scan(
+    modules: str,
+    output: str,
+    show_raw: bool,
+    no_banner: bool,
+    disc: bool,
+    dry_run: bool,
+    interactive: bool,
+    json_output: bool,
+    yaml_output: bool,
+    llm_fallback: bool,
+    profile: str,
+    modules_csv: str,
+) -> None:
     """
     Przeprowadza diagnostykę systemu.
 
@@ -52,7 +105,7 @@ def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
       fixos scan --profile server   # profil serwera
       fixos scan --yaml -o scan.yml # YAML do pliku
     """
-    from fixos.diagnostics import get_full_diagnostics, DIAGNOSTIC_MODULES
+    from fixos.diagnostics import get_full_diagnostics
 
     fmt = OutputFormatter.from_flags(yaml_output=yaml_output, json_output=json_output)
 
@@ -93,15 +146,16 @@ def scan(modules: str, output: str, show_raw: bool, no_banner: bool, disc: bool,
         try:
             Path(output).write_text(
                 json.dumps(data, ensure_ascii=False, indent=2, default=str),
-                encoding="utf-8"
+                encoding="utf-8",
             )
             click.echo(click.style(f"Zapisano: {output}", fg="green"))
         except Exception as e:
             click.echo(f"Błąd zapisu: {e}")
 
 
-def _resolve_modules(modules: str, modules_csv: str | None,
-                     profile: str | None, fmt: OutputFormatter) -> list[str] | None:
+def _resolve_modules(
+    modules: str, modules_csv: str | None, profile: str | None, fmt: OutputFormatter
+) -> list[str] | None:
     """Resolve module selection from flags, CSV, or profile."""
     # CSV override (e.g. -M audio,security)
     if modules_csv:
@@ -112,6 +166,7 @@ def _resolve_modules(modules: str, modules_csv: str | None,
     # Profile override
     if profile:
         from fixos.profiles import Profile as DiagProfile
+
         try:
             prof = DiagProfile.load(profile)
             fmt.status(f"  Profil: {prof.name} — {prof.description}", fg="cyan")
@@ -135,20 +190,24 @@ def _display_disk_fix_mode(disk_analysis: dict) -> None:
         "moderate": "blue",
         "healthy": "green",
     }.get(disk_analysis.get("status", "unknown"), "gray")
-    click.echo(click.style(
-        f"  Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
-        f"({disk_analysis['used_gb']:.1f}GB / {disk_analysis['total_gb']:.1f}GB)",
-        fg=status_color,
-    ))
+    click.echo(
+        click.style(
+            f"  Dysk: {disk_analysis['usage_percent']:.1f}% zajęty "
+            f"({disk_analysis['used_gb']:.1f}GB / {disk_analysis['total_gb']:.1f}GB)",
+            fg=status_color,
+        )
+    )
     suggestions = disk_analysis.get("suggestions", [])
     if suggestions:
         safe_suggestions = [s for s in suggestions if s.get("safe", False)]
         total_safe_gb = sum(s.get("size_gb", 0) for s in safe_suggestions)
         if total_safe_gb > 0.1:
-            click.echo(click.style(
-                f"  Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
-                fg="green",
-            ))
+            click.echo(
+                click.style(
+                    f"  Można bezpiecznie zwolnić: {total_safe_gb:.1f}GB w {len(safe_suggestions)} akcjach",
+                    fg="green",
+                )
+            )
 
 
 def _display_disk_scan_mode(disk_analysis: dict) -> None:
@@ -163,11 +222,17 @@ def _display_disk_scan_mode(disk_analysis: dict) -> None:
         click.echo(click.style("\nSugestie czyszczenia:", fg="yellow"))
         for suggestion in suggestions[:5]:
             safe_icon = "" if suggestion.get("safe") else ""
-            click.echo(f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)")
+            click.echo(
+                f"  {safe_icon} {suggestion['description']} ({suggestion.get('size_gb', 0):.1f}GB)"
+            )
 
 
-def _run_disk_analysis(data: dict, fmt: OutputFormatter | None = None,
-                       json_output: bool = False, is_fix_mode: bool = False) -> None:
+def _run_disk_analysis(
+    data: dict,
+    fmt: OutputFormatter | None = None,
+    json_output: bool = False,
+    is_fix_mode: bool = False,
+) -> None:
     """Helper for disk analysis logic to avoid duplication between scan and fix"""
     indent = "  " if is_fix_mode else ""
 
@@ -176,12 +241,15 @@ def _run_disk_analysis(data: dict, fmt: OutputFormatter | None = None,
         fmt.status("Analizowanie zajętości dysku...", fg="blue")
         try:
             from fixos.diagnostics.disk_analyzer import DiskAnalyzer
+
             analyzer = DiskAnalyzer()
             disk_analysis = analyzer.analyze_disk_usage()
             if "error" not in disk_analysis:
                 data["disk_analysis"] = disk_analysis
             else:
-                fmt.status(f"{indent}Błąd analizy dysku: {disk_analysis['error']}", fg="red")
+                fmt.status(
+                    f"{indent}Błąd analizy dysku: {disk_analysis['error']}", fg="red"
+                )
         except Exception as e:
             fmt.status(f"{indent}Błąd podczas analizy dysku: {e}", fg="red")
         return
@@ -189,17 +257,23 @@ def _run_disk_analysis(data: dict, fmt: OutputFormatter | None = None,
     click.echo(click.style("Analizowanie zajętości dysku...", fg="blue"))
     try:
         from fixos.diagnostics.disk_analyzer import DiskAnalyzer
+
         analyzer = DiskAnalyzer()
         disk_analysis = analyzer.analyze_disk_usage()
 
         if "error" in disk_analysis:
-            click.echo(click.style(f"{indent}Błąd analizy dysku: {disk_analysis['error']}", fg="red"))
+            click.echo(
+                click.style(
+                    f"{indent}Błąd analizy dysku: {disk_analysis['error']}", fg="red"
+                )
+            )
             return
 
         data["disk_analysis"] = disk_analysis
 
         if json_output and not is_fix_mode:
             import json
+
             click.echo(json.dumps(disk_analysis, indent=2, default=str))
             return
 
@@ -209,9 +283,13 @@ def _run_disk_analysis(data: dict, fmt: OutputFormatter | None = None,
             _display_disk_scan_mode(disk_analysis)
 
     except ImportError:
-        click.echo(click.style(f"{indent}Moduł analizy dysku nie jest dostępny", fg="yellow"))
+        click.echo(
+            click.style(f"{indent}Moduł analizy dysku nie jest dostępny", fg="yellow")
+        )
     except Exception as e:
-        click.echo(click.style(f"{indent}Błąd podczas analizy dysku: {str(e)}", fg="red"))
+        click.echo(
+            click.style(f"{indent}Błąd podczas analizy dysku: {str(e)}", fg="red")
+        )
 
 
 def _print_quick_issues(data: dict) -> None:
@@ -221,7 +299,11 @@ def _print_quick_issues(data: dict) -> None:
 
     # Sprawdź audio
     audio = data.get("audio", {})
-    if "brak" in str(audio.get("alsa_cards", "")).lower() or not audio.get("alsa_cards","").strip() or audio.get("alsa_cards","") == "(brak outputu)":
+    if (
+        "brak" in str(audio.get("alsa_cards", "")).lower()
+        or not audio.get("alsa_cards", "").strip()
+        or audio.get("alsa_cards", "") == "(brak outputu)"
+    ):
         issues.append("Dźwięk: brak kart ALSA – prawdopodobnie brak sterownika SOF")
     if "failed" in str(audio.get("pipewire_status", "")).lower():
         issues.append("PipeWire: usługa failed")
@@ -249,4 +331,4 @@ def _print_quick_issues(data: dict) -> None:
     else:
         for issue in issues:
             click.echo(f"  {issue}")
-        click.echo(f"\n  Uruchom 'fixos fix' aby naprawić z pomocą AI.")
+        click.echo("\n  Uruchom 'fixos fix' aby naprawić z pomocą AI.")

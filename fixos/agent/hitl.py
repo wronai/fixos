@@ -24,7 +24,7 @@ __all__ = [
 def run_hitl_session(diagnostics: dict, config, show_data: bool = True) -> None:
     """
     Run interactive HITL session with full transparency.
-    
+
     This is a backward-compatible wrapper around HITLSession.
     For new code, use HITLSession directly.
     """

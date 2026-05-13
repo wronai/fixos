@@ -52,6 +52,7 @@ class TestThumbnailsAnonymization:
     def test_home_path_in_cache_anonymized(self, broken_thumbnails_diagnostics):
         """Ścieżka ~/.cache powinna być zanonimizowana."""
         import getpass
+
         username = getpass.getuser()
         data = str(broken_thumbnails_diagnostics)
         data += f" /home/{username}/.cache/thumbnails"
@@ -70,7 +71,9 @@ class TestThumbnailsMockLLM:
     """Testy z mock LLM dla scenariusza thumbnails."""
 
     @patch("fixos.providers.llm.openai")
-    def test_llm_suggests_ffmpegthumbnailer(self, mock_openai, broken_thumbnails_diagnostics, mock_config):
+    def test_llm_suggests_ffmpegthumbnailer(
+        self, mock_openai, broken_thumbnails_diagnostics, mock_config
+    ):
         """LLM powinien sugerować instalację ffmpegthumbnailer."""
         from fixos.providers.llm import LLMClient
 
@@ -96,7 +99,9 @@ class TestThumbnailsMockLLM:
         assert "dnf install" in reply.lower()
 
     @patch("fixos.providers.llm.openai")
-    def test_llm_suggests_cache_clear(self, mock_openai, broken_thumbnails_diagnostics, mock_config):
+    def test_llm_suggests_cache_clear(
+        self, mock_openai, broken_thumbnails_diagnostics, mock_config
+    ):
         """LLM powinien sugerować wyczyszczenie cache thumbnails."""
         from fixos.providers.llm import LLMClient
 
@@ -121,6 +126,7 @@ class TestWebSearchFallback:
     def test_search_arch_wiki_thumbnails(self):
         """Arch Wiki powinno zwrócić wyniki dla 'thumbnails'."""
         from fixos.utils.web_search import search_arch_wiki
+
         results = search_arch_wiki("file manager thumbnails")
         # Wyniki mogą być puste gdy brak internetu w Docker
         assert isinstance(results, list)
@@ -128,12 +134,14 @@ class TestWebSearchFallback:
     def test_search_fedora_bugzilla_audio(self):
         """Bugzilla może zwrócić wyniki dla problemów audio SOF."""
         from fixos.utils.web_search import search_fedora_bugzilla
+
         results = search_fedora_bugzilla("sof-firmware audio Lenovo")
         assert isinstance(results, list)
 
     def test_format_results_for_llm(self):
         """Wyniki powinny być poprawnie sformatowane dla LLM."""
         from fixos.utils.web_search import SearchResult, format_results_for_llm
+
         results = [
             SearchResult(
                 title="Fix audio Fedora 40",
@@ -150,6 +158,7 @@ class TestWebSearchFallback:
     def test_empty_results_handled(self):
         """Puste wyniki powinny zwrócić sensowny komunikat."""
         from fixos.utils.web_search import format_results_for_llm
+
         formatted = format_results_for_llm([])
         assert "Brak wyników" in formatted
 
@@ -166,7 +175,9 @@ class TestFullBrokenScenario:
 
     def test_combined_issues_anonymized(self, full_broken_diagnostics):
         """Dane z wielu modułów powinny być anonimizowane razem."""
-        import socket, getpass
+        import socket
+        import getpass
+
         data = str(full_broken_diagnostics)
         data += f" {socket.gethostname()} {getpass.getuser()} 192.168.100.200"
 
@@ -213,8 +224,9 @@ class TestFullBrokenScenario:
         assert "dnf" in reply.lower()
 
     @pytest.mark.skipif(
-        not os.environ.get("GEMINI_API_KEY") or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
-        reason="Wymaga GEMINI_API_KEY w .env"
+        not os.environ.get("GEMINI_API_KEY")
+        or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
+        reason="Wymaga GEMINI_API_KEY w .env",
     )
     def test_real_llm_full_scenario(self, full_broken_diagnostics, test_config):
         """Prawdziwy LLM analizuje pełny scenariusz uszkodzeń."""
@@ -239,8 +251,13 @@ class TestFullBrokenScenario:
         reply = client.chat(messages, max_tokens=500)
 
         # Sprawdź czy wykryto kluczowe problemy
-        audio_found = any(t in reply.lower() for t in ["audio", "sof", "dźwięk", "alsa", "pipewire"])
-        thumb_found = any(t in reply.lower() for t in ["thumbnail", "thumbnailer", "podgląd", "ffmpeg"])
+        audio_found = any(
+            t in reply.lower() for t in ["audio", "sof", "dźwięk", "alsa", "pipewire"]
+        )
+        thumb_found = any(
+            t in reply.lower()
+            for t in ["thumbnail", "thumbnailer", "podgląd", "ffmpeg"]
+        )
 
         assert audio_found or thumb_found, (
             f"LLM nie wykrył żadnego z oczekiwanych problemów.\nOdpowiedź: {reply[:400]}"

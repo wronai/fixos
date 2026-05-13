@@ -1,6 +1,7 @@
 """
 Main CLI entry point for fixOS
 """
+
 import click
 from fixos.cli.shared import BANNER, NaturalLanguageGroup
 from fixos.config import FixOsConfig
@@ -8,7 +9,12 @@ from fixos.config import FixOsConfig
 
 @click.group(cls=NaturalLanguageGroup, invoke_without_command=True)
 @click.pass_context
-@click.option("--dry-run", is_flag=True, default=False, help="Symuluj bez wykonania (dla komend naturalnych)")
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Symuluj bez wykonania (dla komend naturalnych)",
+)
 @click.option("--version", "-v", is_flag=True, default=False, help="Pokaż wersję fixos")
 def cli(ctx, dry_run, version) -> None:
     """
@@ -34,7 +40,7 @@ def cli(ctx, dry_run, version) -> None:
     if version:
         click.echo("fixos v2.0.0")
         return
-    
+
     if ctx.invoked_subcommand is None:
         _print_welcome()
 
@@ -45,7 +51,11 @@ def _print_welcome() -> None:
 
     cfg = FixOsConfig.load()
     has_key = bool(cfg.api_key)
-    key_status = click.style("skonfigurowany", fg="green") if has_key else click.style("BRAK", fg="red")
+    key_status = (
+        click.style("skonfigurowany", fg="green")
+        if has_key
+        else click.style("BRAK", fg="red")
+    )
     provider_info = f"{cfg.provider} ({cfg.model})"
 
     click.echo(click.style("═" * 60, fg="cyan"))
@@ -54,20 +64,20 @@ def _print_welcome() -> None:
     click.echo()
 
     commands = [
-        ("fixos fix",         "", "Diagnostyka + sesja naprawcza z AI (HITL)"),
-        ("fixos scan",        "", "Diagnostyka systemu bez AI"),
-        ("fixos quickfix",    "", "Naprawy offline bez API (baza znanych bugów)"),
-        ("fixos cleanup",     "", "Skanuj i czyść dane usług (Docker, Ollama)"),
+        ("fixos fix", "", "Diagnostyka + sesja naprawcza z AI (HITL)"),
+        ("fixos scan", "", "Diagnostyka systemu bez AI"),
+        ("fixos quickfix", "", "Naprawy offline bez API (baza znanych bugów)"),
+        ("fixos cleanup", "", "Skanuj i czyść dane usług (Docker, Ollama)"),
         ("fixos orchestrate", "", "Zaawansowana orkiestracja napraw (graf problemów)"),
-        ("fixos watch",       "", "Monitoring w tle z powiadomieniami"),
-        ("fixos report",      "", "Eksport diagnostyki do HTML/Markdown/JSON"),
-        ("fixos history",     "", "Historia sesji naprawczych"),
-        ("fixos rollback",    "", "Cofanie operacji (undo/list/show)"),
-        ("fixos profile",     "", "Profile diagnostyczne (server/desktop/dev)"),
-        ("fixos llm",         "", "Lista providerów LLM + linki do kluczy API"),
-        ("fixos token set",   "", "Zapisz klucz API (auto-detekcja providera)"),
+        ("fixos watch", "", "Monitoring w tle z powiadomieniami"),
+        ("fixos report", "", "Eksport diagnostyki do HTML/Markdown/JSON"),
+        ("fixos history", "", "Historia sesji naprawczych"),
+        ("fixos rollback", "", "Cofanie operacji (undo/list/show)"),
+        ("fixos profile", "", "Profile diagnostyczne (server/desktop/dev)"),
+        ("fixos llm", "", "Lista providerów LLM + linki do kluczy API"),
+        ("fixos token set", "", "Zapisz klucz API (auto-detekcja providera)"),
         ("fixos config show", "", "Pokaż konfigurację"),
-        ("fixos test-llm",    "", "Test połączenia z LLM"),
+        ("fixos test-llm", "", "Test połączenia z LLM"),
     ]
 
     for cmd, icon, desc in commands:
@@ -79,17 +89,19 @@ def _print_welcome() -> None:
     click.echo(click.style("  🔬 MODUŁY DIAGNOSTYKI", fg="cyan"))
     click.echo(click.style("─" * 60, fg="cyan"))
     modules_info = [
-        ("system",     " ", "CPU, RAM, dyski, usługi, aktualizacje"),
-        ("audio",      "", "ALSA, PipeWire, SOF firmware, mikrofon"),
+        ("system", " ", "CPU, RAM, dyski, usługi, aktualizacje"),
+        ("audio", "", "ALSA, PipeWire, SOF firmware, mikrofon"),
         ("thumbnails", " ", "Podglądy plików, cache, GStreamer"),
-        ("hardware",   "", "DMI, GPU, touchpad, kamera, bateria"),
-        ("security",   "", "Firewall, porty, SELinux, SSH, fail2ban"),
-        ("resources",  "", "Dysk (co zajmuje), procesy, autostart"),
+        ("hardware", "", "DMI, GPU, touchpad, kamera, bateria"),
+        ("security", "", "Firewall, porty, SELinux, SSH, fail2ban"),
+        ("resources", "", "Dysk (co zajmuje), procesy, autostart"),
     ]
     for mod, icon, desc in modules_info:
         mod_styled = click.style(f"{mod:<12}", fg="white")
         click.echo(f"  {icon}  {mod_styled} {desc}")
-    click.echo(click.style("  Użycie: fixos scan --modules security,resources", fg="cyan"))
+    click.echo(
+        click.style("  Użycie: fixos scan --modules security,resources", fg="cyan")
+    )
 
     click.echo()
     click.echo(click.style("─" * 60, fg="cyan"))
@@ -102,18 +114,34 @@ def _print_welcome() -> None:
 
     if not has_key:
         click.echo(click.style("  Szybki start:", fg="yellow", bold=True))
-        click.echo(f"{click.style('     fixos llm', fg='yellow')}                    # wybierz provider i pobierz klucz")
-        click.echo(f"{click.style('     fixos token set <KLUCZ>', fg='yellow')}      # zapisz klucz (auto-detekcja providera)")
-        click.echo(f"{click.style('     fixos fix', fg='yellow')}                    # uruchom diagnostykę + naprawę")
+        click.echo(
+            f"{click.style('     fixos llm', fg='yellow')}                    # wybierz provider i pobierz klucz"
+        )
+        click.echo(
+            f"{click.style('     fixos token set <KLUCZ>', fg='yellow')}      # zapisz klucz (auto-detekcja providera)"
+        )
+        click.echo(
+            f"{click.style('     fixos fix', fg='yellow')}                    # uruchom diagnostykę + naprawę"
+        )
         click.echo()
         click.echo(click.style("  ⚡ Lub po prostu:", fg="yellow"))
-        click.echo(f"{click.style('     fixos fix', fg='yellow')}  # zapyta o provider interaktywnie")
+        click.echo(
+            f"{click.style('     fixos fix', fg='yellow')}  # zapyta o provider interaktywnie"
+        )
     else:
         click.echo(click.style("  Przykłady użycia:", fg="yellow", bold=True))
-        click.echo(f"{click.style('     fixos fix', fg='yellow')}                           # pełna diagnostyka + naprawa")
-        click.echo(f"{click.style('     fixos fix --modules security,resources', fg='yellow')} # bezpieczeństwo + zasoby")
-        click.echo(f"{click.style('     fixos scan --modules security', fg='yellow')}        # tylko skan bezpieczeństwa")
-        click.echo(f"{click.style('     fixos orchestrate --dry-run', fg='yellow')}          # podgląd napraw bez wykonania")
+        click.echo(
+            f"{click.style('     fixos fix', fg='yellow')}                           # pełna diagnostyka + naprawa"
+        )
+        click.echo(
+            f"{click.style('     fixos fix --modules security,resources', fg='yellow')} # bezpieczeństwo + zasoby"
+        )
+        click.echo(
+            f"{click.style('     fixos scan --modules security', fg='yellow')}        # tylko skan bezpieczeństwa"
+        )
+        click.echo(
+            f"{click.style('     fixos orchestrate --dry-run', fg='yellow')}          # podgląd napraw bez wykonania"
+        )
     click.echo()
 
 

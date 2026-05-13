@@ -21,6 +21,7 @@ import click
 
 class OutputFormat(Enum):
     """Supported output formats."""
+
     HUMAN = "human"
     JSON = "json"
     YAML = "yaml"

@@ -30,7 +30,9 @@ class TestChromeCleanup:
             size_gb=round(initial_size_mb / 1024, 3),
             description="Google Chrome cache and data",
             can_cleanup=True,
-            cleanup_command=ServiceCleaner.get_cleanup_command(ServiceType.CHROME, path),
+            cleanup_command=ServiceCleaner.get_cleanup_command(
+                ServiceType.CHROME, path
+            ),
             preview_command="",
             safe_to_cleanup=True,
         )
@@ -56,7 +58,9 @@ class TestChromeCleanup:
 
             return Result()
 
-        monkeypatch.setattr("fixos.diagnostics.service_cleanup.subprocess.run", fake_run)
+        monkeypatch.setattr(
+            "fixos.diagnostics.service_cleanup.subprocess.run", fake_run
+        )
 
         cleaner = ServiceCleaner(FakeScanner())
         result = cleaner.cleanup_service("chrome")

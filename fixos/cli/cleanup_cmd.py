@@ -8,6 +8,7 @@ Sub-modules (split from the original monolith):
   _cleanup_home.py    – Home directory analysis
   _cleanup_system.py  – Full-system analysis, filtering, interactive select
 """
+
 import click
 
 from fixos.diagnostics.service_scanner import ServiceDataScanner
@@ -39,11 +40,17 @@ def _display_cleanup_summary(plan: dict, threshold: int) -> None:
 
 def _display_service_item(svc: dict) -> None:
     """Display a single service item with details."""
-    size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
-    safe_icon = " " if svc['safe_to_cleanup'] else " "
-    safe_text = "(bezpieczne)" if svc['safe_to_cleanup'] else "(wymaga przeglądu)"
+    size_str = (
+        f"{svc['size_gb']:.2f} GB"
+        if svc["size_gb"] >= 1
+        else f"{svc['size_mb']:.0f} MB"
+    )
+    safe_icon = " " if svc["safe_to_cleanup"] else " "
+    safe_text = "(bezpieczne)" if svc["safe_to_cleanup"] else "(wymaga przeglądu)"
 
-    click.echo(f"{safe_icon} {click.style(svc['name'], fg='yellow', bold=True)} - {size_str}")
+    click.echo(
+        f"{safe_icon} {click.style(svc['name'], fg='yellow', bold=True)} - {size_str}"
+    )
     click.echo(f"   {svc['description']}")
     click.echo(f"   Ścieżka: {svc['path']}")
     click.echo(f"   {safe_text}")
@@ -55,7 +62,9 @@ def _display_service_item(svc: dict) -> None:
         elif svc["service_type"] == "ollama" and svc["details"].get("models"):
             models = svc["details"]["models"]
             if models:
-                click.echo(f"   Modele: {', '.join(models[:3])}{'...' if len(models) > 3 else ''}")
+                click.echo(
+                    f"   Modele: {', '.join(models[:3])}{'...' if len(models) > 3 else ''}"
+                )
     click.echo()
 
 
@@ -71,7 +80,9 @@ def _execute_safe_cleanup(services: list, scanner) -> float:
             total_freed += freed
             click.echo(click.style(f"  Zwolniono {freed:.2f} GB", fg="green"))
         else:
-            click.echo(click.style(f"  Błąd: {result.get('error', 'nieznany')}", fg="red"))
+            click.echo(
+                click.style(f"  Błąd: {result.get('error', 'nieznany')}", fg="red")
+            )
     return total_freed
 
 
@@ -95,14 +106,14 @@ def _display_service_group(service_type: str, svcs: list, type_map: dict) -> Non
     """Display a single service group with cleanup commands and hints."""
     from fixos.diagnostics.service_cleanup import ServiceCleaner
 
-    total_size = sum(s.get('size_gb', 0) for s in svcs)
+    total_size = sum(s.get("size_gb", 0) for s in svcs)
     click.echo(f"\n  • {service_type.title()}: {total_size:.2f} GB")
 
-    unique_commands = list(set(s['cleanup_command'] for s in svcs))
+    unique_commands = list(set(s["cleanup_command"] for s in svcs))
     for cmd in unique_commands[:2]:
         click.echo(f"    {cmd}")
     if len(unique_commands) > 2:
-        click.echo(f"    ... (+{len(unique_commands)-2} more commands)")
+        click.echo(f"    ... (+{len(unique_commands) - 2} more commands)")
 
     service_enum = type_map.get(service_type.lower())
     if service_enum:
@@ -122,29 +133,37 @@ def _display_unsafe_services(services: list) -> None:
 
     service_groups: dict = {}
     for svc in services:
-        service_type = svc.get('service_type', 'unknown')
+        service_type = svc.get("service_type", "unknown")
         if service_type not in service_groups:
             service_groups[service_type] = []
         service_groups[service_type].append(svc)
 
     type_map = {
-        'flatpak': ServiceType.FLATPAK,
-        'docker': ServiceType.DOCKER,
-        'ollama': ServiceType.OLLAMA,
+        "flatpak": ServiceType.FLATPAK,
+        "docker": ServiceType.DOCKER,
+        "ollama": ServiceType.OLLAMA,
     }
 
     for service_type, svcs in service_groups.items():
         _display_service_group(service_type, svcs, type_map)
 
     click.echo()
-    click.echo(click.style("💡 Wskazówki: Powyższe komendy są bezpieczne i często odzyskują dużo miejsca", fg="green"))
+    click.echo(
+        click.style(
+            "💡 Wskazówki: Powyższe komendy są bezpieczne i często odzyskują dużo miejsca",
+            fg="green",
+        )
+    )
 
 
-def _cleanup_single_service(service_name: str, scanner, json_output: bool, dry_run: bool) -> None:
+def _cleanup_single_service(
+    service_name: str, scanner, json_output: bool, dry_run: bool
+) -> None:
     """Handle cleanup of a single specific service."""
     if json_output:
         result = scanner.cleanup_service(service_name, dry_run=dry_run)
         import json
+
         click.echo(json.dumps(result, indent=2, default=str))
         return
 
@@ -159,7 +178,9 @@ def _cleanup_single_service(service_name: str, scanner, json_output: bool, dry_r
         if result["space_freed_gb"] > 0:
             click.echo(f"  Zwolniono: {result['space_freed_gb']:.2f} GB")
     else:
-        click.echo(click.style(f"Błąd: {result.get('error', 'Nieznany błąd')}", fg="red"))
+        click.echo(
+            click.style(f"Błąd: {result.get('error', 'Nieznany błąd')}", fg="red")
+        )
         if result.get("output"):
             click.echo(f"Output: {result['output']}")
 
@@ -170,10 +191,14 @@ def _cleanup_single_service(service_name: str, scanner, json_output: bool, dry_r
 def _run_interactive_cleanup(plan: dict, list_only: bool, scanner) -> None:
     """Offer interactive safe cleanup and display unsafe services."""
     if not list_only and plan["safe_to_cleanup"]:
-        safe_total = sum(s['size_gb'] for s in plan["safe_to_cleanup"])
+        safe_total = sum(s["size_gb"] for s in plan["safe_to_cleanup"])
         click.echo(click.style("Bezpieczne do wyczyszczenia:", fg="green"))
         for svc in plan["safe_to_cleanup"]:
-            size_str = f"{svc['size_gb']:.2f} GB" if svc['size_gb'] >= 1 else f"{svc['size_mb']:.0f} MB"
+            size_str = (
+                f"{svc['size_gb']:.2f} GB"
+                if svc["size_gb"] >= 1
+                else f"{svc['size_mb']:.0f} MB"
+            )
             click.echo(f"  • {svc['name']}: {size_str}")
         click.echo()
         if click.confirm(f"Wyczyścić bezpieczne usługi? (zwolni {safe_total:.2f} GB)"):
@@ -186,21 +211,52 @@ def _run_interactive_cleanup(plan: dict, list_only: bool, scanner) -> None:
 
 
 @click.command("cleanup")
-@click.option("--threshold", "-t", default=DEFAULT_CLEANUP_THRESHOLD_MB, type=int,
-              help=f"Próg wielkości w MB (domyślnie {DEFAULT_CLEANUP_THRESHOLD_MB}MB)")
-@click.option("--services", "-s", default=None,
-              help="Usługi do przeskanowania: docker,ollama,npm,pip,... (domyślnie wszystkie)")
-@click.option("--json", "json_output", is_flag=True, default=False,
-              help="Wyjście w formacie JSON")
-@click.option("--cleanup", "-c", default=None,
-              help="Wyczyść konkretną usługę (docker, ollama, npm, ...)")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Symuluj czyszczenie bez faktycznego usuwania")
-@click.option("--list", "list_only", is_flag=True, default=False,
-              help="Tylko wyświetl listę bez interakcji")
-@click.option("--full", "-f", "full_analysis", is_flag=True, default=False,
-              help="Pełna analiza systemu (DNF, kernels, logs, Docker, cache)")
-def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_only, full_analysis) -> None:
+@click.option(
+    "--threshold",
+    "-t",
+    default=DEFAULT_CLEANUP_THRESHOLD_MB,
+    type=int,
+    help=f"Próg wielkości w MB (domyślnie {DEFAULT_CLEANUP_THRESHOLD_MB}MB)",
+)
+@click.option(
+    "--services",
+    "-s",
+    default=None,
+    help="Usługi do przeskanowania: docker,ollama,npm,pip,... (domyślnie wszystkie)",
+)
+@click.option(
+    "--json", "json_output", is_flag=True, default=False, help="Wyjście w formacie JSON"
+)
+@click.option(
+    "--cleanup",
+    "-c",
+    default=None,
+    help="Wyczyść konkretną usługę (docker, ollama, npm, ...)",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    default=False,
+    help="Symuluj czyszczenie bez faktycznego usuwania",
+)
+@click.option(
+    "--list",
+    "list_only",
+    is_flag=True,
+    default=False,
+    help="Tylko wyświetl listę bez interakcji",
+)
+@click.option(
+    "--full",
+    "-f",
+    "full_analysis",
+    is_flag=True,
+    default=False,
+    help="Pełna analiza systemu (DNF, kernels, logs, Docker, cache)",
+)
+def cleanup_services(
+    threshold, services, json_output, cleanup, dry_run, list_only, full_analysis
+) -> None:
     """
     Skanuje i czyści dane usług przekraczające próg.
 
@@ -237,6 +293,7 @@ def cleanup_services(threshold, services, json_output, cleanup, dry_run, list_on
 
     if json_output:
         import json
+
         click.echo(json.dumps(plan, indent=2, default=str))
         return
 

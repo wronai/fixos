@@ -19,29 +19,35 @@ class Plugin(DiagnosticPlugin):
         cpu = self._check_cpu()
         raw_data["cpu"] = cpu
         if cpu.get("load_1m") and cpu["load_1m"] > cpu.get("cores", 1) * 2:
-            findings.append(Finding(
-                title="Wysokie obciążenie CPU",
-                severity=Severity.WARNING,
-                description=f"Load average 1m: {cpu['load_1m']:.1f} (rdzenie: {cpu.get('cores', '?')}).",
-                suggestion="Sprawdź procesy zużywające CPU: top lub htop.",
-            ))
+            findings.append(
+                Finding(
+                    title="Wysokie obciążenie CPU",
+                    severity=Severity.WARNING,
+                    description=f"Load average 1m: {cpu['load_1m']:.1f} (rdzenie: {cpu.get('cores', '?')}).",
+                    suggestion="Sprawdź procesy zużywające CPU: top lub htop.",
+                )
+            )
 
         # RAM usage
         ram = self._check_ram()
         raw_data["ram"] = ram
         if ram.get("percent") and ram["percent"] > 90:
-            findings.append(Finding(
-                title="Krytycznie wysokie zużycie RAM",
-                severity=Severity.CRITICAL,
-                description=f"RAM: {ram['percent']:.0f}% ({ram.get('used_gb', '?')}GB / {ram.get('total_gb', '?')}GB).",
-                suggestion="Zamknij niepotrzebne aplikacje lub zwiększ swap.",
-            ))
+            findings.append(
+                Finding(
+                    title="Krytycznie wysokie zużycie RAM",
+                    severity=Severity.CRITICAL,
+                    description=f"RAM: {ram['percent']:.0f}% ({ram.get('used_gb', '?')}GB / {ram.get('total_gb', '?')}GB).",
+                    suggestion="Zamknij niepotrzebne aplikacje lub zwiększ swap.",
+                )
+            )
         elif ram.get("percent") and ram["percent"] > 80:
-            findings.append(Finding(
-                title="Wysokie zużycie RAM",
-                severity=Severity.WARNING,
-                description=f"RAM: {ram['percent']:.0f}% ({ram.get('used_gb', '?')}GB / {ram.get('total_gb', '?')}GB).",
-            ))
+            findings.append(
+                Finding(
+                    title="Wysokie zużycie RAM",
+                    severity=Severity.WARNING,
+                    description=f"RAM: {ram['percent']:.0f}% ({ram.get('used_gb', '?')}GB / {ram.get('total_gb', '?')}GB).",
+                )
+            )
 
         # Top processes
         procs = self._check_top_processes()
@@ -51,22 +57,26 @@ class Plugin(DiagnosticPlugin):
         zombies = self._check_zombies()
         raw_data["zombies"] = zombies
         if zombies.get("count", 0) > 5:
-            findings.append(Finding(
-                title=f"{zombies['count']} procesów zombie",
-                severity=Severity.WARNING,
-                description="Duża liczba procesów zombie może wskazywać na problem z parent process.",
-            ))
+            findings.append(
+                Finding(
+                    title=f"{zombies['count']} procesów zombie",
+                    severity=Severity.WARNING,
+                    description="Duża liczba procesów zombie może wskazywać na problem z parent process.",
+                )
+            )
 
         # Swap usage
         swap = self._check_swap()
         raw_data["swap"] = swap
         if swap.get("percent") and swap["percent"] > 80:
-            findings.append(Finding(
-                title="Wysokie zużycie swap",
-                severity=Severity.WARNING,
-                description=f"Swap: {swap['percent']:.0f}% wykorzystany.",
-                suggestion="System intensywnie korzysta ze swap — może być wolny.",
-            ))
+            findings.append(
+                Finding(
+                    title="Wysokie zużycie swap",
+                    severity=Severity.WARNING,
+                    description=f"Swap: {swap['percent']:.0f}% wykorzystany.",
+                    suggestion="System intensywnie korzysta ze swap — może być wolny.",
+                )
+            )
 
         status = Severity.OK
         if any(f.severity == Severity.CRITICAL for f in findings):
@@ -84,6 +94,7 @@ class Plugin(DiagnosticPlugin):
     def _check_cpu(self) -> dict:
         try:
             import psutil
+
             load = psutil.getloadavg()
             return {
                 "load_1m": load[0],
@@ -101,6 +112,7 @@ class Plugin(DiagnosticPlugin):
     def _check_ram(self) -> dict:
         try:
             import psutil
+
             mem = psutil.virtual_memory()
             return {
                 "total_gb": round(mem.total / (1024**3), 1),
@@ -112,9 +124,7 @@ class Plugin(DiagnosticPlugin):
             return {}
 
     def _check_top_processes(self) -> dict:
-        ok, stdout, _, _ = run_command(
-            "ps aux --sort=-%mem | head -6", timeout=5
-        )
+        ok, stdout, _, _ = run_command("ps aux --sort=-%mem | head -6", timeout=5)
         return {"raw": stdout if ok else ""}
 
     def _check_zombies(self) -> dict:
@@ -127,6 +137,7 @@ class Plugin(DiagnosticPlugin):
     def _check_swap(self) -> dict:
         try:
             import psutil
+
             swap = psutil.swap_memory()
             return {
                 "total_gb": round(swap.total / (1024**3), 1),

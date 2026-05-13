@@ -16,7 +16,9 @@ class DangerousCommandError(Exception):
     def __init__(self, command: str, reason: str = ""):
         self.command = command
         self.reason = reason
-        super().__init__(f"Niebezpieczna komenda: {command!r}" + (f" ({reason})" if reason else ""))
+        super().__init__(
+            f"Niebezpieczna komenda: {command!r}" + (f" ({reason})" if reason else "")
+        )
 
 
 class CommandTimeoutError(Exception):
@@ -54,7 +56,10 @@ class ExecutionResult:
 
 DANGEROUS_PATTERNS: list[tuple[str, str]] = [
     (r"rm\s+-rf\s+/(?!\w)", "rm -rf / jest destruktywne"),
-    (r"rm\s+-rf\s+/(?:boot|etc|usr|lib|bin|sbin|sys|proc|dev)\b", "usuwanie katalogu systemowego"),
+    (
+        r"rm\s+-rf\s+/(?:boot|etc|usr|lib|bin|sbin|sys|proc|dev)\b",
+        "usuwanie katalogu systemowego",
+    ),
     (r"dd\s+if=.*of=/dev/(?:sd|nvme|vd|hd)[a-z](?!\d)", "nadpisywanie dysku przez dd"),
     (r"mkfs\.", "formatowanie systemu plików"),
     (r">\s*/dev/(?:sd|nvme|vd|hd)", "zapis bezpośrednio na urządzenie blokowe"),
@@ -66,11 +71,27 @@ DANGEROUS_PATTERNS: list[tuple[str, str]] = [
 ]
 
 NEEDS_SUDO_PREFIXES = [
-    "dnf", "rpm", "systemctl", "firewall-cmd", "setenforce",
-    "chmod 0", "chown", "modprobe", "rmmod", "insmod",
-    "mount", "umount", "fdisk", "parted", "lvextend",
-    "useradd", "userdel", "usermod", "groupadd",
-    "update-grub", "grub2-mkconfig",
+    "dnf",
+    "rpm",
+    "systemctl",
+    "firewall-cmd",
+    "setenforce",
+    "chmod 0",
+    "chown",
+    "modprobe",
+    "rmmod",
+    "insmod",
+    "mount",
+    "umount",
+    "fdisk",
+    "parted",
+    "lvextend",
+    "useradd",
+    "userdel",
+    "usermod",
+    "groupadd",
+    "update-grub",
+    "grub2-mkconfig",
 ]
 
 LONG_RUNNING_PATTERNS: list[tuple[str, int]] = [

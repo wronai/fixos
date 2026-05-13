@@ -19,6 +19,7 @@ from typing import Optional
 @dataclass
 class RollbackEntry:
     """Single recorded operation with its rollback command."""
+
     timestamp: str
     command: str
     rollback_command: Optional[str]
@@ -31,6 +32,7 @@ class RollbackEntry:
 @dataclass
 class RollbackSession:
     """A session of recorded operations that can be rolled back."""
+
     session_id: str = field(default_factory=lambda: uuid.uuid4().hex[:12])
     created_at: str = field(default_factory=lambda: datetime.now().isoformat())
     entries: list[RollbackEntry] = field(default_factory=list)
@@ -47,15 +49,17 @@ class RollbackSession:
         exit_code: int,
     ):
         """Zapisz wykonaną operację."""
-        self.entries.append(RollbackEntry(
-            timestamp=datetime.now().isoformat(),
-            command=command,
-            rollback_command=rollback_cmd,
-            stdout=stdout[:2000],
-            stderr=stderr[:1000],
-            success=success,
-            exit_code=exit_code,
-        ))
+        self.entries.append(
+            RollbackEntry(
+                timestamp=datetime.now().isoformat(),
+                command=command,
+                rollback_command=rollback_cmd,
+                stdout=stdout[:2000],
+                stderr=stderr[:1000],
+                success=success,
+                exit_code=exit_code,
+            )
+        )
         self._save()
 
     def get_rollback_commands(self) -> list[tuple[str, str]]:
@@ -77,12 +81,14 @@ class RollbackSession:
 
         for orig_cmd, rollback_cmd in commands:
             if dry_run:
-                results.append({
-                    "command": orig_cmd,
-                    "rollback_command": rollback_cmd,
-                    "success": None,
-                    "output": "[DRY-RUN]",
-                })
+                results.append(
+                    {
+                        "command": orig_cmd,
+                        "rollback_command": rollback_cmd,
+                        "success": None,
+                        "output": "[DRY-RUN]",
+                    }
+                )
                 continue
 
             try:
@@ -93,19 +99,23 @@ class RollbackSession:
                     text=True,
                     timeout=30,
                 )
-                results.append({
-                    "command": orig_cmd,
-                    "rollback_command": rollback_cmd,
-                    "success": proc.returncode == 0,
-                    "output": proc.stdout.strip() or proc.stderr.strip(),
-                })
+                results.append(
+                    {
+                        "command": orig_cmd,
+                        "rollback_command": rollback_cmd,
+                        "success": proc.returncode == 0,
+                        "output": proc.stdout.strip() or proc.stderr.strip(),
+                    }
+                )
             except Exception as e:
-                results.append({
-                    "command": orig_cmd,
-                    "rollback_command": rollback_cmd,
-                    "success": False,
-                    "output": str(e),
-                })
+                results.append(
+                    {
+                        "command": orig_cmd,
+                        "rollback_command": rollback_cmd,
+                        "success": False,
+                        "output": str(e),
+                    }
+                )
 
         return results
 
@@ -148,15 +158,18 @@ class RollbackSession:
         for f in files[:limit]:
             try:
                 data = json.loads(f.read_text())
-                sessions.append({
-                    "session_id": data["session_id"],
-                    "created_at": data["created_at"],
-                    "operations": len(data["entries"]),
-                    "rollbackable": sum(
-                        1 for e in data["entries"]
-                        if e.get("rollback_command") and e.get("success")
-                    ),
-                })
+                sessions.append(
+                    {
+                        "session_id": data["session_id"],
+                        "created_at": data["created_at"],
+                        "operations": len(data["entries"]),
+                        "rollbackable": sum(
+                            1
+                            for e in data["entries"]
+                            if e.get("rollback_command") and e.get("success")
+                        ),
+                    }
+                )
             except (json.JSONDecodeError, KeyError):
                 continue
         return sessions

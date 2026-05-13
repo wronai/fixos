@@ -6,7 +6,6 @@ Używa Click test runner – nie wymaga API.
 from __future__ import annotations
 
 import os
-import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -53,10 +52,17 @@ class TestWelcomeScreen:
 
     def test_welcome_shows_tip_when_no_key(self, runner):
         """Gdy brak klucza API, powinien pokazać wskazówkę."""
-        with patch.dict(os.environ, {
-            "GEMINI_API_KEY": "", "OPENAI_API_KEY": "", "API_KEY": "",
-            "OPENROUTER_API_KEY": "", "GROQ_API_KEY": "",
-        }, clear=False):
+        with patch.dict(
+            os.environ,
+            {
+                "GEMINI_API_KEY": "",
+                "OPENAI_API_KEY": "",
+                "API_KEY": "",
+                "OPENROUTER_API_KEY": "",
+                "GROQ_API_KEY": "",
+            },
+            clear=False,
+        ):
             result = runner.invoke(cli, [])
         assert result.exit_code == 0
         # Powinien sugerować fixos llm lub fixos token set
@@ -69,8 +75,19 @@ class TestLlmCommand:
     def test_llm_shows_all_providers(self, runner):
         result = runner.invoke(cli, ["llm"])
         assert result.exit_code == 0
-        for provider in ["gemini", "openai", "openrouter", "groq", "mistral",
-                         "anthropic", "together", "cohere", "deepseek", "cerebras", "ollama"]:
+        for provider in [
+            "gemini",
+            "openai",
+            "openrouter",
+            "groq",
+            "mistral",
+            "anthropic",
+            "together",
+            "cohere",
+            "deepseek",
+            "cerebras",
+            "ollama",
+        ]:
             assert provider in result.output
 
     def test_llm_shows_urls(self, runner):
@@ -127,61 +144,104 @@ class TestTokenCommands:
     """Testy komend fixos token set/show/clear."""
 
     def test_token_set_gemini_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "gemini" in result.output.lower()
         content = tmp_env.read_text()
         assert "GEMINI_API_KEY=" in content
 
     def test_token_set_openai_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "sk-abcdefghijklmnopqrstuvwxyz1234567890",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "sk-abcdefghijklmnopqrstuvwxyz1234567890",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "openai" in result.output.lower()
 
     def test_token_set_openrouter_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "sk-or-v1-abcdefghijklmnopqrstuvwxyz1234567890",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "sk-or-v1-abcdefghijklmnopqrstuvwxyz1234567890",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "openrouter" in result.output.lower()
 
     def test_token_set_anthropic_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "sk-ant-abcdefghijklmnopqrstuvwxyz1234567890",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "sk-ant-abcdefghijklmnopqrstuvwxyz1234567890",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "anthropic" in result.output.lower()
 
     def test_token_set_groq_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "gsk_abcdefghijklmnopqrstuvwxyz1234567890",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "gsk_abcdefghijklmnopqrstuvwxyz1234567890",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "groq" in result.output.lower()
 
     def test_token_set_xai_auto_detect(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "xai-abcdefghijklmnopqrstuvwxyz1234567890",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "xai-abcdefghijklmnopqrstuvwxyz1234567890",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "xai" in result.output.lower()
 
     def test_token_set_explicit_provider(self, runner, tmp_env):
-        result = runner.invoke(cli, [
-            "token", "set", "mytoken12345678901234567890",
-            "--provider", "mistral",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "mytoken12345678901234567890",
+                "--provider",
+                "mistral",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "mistral" in result.output.lower()
         content = tmp_env.read_text()
@@ -189,38 +249,55 @@ class TestTokenCommands:
 
     def test_token_set_masked_in_output(self, runner, tmp_env):
         """Token w outputcie powinien być zamaskowany."""
-        result = runner.invoke(cli, [
-            "token", "set", "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
-            "--env-file", str(tmp_env)
-        ])
+        result = runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         assert result.exit_code == 0
         assert "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345" not in result.output
         assert "..." in result.output
 
     def test_token_set_file_permissions(self, runner, tmp_env):
         """Plik .env powinien mieć uprawnienia 600."""
-        runner.invoke(cli, [
-            "token", "set", "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
-            "--env-file", str(tmp_env)
-        ])
+        runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ12345",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         mode = oct(tmp_env.stat().st_mode)[-3:]
         assert mode == "600"
 
     def test_token_set_replaces_existing(self, runner, tmp_env):
         """Drugi token set powinien zastąpić istniejący."""
         tmp_env.write_text("GEMINI_API_KEY=oldtoken123456789012345\n", encoding="utf-8")
-        runner.invoke(cli, [
-            "token", "set", "AIzaSyNEWTOKENABCDEFGHIJKLMNOPQRSTUV",
-            "--env-file", str(tmp_env)
-        ])
+        runner.invoke(
+            cli,
+            [
+                "token",
+                "set",
+                "AIzaSyNEWTOKENABCDEFGHIJKLMNOPQRSTUV",
+                "--env-file",
+                str(tmp_env),
+            ],
+        )
         content = tmp_env.read_text()
         assert "oldtoken" not in content
         assert "GEMINI_API_KEY=" in content
 
     def test_token_clear(self, runner, tmp_env):
         tmp_env.write_text(
-            "LLM_PROVIDER=gemini\nGEMINI_API_KEY=AIzaSyABC123\n",
-            encoding="utf-8"
+            "LLM_PROVIDER=gemini\nGEMINI_API_KEY=AIzaSyABC123\n", encoding="utf-8"
         )
         result = runner.invoke(cli, ["token", "clear", "--env-file", str(tmp_env)])
         assert result.exit_code == 0

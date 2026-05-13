@@ -5,7 +5,6 @@ Handles differences between Linux, macOS, and Windows.
 
 from __future__ import annotations
 
-import os
 import platform
 import subprocess
 import sys
@@ -34,7 +33,11 @@ def get_os_info() -> dict:
         except Exception:
             info["distro"] = "unknown"
     if IS_WINDOWS:
-        info["edition"] = platform.win32_edition() if hasattr(platform, "win32_edition") else "unknown"
+        info["edition"] = (
+            platform.win32_edition()
+            if hasattr(platform, "win32_edition")
+            else "unknown"
+        )
     return info
 
 
@@ -43,19 +46,48 @@ def needs_elevation(cmd: str) -> bool:
     cmd = cmd.strip()
     if IS_WINDOWS:
         elevated_prefixes = [
-            "sc ", "net ", "netsh ", "reg ", "bcdedit", "diskpart",
-            "sfc ", "dism ", "wmic ", "powercfg", "icacls",
+            "sc ",
+            "net ",
+            "netsh ",
+            "reg ",
+            "bcdedit",
+            "diskpart",
+            "sfc ",
+            "dism ",
+            "wmic ",
+            "powercfg",
+            "icacls",
         ]
         return any(cmd.lower().startswith(p) for p in elevated_prefixes)
     else:
         sudo_prefixes = [
-            "dnf", "apt", "apt-get", "yum", "pacman", "zypper",
-            "rpm", "systemctl", "firewall-cmd", "setenforce",
-            "modprobe", "rmmod", "alsactl", "grub2-", "update-grub",
-            "chmod 0", "chown", "mount", "umount", "useradd", "usermod",
-            "snap install", "flatpak install",
+            "dnf",
+            "apt",
+            "apt-get",
+            "yum",
+            "pacman",
+            "zypper",
+            "rpm",
+            "systemctl",
+            "firewall-cmd",
+            "setenforce",
+            "modprobe",
+            "rmmod",
+            "alsactl",
+            "grub2-",
+            "update-grub",
+            "chmod 0",
+            "chown",
+            "mount",
+            "umount",
+            "useradd",
+            "usermod",
+            "snap install",
+            "flatpak install",
         ]
-        return any(cmd.startswith(p) for p in sudo_prefixes) and not cmd.startswith("sudo")
+        return any(cmd.startswith(p) for p in sudo_prefixes) and not cmd.startswith(
+            "sudo"
+        )
 
 
 def elevate_cmd(cmd: str) -> str:
@@ -72,9 +104,13 @@ def elevate_cmd(cmd: str) -> str:
 def is_dangerous(cmd: str) -> Optional[str]:
     """Returns reason string if command is dangerous, None if safe."""
     import re
+
     patterns = [
         (r"rm\s+-rf\s+/(?!\w)", "rm -rf / destroys root filesystem"),
-        (r"rm\s+-rf\s+/(?:boot|etc|usr|lib|bin|sbin)\b", "deletes critical system directory"),
+        (
+            r"rm\s+-rf\s+/(?:boot|etc|usr|lib|bin|sbin)\b",
+            "deletes critical system directory",
+        ),
         (r"dd\s+if=.*of=/dev/(?:sd|nvme|vd|hd)[a-z](?!\d)", "overwrites disk with dd"),
         (r"mkfs\.", "formats filesystem"),
         (r":\(\)\{.*\};:", "fork bomb"),
@@ -91,11 +127,15 @@ def is_dangerous(cmd: str) -> Optional[str]:
 def is_interactive_blocker(cmd: str) -> Optional[str]:
     """Returns reason string if command is likely to hang in non-interactive session."""
     import re
+
     patterns = [
         (r"\bnewgrp\b", "newgrp replaces the shell and waits for input"),
         (r"\bsu\s+-(\s+|$)", "su - starts a new login shell"),
         (r"\bexec\s+bash\b", "exec replaces the process"),
-        (r"\btop\b(?!.*\s-b(?:\s|$))", "top is interactive unless run in batch mode (-b)"),
+        (
+            r"\btop\b(?!.*\s-b(?:\s|$))",
+            "top is interactive unless run in batch mode (-b)",
+        ),
         (r"\bvim?\b", "editors require terminal interaction"),
         (r"\bnano\b", "editors require terminal interaction"),
         (r"\bless\b", "pagers require terminal interaction"),
@@ -118,6 +158,7 @@ def run_command(
     try:
         if IS_WINDOWS and not shell:
             import shlex
+
             args = shlex.split(cmd)
         else:
             args = cmd
@@ -131,7 +172,12 @@ def run_command(
             encoding="utf-8",
             errors="replace",
         )
-        return proc.returncode == 0, proc.stdout.strip(), proc.stderr.strip(), proc.returncode
+        return (
+            proc.returncode == 0,
+            proc.stdout.strip(),
+            proc.stderr.strip(),
+            proc.returncode,
+        )
     except subprocess.TimeoutExpired:
         return False, "", f"[TIMEOUT {timeout}s]", -2
     except Exception as e:
@@ -179,6 +225,7 @@ def install_package_cmd(package: str) -> str:
 
 def _cmd_exists(cmd: str) -> bool:
     import shutil
+
     return shutil.which(cmd) is not None
 
 
@@ -189,6 +236,7 @@ def setup_signal_timeout(seconds: int, handler) -> bool:
     """
     if IS_POSIX:
         import signal
+
         signal.signal(signal.SIGALRM, handler)
         signal.alarm(seconds)
         return True
@@ -199,4 +247,5 @@ def cancel_signal_timeout():
     """Cancels the timeout signal (POSIX only)."""
     if IS_POSIX:
         import signal
+
         signal.alarm(0)

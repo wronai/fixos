@@ -7,7 +7,6 @@ Przeszukuje: Linux Bugzilla, Linux forums, Reddit, GitHub Issues,
 from __future__ import annotations
 
 import json
-import re
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -51,12 +50,14 @@ def search_fedora_bugzilla(query: str, max_results: int = 3) -> list[SearchResul
             return []
         bugs = json.loads(data).get("bugs", [])
         for bug in bugs[:max_results]:
-            results.append(SearchResult(
-                title=f"[BUG #{bug['id']}] {bug['summary']}",
-                url=f"https://bugzilla.redhat.com/show_bug.cgi?id={bug['id']}",
-                snippet=f"Status: {bug.get('status','?')} | Rozwiązanie: {bug.get('resolution','?')}",
-                source="Linux Bugzilla",
-            ))
+            results.append(
+                SearchResult(
+                    title=f"[BUG #{bug['id']}] {bug['summary']}",
+                    url=f"https://bugzilla.redhat.com/show_bug.cgi?id={bug['id']}",
+                    snippet=f"Status: {bug.get('status', '?')} | Rozwiązanie: {bug.get('resolution', '?')}",
+                    source="Linux Bugzilla",
+                )
+            )
     except Exception:
         pass
     return results
@@ -73,12 +74,14 @@ def search_ask_fedora(query: str, max_results: int = 3) -> list[SearchResult]:
             return []
         topics = json.loads(data).get("topics", [])
         for t in topics[:max_results]:
-            results.append(SearchResult(
-                title=t.get("title", ""),
-                url=f"https://Linux forums/t/{t.get('slug','')}/{t.get('id','')}",
-                snippet=f"Odpowiedzi: {t.get('posts_count', 0)} | Widoki: {t.get('views', 0)}",
-                source="Linux forums",
-            ))
+            results.append(
+                SearchResult(
+                    title=t.get("title", ""),
+                    url=f"https://Linux forums/t/{t.get('slug', '')}/{t.get('id', '')}",
+                    snippet=f"Odpowiedzi: {t.get('posts_count', 0)} | Widoki: {t.get('views', 0)}",
+                    source="Linux forums",
+                )
+            )
     except Exception:
         pass
     return results
@@ -101,12 +104,14 @@ def search_arch_wiki(query: str, max_results: int = 2) -> list[SearchResult]:
         descriptions = parsed[2] if len(parsed) > 2 else []
         urls = parsed[3] if len(parsed) > 3 else []
         for i, title in enumerate(titles[:max_results]):
-            results.append(SearchResult(
-                title=title,
-                url=urls[i] if i < len(urls) else "",
-                snippet=descriptions[i] if i < len(descriptions) else "",
-                source="Arch Wiki",
-            ))
+            results.append(
+                SearchResult(
+                    title=title,
+                    url=urls[i] if i < len(urls) else "",
+                    snippet=descriptions[i] if i < len(descriptions) else "",
+                    source="Arch Wiki",
+                )
+            )
     except Exception:
         pass
     return results
@@ -136,36 +141,44 @@ def search_github_issues(query: str, max_results: int = 3) -> list[SearchResult]
         with urllib.request.urlopen(req, timeout=8) as resp:
             data = json.loads(resp.read().decode())
         for item in data.get("items", [])[:max_results]:
-            results.append(SearchResult(
-                title=item["title"],
-                url=item["html_url"],
-                snippet=f"Stan: {item['state']} | 👍 {item.get('reactions',{}).get('+1',0)}",
-                source="GitHub Issues",
-            ))
+            results.append(
+                SearchResult(
+                    title=item["title"],
+                    url=item["html_url"],
+                    snippet=f"Stan: {item['state']} | 👍 {item.get('reactions', {}).get('+1', 0)}",
+                    source="GitHub Issues",
+                )
+            )
     except Exception:
         pass
     return results
 
 
-def search_serpapi(query: str, api_key: str, max_results: int = 5) -> list[SearchResult]:
+def search_serpapi(
+    query: str, api_key: str, max_results: int = 5
+) -> list[SearchResult]:
     """SerpAPI – Google/Bing search (wymaga klucza API)."""
     results = []
     if not api_key:
         return []
     try:
         q = urllib.parse.quote(f"fedora linux {query} site fix solution")
-        url = f"https://serpapi.com/search.json?q={q}&num={max_results}&api_key={api_key}"
+        url = (
+            f"https://serpapi.com/search.json?q={q}&num={max_results}&api_key={api_key}"
+        )
         data = _http_get(url)
         if not data:
             return []
         parsed = json.loads(data)
         for r in parsed.get("organic_results", [])[:max_results]:
-            results.append(SearchResult(
-                title=r.get("title", ""),
-                url=r.get("link", ""),
-                snippet=r.get("snippet", ""),
-                source="Google (SerpAPI)",
-            ))
+            results.append(
+                SearchResult(
+                    title=r.get("title", ""),
+                    url=r.get("link", ""),
+                    snippet=r.get("snippet", ""),
+                    source="Google (SerpAPI)",
+                )
+            )
     except Exception:
         pass
     return results
@@ -183,21 +196,25 @@ def search_ddg(query: str, max_results: int = 5) -> list[SearchResult]:
         parsed = json.loads(data)
         # Abstract
         if parsed.get("AbstractText") and parsed.get("AbstractURL"):
-            results.append(SearchResult(
-                title=parsed.get("Heading", query),
-                url=parsed["AbstractURL"],
-                snippet=parsed["AbstractText"][:300],
-                source="DuckDuckGo",
-            ))
+            results.append(
+                SearchResult(
+                    title=parsed.get("Heading", query),
+                    url=parsed["AbstractURL"],
+                    snippet=parsed["AbstractText"][:300],
+                    source="DuckDuckGo",
+                )
+            )
         # Related topics
         for topic in parsed.get("RelatedTopics", [])[:max_results]:
             if isinstance(topic, dict) and topic.get("FirstURL"):
-                results.append(SearchResult(
-                    title=topic.get("Text", "")[:80],
-                    url=topic["FirstURL"],
-                    snippet=topic.get("Text", "")[:200],
-                    source="DuckDuckGo",
-                ))
+                results.append(
+                    SearchResult(
+                        title=topic.get("Text", "")[:80],
+                        url=topic["FirstURL"],
+                        snippet=topic.get("Text", "")[:200],
+                        source="DuckDuckGo",
+                    )
+                )
     except Exception:
         pass
     return results[:max_results]
@@ -224,7 +241,12 @@ def search_all(
     ]
 
     if serpapi_key:
-        sources.append(("Google (SerpAPI)", lambda: search_serpapi(query, serpapi_key, max_per_source)))
+        sources.append(
+            (
+                "Google (SerpAPI)",
+                lambda: search_serpapi(query, serpapi_key, max_per_source),
+            )
+        )
     else:
         sources.append(("DuckDuckGo", lambda: search_ddg(query, max_per_source)))
 

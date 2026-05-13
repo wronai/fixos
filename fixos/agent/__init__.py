@@ -21,8 +21,9 @@ if TYPE_CHECKING:
 
 def get_remaining_time(session: "HITLSession | AutonomousSession") -> int:
     """Calculate remaining session time in seconds."""
-    start_time = getattr(session, 'start_ts', None) or getattr(session, 'start_time')
+    start_time = getattr(session, "start_ts", None) or getattr(session, "start_time")
     return session.config.session_timeout - int(time.time() - start_time)
+
 
 __all__ = [
     "run_hitl_session",

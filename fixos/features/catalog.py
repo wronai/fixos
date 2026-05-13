@@ -4,13 +4,14 @@ Package catalog - loads and manages package database from YAML.
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 import yaml
 
 
 @dataclass
 class PackageInfo:
     """Information about a single package."""
+
     id: str
     description: str
     category: str
@@ -33,12 +34,20 @@ class PackageInfo:
 
     def is_available_on(self, distro: str) -> bool:
         """Check if package is available on given distro."""
-        return bool(self.get_distro_name(distro)) or self.flatpak or self.pip or self.npm or self.cargo or self.install_script
+        return (
+            bool(self.get_distro_name(distro))
+            or self.flatpak
+            or self.pip
+            or self.npm
+            or self.cargo
+            or self.install_script
+        )
 
 
 @dataclass
 class PackageCategory:
     """A category of packages (e.g., core_utils, dev_tools)."""
+
     id: str
     description: str
     category: str
@@ -57,30 +66,30 @@ class PackageCatalog:
         """Load package catalog from YAML files."""
         if data_dir is None:
             data_dir = Path(__file__).parent / "data"
-        
+
         catalog = cls()
         packages_file = data_dir / "packages.yaml"
-        
+
         if not packages_file.exists():
             # Create empty catalog if file doesn't exist
             return catalog
-        
+
         with open(packages_file) as f:
             data = yaml.safe_load(f)
-        
+
         if not data:
             return catalog
-        
+
         for cat_id, cat_data in data.items():
             if cat_id.startswith("_"):
                 continue
-            
+
             category = PackageCategory(
                 id=cat_id,
                 description=cat_data.get("description", ""),
                 category=cat_data.get("category", "misc"),
             )
-            
+
             for pkg_data in cat_data.get("packages", []):
                 pkg = PackageInfo(
                     id=pkg_data.get("id", ""),
@@ -97,9 +106,9 @@ class PackageCatalog:
                 )
                 category.packages.append(pkg)
                 catalog.packages[pkg.id] = pkg
-            
+
             catalog.categories[cat_id] = category
-        
+
         return catalog
 
     def get_package(self, pkg_id: str) -> Optional[PackageInfo]:

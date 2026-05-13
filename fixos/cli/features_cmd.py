@@ -5,7 +5,6 @@ Manage packages and system features based on user profiles.
 
 import json
 import click
-from pathlib import Path
 from typing import Optional, List, Dict
 
 from ..features import SystemDetector
@@ -24,7 +23,9 @@ def features() -> None:
 
 
 @features.command("audit")
-@click.option("--profile", "-p", help="Profil użytkownika (developer, sysadmin, gamer, itd.)")
+@click.option(
+    "--profile", "-p", help="Profil użytkownika (developer, sysadmin, gamer, itd.)"
+)
 @click.option("--json-output", is_flag=True, help="Output JSON")
 def features_audit(profile: Optional[str], json_output: bool) -> None:
     """Sprawdź brakujące pakiety dla profilu."""
@@ -70,7 +71,9 @@ def _show_install_results(install_result: Dict) -> None:
     """Display installation results summary."""
     console.print()
     if install_result["installed"]:
-        console.print(f"[green]✅ Zainstalowano: {len(install_result['installed'])}[/green]")
+        console.print(
+            f"[green]✅ Zainstalowano: {len(install_result['installed'])}[/green]"
+        )
     if install_result["failed"]:
         console.print(f"[red]❌ Nie udało się: {len(install_result['failed'])}[/red]")
         for pkg_id in install_result["failed"][:5]:
@@ -127,7 +130,9 @@ def features_profiles() -> None:
     for profile_name in profiles:
         try:
             prof = UserProfile.load(profile_name)
-            console.print(f"  {prof.icon}  [bold]{prof.name:15s}[/bold]  {prof.description}")
+            console.print(
+                f"  {prof.icon}  [bold]{prof.name:15s}[/bold]  {prof.description}"
+            )
         except Exception:
             console.print(f"  📦  [bold]{profile_name:15s}[/bold]  (błąd ładowania)")
 

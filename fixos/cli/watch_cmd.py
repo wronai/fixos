@@ -1,20 +1,38 @@
 """
 Watch daemon command for fixOS CLI
 """
+
 import click
 from fixos.plugins.base import Severity
 
 
 @click.command("watch")
-@click.option("--interval", "-i", default=300, show_default=True,
-              help="Interwał diagnostyki w sekundach")
-@click.option("--modules", "-m", default=None,
-              help="Moduły diagnostyki: system,security,disk,audio,...")
-@click.option("--alert-on", type=click.Choice(["ok", "info", "warning", "critical"]),
-              default="critical", show_default=True,
-              help="Minimalny poziom alertów")
-@click.option("--max-iterations", default=0, show_default=True,
-              help="Maksymalna liczba iteracji (0 = bez limitu)")
+@click.option(
+    "--interval",
+    "-i",
+    default=300,
+    show_default=True,
+    help="Interwał diagnostyki w sekundach",
+)
+@click.option(
+    "--modules",
+    "-m",
+    default=None,
+    help="Moduły diagnostyki: system,security,disk,audio,...",
+)
+@click.option(
+    "--alert-on",
+    type=click.Choice(["ok", "info", "warning", "critical"]),
+    default="critical",
+    show_default=True,
+    help="Minimalny poziom alertów",
+)
+@click.option(
+    "--max-iterations",
+    default=0,
+    show_default=True,
+    help="Maksymalna liczba iteracji (0 = bez limitu)",
+)
 def watch(interval, modules, alert_on, max_iterations) -> None:
     """
     Monitorowanie systemu w tle z powiadomieniami.

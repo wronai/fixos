@@ -1,6 +1,7 @@
 """
 Rollback commands for fixOS CLI
 """
+
 import click
 from fixos.orchestrator.rollback import RollbackSession
 
@@ -48,7 +49,11 @@ def rollback_show(session_id) -> None:
     click.echo()
 
     for i, entry in enumerate(session.entries, 1):
-        status = click.style("OK", fg="green") if entry.success else click.style("FAIL", fg="red")
+        status = (
+            click.style("OK", fg="green")
+            if entry.success
+            else click.style("FAIL", fg="red")
+        )
         click.echo(f"  {i}. [{status}] {entry.command}")
         if entry.rollback_command:
             click.echo(f"     Rollback: {entry.rollback_command}")
@@ -59,7 +64,9 @@ def rollback_show(session_id) -> None:
 @rollback.command("undo")
 @click.argument("session_id")
 @click.option("--last", default=1, help="Ile ostatnich operacji cofnąć")
-@click.option("--dry-run", is_flag=True, default=False, help="Tylko pokaż co by się cofnęło")
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Tylko pokaż co by się cofnęło"
+)
 def rollback_undo(session_id, last, dry_run) -> None:
     """Cofnij operacje z podanej sesji."""
     try:
@@ -82,9 +89,9 @@ def rollback_undo(session_id, last, dry_run) -> None:
     for r in results:
         click.echo(f"  Cofam: {r['command']}")
         click.echo(f"    → {r['rollback_command']}")
-        if r['success'] is None:
+        if r["success"] is None:
             click.echo(click.style("    [DRY-RUN]", fg="yellow"))
-        elif r['success']:
+        elif r["success"]:
             click.echo(click.style("    OK", fg="green"))
         else:
             click.echo(click.style(f"    FAIL: {r['output']}", fg="red"))

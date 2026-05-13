@@ -1,6 +1,7 @@
 """
 Orchestrate command for fixOS CLI - advanced repair with problem graph
 """
+
 import click
 import json
 from pathlib import Path
@@ -10,17 +11,33 @@ from fixos.config import FixOsConfig
 
 @click.command()
 @add_common_options
-@click.option("--mode", type=click.Choice(["hitl", "autonomous"]), default="hitl",
-              help="Tryb wykonania (domyślnie: hitl)")
-@click.option("--modules", "-m", default=None,
-              help="Moduły diagnostyczne do uruchomienia")
-@click.option("--dry-run", is_flag=True, default=False,
-              help="Symulacja bez wykonywania komend")
-@click.option("--max-iterations", default=10, show_default=True,
-              help="Maksymalna liczba iteracji")
-@click.option("--output", "-o", default=None,
-              help="Zapisz log wykonania do pliku JSON")
-def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: str, modules: str, dry_run: bool, max_iterations: int, output: str) -> None:
+@click.option(
+    "--mode",
+    type=click.Choice(["hitl", "autonomous"]),
+    default="hitl",
+    help="Tryb wykonania (domyślnie: hitl)",
+)
+@click.option(
+    "--modules", "-m", default=None, help="Moduły diagnostyczne do uruchomienia"
+)
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Symulacja bez wykonywania komend"
+)
+@click.option(
+    "--max-iterations", default=10, show_default=True, help="Maksymalna liczba iteracji"
+)
+@click.option("--output", "-o", default=None, help="Zapisz log wykonania do pliku JSON")
+def orchestrate(
+    provider: str,
+    token: str,
+    model: str,
+    no_banner: bool,
+    mode: str,
+    modules: str,
+    dry_run: bool,
+    max_iterations: int,
+    output: str,
+) -> None:
     """
     Zaawansowana orkiestracja napraw z grafem problemów.
 
@@ -52,7 +69,9 @@ def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: st
     )
 
     if not cfg.api_key:
-        click.echo(click.style("\nBrak klucza API. Użyj: fixos token set <KLUCZ>", fg="red"))
+        click.echo(
+            click.style("\nBrak klucza API. Użyj: fixos token set <KLUCZ>", fg="red")
+        )
         return
 
     click.echo(click.style("\nOrkiestracja napraw...", fg="cyan", bold=True))
@@ -76,7 +95,7 @@ def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: st
 
     # Build and execute problem graph
     click.echo(click.style("\nFaza 2: Analiza zależności", fg="yellow"))
-    
+
     orch = FixOrchestrator(
         config=cfg,
         dry_run=dry_run,
@@ -100,7 +119,7 @@ def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: st
 
     # Execute
     click.echo(click.style(f"\nFaza 3: Wykonanie (tryb: {mode})", fg="yellow"))
-    
+
     if mode == "hitl":
         result = orch.run_interactive()
     else:
@@ -111,21 +130,33 @@ def orchestrate(provider: str, token: str, model: str, no_banner: bool, mode: st
     click.echo(f"  Wykonane operacje: {result['executed']}")
     click.echo(f"  Błędy: {result['failed']}")
     click.echo(f"  Pominięte: {result['skipped']}")
-    
-    if result['rollback_available']:
-        click.echo(click.style(f"\nRollback dostępny: fixos rollback undo {result['session_id']}", fg="green"))
+
+    if result["rollback_available"]:
+        click.echo(
+            click.style(
+                f"\nRollback dostępny: fixos rollback undo {result['session_id']}",
+                fg="green",
+            )
+        )
 
     # Save output
     if output:
         try:
             Path(output).write_text(
-                json.dumps({
-                    "session_id": result.get('session_id'),
-                    "diagnostics": diagnostics,
-                    "execution": result,
-                    "graph": {pid: p.to_summary() for pid, p in orch.graph.nodes.items()},
-                }, ensure_ascii=False, indent=2, default=str),
-                encoding="utf-8"
+                json.dumps(
+                    {
+                        "session_id": result.get("session_id"),
+                        "diagnostics": diagnostics,
+                        "execution": result,
+                        "graph": {
+                            pid: p.to_summary() for pid, p in orch.graph.nodes.items()
+                        },
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                    default=str,
+                ),
+                encoding="utf-8",
             )
             click.echo(click.style(f"\nLog zapisany: {output}", fg="green"))
         except Exception as e:

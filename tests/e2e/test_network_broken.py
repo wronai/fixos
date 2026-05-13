@@ -117,6 +117,7 @@ class TestNetworkAnonymization:
 
     def test_hostname_in_network_data_masked(self):
         import socket
+
         hostname = socket.gethostname()
         data = f"host {hostname} connected to network"
         anon, report = anonymize(data)
@@ -220,27 +221,32 @@ class TestNetworkExecutorIntegration:
     def test_systemctl_user_network_no_sudo(self):
         """systemctl --user dla usług sieciowych nie dostaje sudo."""
         from fixos.orchestrator.executor import CommandExecutor
+
         ex = CommandExecutor(dry_run=True)
         assert ex.needs_sudo("systemctl --user restart pipewire-pulse") is False
 
     def test_networkmanager_restart_gets_sudo(self):
         from fixos.orchestrator.executor import CommandExecutor
+
         ex = CommandExecutor(dry_run=True)
         cmd = ex.add_sudo("systemctl restart NetworkManager")
         assert cmd.startswith("sudo")
 
     def test_ip_command_no_sudo(self):
         from fixos.orchestrator.executor import CommandExecutor
+
         ex = CommandExecutor(dry_run=True)
         assert ex.needs_sudo("ip addr show") is False
 
     def test_rfkill_no_sudo(self):
         from fixos.orchestrator.executor import CommandExecutor
+
         ex = CommandExecutor(dry_run=True)
         assert ex.needs_sudo("rfkill unblock wifi") is False
 
     def test_firewall_cmd_needs_sudo(self):
         from fixos.orchestrator.executor import CommandExecutor
+
         ex = CommandExecutor(dry_run=True)
         assert ex.needs_sudo("firewall-cmd --add-service=http") is True
 
@@ -249,8 +255,9 @@ class TestNetworkRealLLM:
     """Testy z prawdziwym API – tylko gdy token dostępny."""
 
     @pytest.mark.skipif(
-        not os.environ.get("GEMINI_API_KEY") or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
-        reason="Wymaga GEMINI_API_KEY w .env"
+        not os.environ.get("GEMINI_API_KEY")
+        or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
+        reason="Wymaga GEMINI_API_KEY w .env",
     )
     def test_real_llm_analyzes_network(self, broken_network_diagnostics, test_config):
         """Prawdziwy LLM powinien wykryć problemy sieciowe."""
@@ -273,8 +280,15 @@ class TestNetworkRealLLM:
         reply = client.chat(messages, max_tokens=300)
 
         network_terms = [
-            "networkmanager", "network manager", "rfkill", "wifi", "dns",
-            "resolved", "sieć", "połączenie", "network"
+            "networkmanager",
+            "network manager",
+            "rfkill",
+            "wifi",
+            "dns",
+            "resolved",
+            "sieć",
+            "połączenie",
+            "network",
         ]
         found = [t for t in network_terms if t in reply.lower()]
         assert len(found) >= 1, (

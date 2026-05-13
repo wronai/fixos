@@ -7,10 +7,11 @@ from __future__ import annotations
 
 import json
 import time
-from typing import Optional, Iterator, Type
+from typing import Iterator, Type
 
 try:
     import openai
+
     _HAS_OPENAI = True
 except ImportError:
     _HAS_OPENAI = False
@@ -20,6 +21,7 @@ from ..config import FixOsConfig
 
 class LLMError(Exception):
     """Błąd komunikacji z LLM."""
+
     pass
 
 
@@ -50,10 +52,17 @@ class LLMClient:
         """
         _type = type(e).__name__
         _mod = type(e).__module__
-        if not (_mod.startswith("openai") or _type in (
-            "AuthenticationError", "RateLimitError", "NotFoundError",
-            "APIConnectionError", "APITimeoutError",
-        )):
+        if not (
+            _mod.startswith("openai")
+            or _type
+            in (
+                "AuthenticationError",
+                "RateLimitError",
+                "NotFoundError",
+                "APIConnectionError",
+                "APITimeoutError",
+            )
+        ):
             raise LLMError(f"Nieoczekiwany błąd API: {e}") from e
 
         if _type == "AuthenticationError":
@@ -73,7 +82,8 @@ class LLMClient:
         if _type in ("APIConnectionError", "APITimeoutError"):
             if attempt == 2:
                 raise LLMError(
-                    f"Błąd połączenia z {self.config.base_url}: {e}" if _type == "APIConnectionError"
+                    f"Błąd połączenia z {self.config.base_url}: {e}"
+                    if _type == "APIConnectionError"
                     else "Timeout połączenia z API"
                 )
             time.sleep(5)
@@ -177,11 +187,13 @@ class LLMClient:
             except Exception as e:
                 if attempt < max_retries:
                     augmented.append({"role": "assistant", "content": raw})
-                    augmented.append({
-                        "role": "user",
-                        "content": f"Invalid JSON. Error: {e}. "
-                                   f"Please output ONLY valid JSON.",
-                    })
+                    augmented.append(
+                        {
+                            "role": "user",
+                            "content": f"Invalid JSON. Error: {e}. "
+                            f"Please output ONLY valid JSON.",
+                        }
+                    )
                 else:
                     raise ValueError(
                         f"LLM failed to produce valid schema after "
@@ -194,9 +206,7 @@ class LLMClient:
         text = text.strip()
         if text.startswith("```"):
             lines = text.split("\n")
-            text = "\n".join(
-                lines[1:-1] if lines[-1].startswith("```") else lines[1:]
-            )
+            text = "\n".join(lines[1:-1] if lines[-1].startswith("```") else lines[1:])
         return text.strip()
 
     def ping(self) -> bool:

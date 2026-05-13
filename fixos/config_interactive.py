@@ -38,7 +38,7 @@ def _print_provider_menu() -> dict[int, str]:
     print()
     print("  [0]  Anuluj")
     print()
-    
+
     return num_map
 
 
@@ -53,7 +53,9 @@ def _get_user_choice(num_map: dict[int, str]) -> Optional[str]:
             return None
         if raw.isdigit() and int(raw) in num_map:
             return num_map[int(raw)]
-        print(f"  ❌ Nieprawidłowy wybór. Wpisz numer 1–{len(num_map)} lub 0 aby anulować.")
+        print(
+            f"  ❌ Nieprawidłowy wybór. Wpisz numer 1–{len(num_map)} lub 0 aby anulować."
+        )
 
 
 def _get_api_key(provider: str) -> Optional[str]:
@@ -76,7 +78,7 @@ def _get_api_key(provider: str) -> Optional[str]:
     if not key:
         print("  ❌ Brak klucza – anulowano.")
         return None
-    
+
     return key
 
 
@@ -112,7 +114,7 @@ def _save_to_env(provider: str, key: str, key_env: Optional[str]) -> Path:
 
     env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     env_path.chmod(0o600)
-    
+
     return env_path
 
 
@@ -133,7 +135,7 @@ def interactive_provider_setup() -> Optional[FixOsConfig]:
     key = _get_api_key(chosen)
     if key is None:
         return None
-    
+
     if key == "":  # ollama, no key needed
         return FixOsConfig.load(provider=chosen)
 
@@ -142,7 +144,9 @@ def interactive_provider_setup() -> Optional[FixOsConfig]:
     CONSTANT_4 = 4
     CONSTANT_8 = 8
     CONSTANT_12 = 12
-    masked = f"{key[:CONSTANT_8]}...{key[-CONSTANT_4:]}" if len(key) > CONSTANT_12 else "***"
+    masked = (
+        f"{key[:CONSTANT_8]}...{key[-CONSTANT_4:]}" if len(key) > CONSTANT_12 else "***"
+    )
     print(f"  💾 Zapisano {key_env}={masked} → {env_path}")
     print()
 

@@ -1,13 +1,18 @@
 """
 Config management commands for fixOS CLI
 """
+
 import click
 from pathlib import Path
 
 
 def _env_path() -> Path:
     """Return path to active .env file (cwd > home)."""
-    for p in [Path.cwd() / ".env", Path.home() / ".fixos.env", Path.home() / ".fixos.conf"]:
+    for p in [
+        Path.cwd() / ".env",
+        Path.home() / ".fixos.env",
+        Path.home() / ".fixos.conf",
+    ]:
         if p.exists():
             return p
     return Path.cwd() / ".env"
@@ -16,7 +21,9 @@ def _env_path() -> Path:
 def _set_env_key(key: str, value: str) -> Path:
     """Update or insert KEY=VALUE in the active .env file."""
     path = _env_path()
-    lines: list[str] = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    lines: list[str] = (
+        path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    )
     replaced = False
     for i, line in enumerate(lines):
         if line.startswith(f"{key}="):
@@ -51,7 +58,11 @@ def config_show() -> None:
     click.echo(f"  Agent mode: {cfg.agent_mode}")
     click.echo(f"  Web search: {'włączone' if cfg.enable_web_search else 'wyłączone'}")
 
-    key_status = click.style("skonfigurowany", fg="green") if cfg.api_key else click.style("BRAK", fg="red")
+    key_status = (
+        click.style("skonfigurowany", fg="green")
+        if cfg.api_key
+        else click.style("BRAK", fg="red")
+    )
     click.echo(f"  API Key: {key_status}")
 
     if cfg.env_file_loaded:
@@ -68,7 +79,11 @@ def config_init(force: bool) -> None:
 
     env_path = Path(".env")
     if env_path.exists() and not force:
-        click.echo(click.style("Plik .env już istnieje. Użyj --force aby nadpisać.", fg="yellow"))
+        click.echo(
+            click.style(
+                "Plik .env już istnieje. Użyj --force aby nadpisać.", fg="yellow"
+            )
+        )
         return
 
     template = """# fixOS Configuration
@@ -100,7 +115,11 @@ def config_set(key: str, value: str) -> None:
 
     env_path = Path(".env")
     if not env_path.exists():
-        click.echo(click.style("Plik .env nie istnieje. Uruchom: fixos config init", fg="yellow"))
+        click.echo(
+            click.style(
+                "Plik .env nie istnieje. Uruchom: fixos config init", fg="yellow"
+            )
+        )
         return
 
     set_key(str(env_path), key.upper(), value)
@@ -108,22 +127,28 @@ def config_set(key: str, value: str) -> None:
 
 
 @config.command("model")
-@click.option("--provider", "-p", default=None, help="Provider (domyślnie: aktualny z .env)")
+@click.option(
+    "--provider", "-p", default=None, help="Provider (domyślnie: aktualny z .env)"
+)
 def config_model(provider: str) -> None:
     """Interaktywnie wybierz model LLM z listy."""
-    from fixos.config import FixOsConfig, PROVIDER_MODELS, PROVIDER_DEFAULTS
+    from fixos.config import FixOsConfig, PROVIDER_MODELS
 
     cfg = FixOsConfig.load(provider=provider)
     current_provider = cfg.provider
     models = PROVIDER_MODELS.get(current_provider, [])
 
-    click.echo(click.style(f"\n🤖 Wybór modelu dla providera: ", fg="cyan") +
-               click.style(current_provider, fg="yellow", bold=True))
+    click.echo(
+        click.style("\n🤖 Wybór modelu dla providera: ", fg="cyan")
+        + click.style(current_provider, fg="yellow", bold=True)
+    )
     click.echo(click.style(f"   Aktualny model: {cfg.model}", fg="white"))
     click.echo(click.style("─" * 50, fg="cyan"))
 
     if not models:
-        click.echo(click.style(f"Brak znanych modeli dla '{current_provider}'.", fg="yellow"))
+        click.echo(
+            click.style(f"Brak znanych modeli dla '{current_provider}'.", fg="yellow")
+        )
         custom = click.prompt("Podaj nazwę modelu ręcznie", default=cfg.model)
         chosen = custom
     else:
@@ -131,11 +156,13 @@ def config_model(provider: str) -> None:
         for i, m in enumerate(models, 1):
             marker = click.style("◀ aktualny", fg="green") if m == cfg.model else ""
             click.echo(f"  [{i:2d}] {m}  {marker}")
-        click.echo(f"  [ 0] Wpisz własną nazwę modelu")
+        click.echo("  [ 0] Wpisz własną nazwę modelu")
         click.echo()
 
         while True:
-            raw = click.prompt(click.style("Wybierz numer lub 0", fg="cyan"), default="1")
+            raw = click.prompt(
+                click.style("Wybierz numer lub 0", fg="cyan"), default="1"
+            )
             if raw == "0":
                 chosen = click.prompt("Podaj nazwę modelu", default=cfg.model)
                 break
@@ -164,7 +191,9 @@ def _display_provider_menu(cfg, free, paid) -> dict[int, str]:
     idx = 1
     for name, d in free:
         marker = click.style(" ◀ aktualny", fg="green") if name == cfg.provider else ""
-        click.echo(f"  [{idx:2d}] {click.style(name, fg='yellow'):<20} {d['model']:<38}{marker}")
+        click.echo(
+            f"  [{idx:2d}] {click.style(name, fg='yellow'):<20} {d['model']:<38}{marker}"
+        )
         num_map[idx] = name
         idx += 1
 
@@ -172,7 +201,9 @@ def _display_provider_menu(cfg, free, paid) -> dict[int, str]:
     click.echo(click.style("  💰 PŁATNE:", fg="yellow"))
     for name, d in paid:
         marker = click.style(" ◀ aktualny", fg="green") if name == cfg.provider else ""
-        click.echo(f"  [{idx:2d}] {click.style(name, fg='yellow'):<20} {d['model']:<38}{marker}")
+        click.echo(
+            f"  [{idx:2d}] {click.style(name, fg='yellow'):<20} {d['model']:<38}{marker}"
+        )
         num_map[idx] = name
         idx += 1
 
@@ -185,7 +216,9 @@ def _display_provider_menu(cfg, free, paid) -> dict[int, str]:
 def _prompt_provider_choice(num_map: dict[int, str]) -> str | None:
     """Prompt user to pick a provider; returns name or None if cancelled."""
     while True:
-        raw = click.prompt(click.style("Wybierz numer providera", fg="cyan"), default="0")
+        raw = click.prompt(
+            click.style("Wybierz numer providera", fg="cyan"), default="0"
+        )
         if raw == "0":
             click.echo(click.style("Anulowano.", fg="yellow"))
             return None
@@ -206,15 +239,22 @@ def _save_provider_choice(chosen: str, provider_defaults: dict) -> None:
     click.echo(click.style(f"  ✅ Ustawiono LLM_PROVIDER={chosen}", fg="green"))
 
     if chosen != "ollama" and key_env and not os.environ.get(key_env, ""):
-        click.echo(click.style(f"  ℹ️  Pobierz klucz API: {pdef.get('key_url', '')}", fg="cyan"))
-        if click.confirm(click.style(f"  Chcesz teraz wpisać klucz {key_env}?", fg="yellow"), default=False):
+        click.echo(
+            click.style(f"  ℹ️  Pobierz klucz API: {pdef.get('key_url', '')}", fg="cyan")
+        )
+        if click.confirm(
+            click.style(f"  Chcesz teraz wpisać klucz {key_env}?", fg="yellow"),
+            default=False,
+        ):
             key = click.prompt(f"  Wklej klucz {key_env}", hide_input=True)
             if key.strip():
                 _set_env_key(key_env, key.strip())
                 click.echo(click.style(f"  ✅ Zapisano {key_env}", fg="green"))
 
     click.echo(click.style(f"  💾 Zapisano → {env_file}", fg="cyan"))
-    click.echo(click.style(f"\n  Następny krok – wybierz model: fixos config model", fg="white"))
+    click.echo(
+        click.style("\n  Następny krok – wybierz model: fixos config model", fg="white")
+    )
     click.echo()
 
 

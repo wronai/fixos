@@ -69,12 +69,12 @@ class FeatureInstaller:
             return "skipped"
 
         method_dispatch = {
-            "native":  self._install_native,
+            "native": self._install_native,
             "flatpak": self._install_flatpak,
-            "pip":     self._install_pip,
-            "cargo":   self._install_cargo,
-            "npm":     self._install_npm,
-            "script":  self._run_script,
+            "pip": self._install_pip,
+            "cargo": self._install_cargo,
+            "npm": self._install_npm,
+            "script": self._run_script,
         }
 
         for method, value in methods:
@@ -152,9 +152,7 @@ class FeatureInstaller:
 
     def _run_script(self, script: str) -> bool:
         """Run install script."""
-        result = subprocess.run(
-            script, shell=True, capture_output=True, timeout=300
-        )
+        result = subprocess.run(script, shell=True, capture_output=True, timeout=300)
         return result.returncode == 0
 
     def get_rollback_commands(self, installed_packages: List[str]) -> List[str]:

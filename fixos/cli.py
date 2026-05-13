@@ -11,8 +11,6 @@ Migration path:
 For internal imports, use fixos.cli.* modules directly.
 """
 
-from pathlib import Path  # For backward compat with tests
-
 # Re-export all public API from new cli package
 from fixos.cli import cli, main
 from fixos.cli.shared import (
@@ -25,13 +23,27 @@ from fixos.cli.shared import (
 
 # Re-export command functions for backward compatibility
 from fixos.cli.scan_cmd import scan, _run_disk_analysis, _print_quick_issues
-from fixos.cli.fix_cmd import fix, handle_disk_cleanup_mode, execute_cleanup_actions, try_llm_fallback_for_failures
+from fixos.cli.fix_cmd import (
+    fix,
+    handle_disk_cleanup_mode,
+    execute_cleanup_actions,
+    try_llm_fallback_for_failures,
+)
 from fixos.cli.orchestrate_cmd import orchestrate
-from fixos.cli.cleanup_cmd import cleanup_services, _cleanup_flatpak_detailed, _cleanup_single_service
+from fixos.cli.cleanup_cmd import (
+    cleanup_services,
+    _cleanup_flatpak_detailed,
+    _cleanup_single_service,
+)
 from fixos.cli.token_cmd import token, token_set, token_show, token_clear
 from fixos.cli.config_cmd import config, config_show, config_init, config_set
 from fixos.cli.provider_cmd import llm_providers, providers, test_llm
-from fixos.cli.ask_cmd import ask, _handle_natural_command, _match_heuristic_command, _execute_heuristic_command
+from fixos.cli.ask_cmd import (
+    ask,
+    _handle_natural_command,
+    _match_heuristic_command,
+    _execute_heuristic_command,
+)
 from fixos.cli.rollback_cmd import rollback, rollback_list, rollback_show, rollback_undo
 from fixos.cli.watch_cmd import watch
 from fixos.cli.profile_cmd import profile, profile_list, profile_show

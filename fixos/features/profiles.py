@@ -13,6 +13,7 @@ from .catalog import PackageCatalog, PackageInfo
 @dataclass
 class UserProfile:
     """A user profile defining what packages/features they want."""
+
     name: str
     description: str
     icon: str = "📦"
@@ -24,15 +25,17 @@ class UserProfile:
         """Load a profile from YAML file."""
         if data_dir is None:
             data_dir = Path(__file__).parent / "data" / "profiles"
-        
+
         profile_file = data_dir / f"{profile_name}.yaml"
-        
+
         if not profile_file.exists():
-            raise FileNotFoundError(f"Profile '{profile_name}' not found at {profile_file}")
-        
+            raise FileNotFoundError(
+                f"Profile '{profile_name}' not found at {profile_file}"
+            )
+
         with open(profile_file) as f:
             data = yaml.safe_load(f)
-        
+
         return cls(
             name=data.get("name", profile_name),
             description=data.get("description", ""),
@@ -46,18 +49,20 @@ class UserProfile:
         """List available profile names."""
         if data_dir is None:
             data_dir = Path(__file__).parent / "data" / "profiles"
-        
+
         profiles = []
         if data_dir.exists():
             for f in data_dir.glob("*.yaml"):
                 profiles.append(f.stem)
         return sorted(profiles)
 
-    def resolve_packages(self, catalog: PackageCatalog, system_info) -> List[PackageInfo]:
+    def resolve_packages(
+        self, catalog: PackageCatalog, system_info
+    ) -> List[PackageInfo]:
         """Resolve all packages for this profile based on system."""
         result: List[PackageInfo] = []
         seen: Set[str] = set()
-        
+
         # Add packages from included categories
         for cat_id in self.includes:
             if cat_id in catalog.categories:
@@ -66,7 +71,7 @@ class UserProfile:
                     if pkg.id not in seen:
                         result.append(pkg)
                         seen.add(pkg.id)
-        
+
         # Add extra packages
         for pkg_id in self.extra_packages:
             if pkg_id not in seen:
@@ -74,7 +79,7 @@ class UserProfile:
                 if pkg:
                     result.append(pkg)
                     seen.add(pkg_id)
-        
+
         return result
 
     def to_dict(self) -> dict:

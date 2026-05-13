@@ -9,7 +9,9 @@ from unittest.mock import MagicMock, patch
 
 from fixos.orchestrator.graph import Problem, ProblemGraph
 from fixos.orchestrator.executor import (
-    CommandExecutor, DangerousCommandError, CommandTimeoutError, ExecutionResult
+    CommandExecutor,
+    DangerousCommandError,
+    ExecutionResult,
 )
 
 
@@ -17,21 +19,42 @@ from fixos.orchestrator.executor import (
 #  Problem + ProblemGraph
 # ══════════════════════════════════════════════════════════
 
+
 class TestProblem:
     def test_is_actionable_pending(self):
-        p = Problem(id="p1", description="test", severity="warning", fix_commands=["echo ok"])
+        p = Problem(
+            id="p1", description="test", severity="warning", fix_commands=["echo ok"]
+        )
         assert p.is_actionable()
 
     def test_is_actionable_resolved(self):
-        p = Problem(id="p1", description="test", severity="warning", fix_commands=[], status="resolved")
+        p = Problem(
+            id="p1",
+            description="test",
+            severity="warning",
+            fix_commands=[],
+            status="resolved",
+        )
         assert not p.is_actionable()
 
     def test_is_actionable_max_attempts(self):
-        p = Problem(id="p1", description="test", severity="warning", fix_commands=[], attempts=3, max_attempts=3)
+        p = Problem(
+            id="p1",
+            description="test",
+            severity="warning",
+            fix_commands=[],
+            attempts=3,
+            max_attempts=3,
+        )
         assert not p.is_actionable()
 
     def test_to_summary_keys(self):
-        p = Problem(id="p1", description="test", severity="critical", fix_commands=["dnf install x"])
+        p = Problem(
+            id="p1",
+            description="test",
+            severity="critical",
+            fix_commands=["dnf install x"],
+        )
         s = p.to_summary()
         assert s["id"] == "p1"
         assert s["severity"] == "critical"
@@ -53,8 +76,20 @@ class TestProblemGraph:
 
     def test_next_actionable_blocked_by_dep(self):
         g = ProblemGraph()
-        p1 = Problem(id="p1", description="root", severity="critical", fix_commands=[], status="pending")
-        p2 = Problem(id="p2", description="child", severity="warning", fix_commands=[], caused_by=["p1"])
+        p1 = Problem(
+            id="p1",
+            description="root",
+            severity="critical",
+            fix_commands=[],
+            status="pending",
+        )
+        p2 = Problem(
+            id="p2",
+            description="child",
+            severity="warning",
+            fix_commands=[],
+            caused_by=["p1"],
+        )
         g.add(p1)
         g.add(p2)
         # p2 jest zablokowane przez p1
@@ -63,8 +98,20 @@ class TestProblemGraph:
 
     def test_next_actionable_dep_resolved(self):
         g = ProblemGraph()
-        p1 = Problem(id="p1", description="root", severity="critical", fix_commands=[], status="resolved")
-        p2 = Problem(id="p2", description="child", severity="warning", fix_commands=[], caused_by=["p1"])
+        p1 = Problem(
+            id="p1",
+            description="root",
+            severity="critical",
+            fix_commands=[],
+            status="resolved",
+        )
+        p2 = Problem(
+            id="p2",
+            description="child",
+            severity="warning",
+            fix_commands=[],
+            caused_by=["p1"],
+        )
         g.add(p1)
         g.add(p2)
         actionable = g.next_actionable()
@@ -72,24 +119,71 @@ class TestProblemGraph:
 
     def test_all_done_when_all_resolved(self):
         g = ProblemGraph()
-        g.add(Problem(id="p1", description="a", severity="info", fix_commands=[], status="resolved"))
-        g.add(Problem(id="p2", description="b", severity="info", fix_commands=[], status="failed"))
+        g.add(
+            Problem(
+                id="p1",
+                description="a",
+                severity="info",
+                fix_commands=[],
+                status="resolved",
+            )
+        )
+        g.add(
+            Problem(
+                id="p2",
+                description="b",
+                severity="info",
+                fix_commands=[],
+                status="failed",
+            )
+        )
         assert g.all_done()
 
     def test_all_done_false_when_pending(self):
         g = ProblemGraph()
-        g.add(Problem(id="p1", description="a", severity="info", fix_commands=[], status="pending"))
+        g.add(
+            Problem(
+                id="p1",
+                description="a",
+                severity="info",
+                fix_commands=[],
+                status="pending",
+            )
+        )
         assert not g.all_done()
 
     def test_pending_count(self):
         g = ProblemGraph()
-        g.add(Problem(id="p1", description="a", severity="info", fix_commands=[], status="pending"))
-        g.add(Problem(id="p2", description="b", severity="info", fix_commands=[], status="resolved"))
+        g.add(
+            Problem(
+                id="p1",
+                description="a",
+                severity="info",
+                fix_commands=[],
+                status="pending",
+            )
+        )
+        g.add(
+            Problem(
+                id="p2",
+                description="b",
+                severity="info",
+                fix_commands=[],
+                status="resolved",
+            )
+        )
         assert g.pending_count() == 1
 
     def test_render_tree_not_empty(self):
         g = ProblemGraph()
-        g.add(Problem(id="p1", description="Brak dźwięku", severity="critical", fix_commands=[]))
+        g.add(
+            Problem(
+                id="p1",
+                description="Brak dźwięku",
+                severity="critical",
+                fix_commands=[],
+            )
+        )
         tree = g.render_tree()
         assert "p1" in tree
         assert "Brak dźwięku" in tree
@@ -97,16 +191,41 @@ class TestProblemGraph:
 
     def test_topological_order_critical_first(self):
         g = ProblemGraph()
-        g.add(Problem(id="p_info", description="info", severity="info", fix_commands=[]))
-        g.add(Problem(id="p_crit", description="critical", severity="critical", fix_commands=[]))
-        g.add(Problem(id="p_warn", description="warning", severity="warning", fix_commands=[]))
+        g.add(
+            Problem(id="p_info", description="info", severity="info", fix_commands=[])
+        )
+        g.add(
+            Problem(
+                id="p_crit",
+                description="critical",
+                severity="critical",
+                fix_commands=[],
+            )
+        )
+        g.add(
+            Problem(
+                id="p_warn", description="warning", severity="warning", fix_commands=[]
+            )
+        )
         # critical powinno być pierwsze
         assert g.execution_order[0] == "p_crit"
 
     def test_child_linked_to_parent(self):
         g = ProblemGraph()
-        parent = Problem(id="p1", description="parent", severity="critical", fix_commands=[], status="resolved")
-        child = Problem(id="p2", description="child", severity="warning", fix_commands=[], caused_by=["p1"])
+        parent = Problem(
+            id="p1",
+            description="parent",
+            severity="critical",
+            fix_commands=[],
+            status="resolved",
+        )
+        child = Problem(
+            id="p2",
+            description="child",
+            severity="warning",
+            fix_commands=[],
+            caused_by=["p1"],
+        )
         g.add(parent)
         g.add(child)
         assert "p1" in child.caused_by
@@ -115,6 +234,7 @@ class TestProblemGraph:
 # ══════════════════════════════════════════════════════════
 #  CommandExecutor
 # ══════════════════════════════════════════════════════════
+
 
 class TestCommandExecutor:
     def test_is_dangerous_rm_rf_root(self):
@@ -168,7 +288,9 @@ class TestCommandExecutor:
 
     def test_execute_sync_safe_command(self):
         ex = CommandExecutor(dry_run=False)
-        result = ex.execute_sync("echo hello_fixfedora", add_sudo=False, check_idempotent=False)
+        result = ex.execute_sync(
+            "echo hello_fixfedora", add_sudo=False, check_idempotent=False
+        )
         assert result.executed
         assert result.success
         assert "hello_fixfedora" in result.stdout
@@ -202,10 +324,12 @@ class TestCommandExecutor:
 #  FixOrchestrator (z mock LLM)
 # ══════════════════════════════════════════════════════════
 
+
 class TestFixOrchestrator:
     @pytest.fixture
     def mock_cfg(self):
         from fixos.config import FixOsConfig
+
         return FixOsConfig(
             provider="gemini",
             api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_1234567890",
@@ -219,24 +343,42 @@ class TestFixOrchestrator:
 
     def test_load_from_dict(self, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
+
         orch = FixOrchestrator(config=mock_cfg)
-        problems = orch.load_from_dict([
-            {"id": "p1", "description": "Brak SOF firmware", "severity": "critical",
-             "fix_commands": ["sudo dnf install sof-firmware"]},
-            {"id": "p2", "description": "PipeWire failed", "severity": "warning",
-             "fix_commands": ["systemctl --user restart pipewire"]},
-        ])
+        problems = orch.load_from_dict(
+            [
+                {
+                    "id": "p1",
+                    "description": "Brak SOF firmware",
+                    "severity": "critical",
+                    "fix_commands": ["sudo dnf install sof-firmware"],
+                },
+                {
+                    "id": "p2",
+                    "description": "PipeWire failed",
+                    "severity": "warning",
+                    "fix_commands": ["systemctl --user restart pipewire"],
+                },
+            ]
+        )
         assert len(problems) == 2
         assert orch.graph.get("p1") is not None
         assert orch.graph.get("p2") is not None
 
     def test_graph_render_after_load(self, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
+
         orch = FixOrchestrator(config=mock_cfg)
-        orch.load_from_dict([
-            {"id": "p1", "description": "Brak dźwięku", "severity": "critical",
-             "fix_commands": ["sudo dnf install sof-firmware"]},
-        ])
+        orch.load_from_dict(
+            [
+                {
+                    "id": "p1",
+                    "description": "Brak dźwięku",
+                    "severity": "critical",
+                    "fix_commands": ["sudo dnf install sof-firmware"],
+                },
+            ]
+        )
         tree = orch.graph.render_tree()
         assert "p1" in tree
         assert "Brak dźwięku" in tree
@@ -248,17 +390,26 @@ class TestFixOrchestrator:
 
         executor = CommandExecutor(dry_run=True)
         orch = FixOrchestrator(config=mock_cfg, executor=executor)
-        orch.load_from_dict([
-            {"id": "p1", "description": "test", "severity": "info",
-             "fix_commands": ["echo test"]},
-        ])
+        orch.load_from_dict(
+            [
+                {
+                    "id": "p1",
+                    "description": "test",
+                    "severity": "info",
+                    "fix_commands": ["echo test"],
+                },
+            ]
+        )
 
         # W dry-run: auto-confirm, LLM evaluate mockujemy
-        with patch.object(orch, "_evaluate_and_rediagnose", return_value=[]) as mock_eval:
+        with patch.object(
+            orch, "_evaluate_and_rediagnose", return_value=[]
+        ) as mock_eval:
             # Ustaw problem jako resolved po wykonaniu
             def fake_eval(problem, result):
                 problem.status = "resolved"
                 return []
+
             mock_eval.side_effect = fake_eval
 
             summary = orch.run_sync(confirm_fn=lambda p, c: True)
@@ -295,19 +446,22 @@ class TestFixOrchestrator:
 
     def test_parse_json_clean(self, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
+
         orch = FixOrchestrator(config=mock_cfg)
         data = orch._parse_json('{"key": "value"}')
         assert data["key"] == "value"
 
     def test_parse_json_with_markdown_fence(self, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
+
         orch = FixOrchestrator(config=mock_cfg)
-        raw = "```json\n{\"key\": \"value\"}\n```"
+        raw = '```json\n{"key": "value"}\n```'
         data = orch._parse_json(raw)
         assert data["key"] == "value"
 
     def test_parse_json_invalid_raises(self, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
+
         orch = FixOrchestrator(config=mock_cfg)
         with pytest.raises(ValueError):
             orch._parse_json("not json at all")

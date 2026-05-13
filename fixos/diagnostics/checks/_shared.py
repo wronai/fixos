@@ -3,14 +3,18 @@ Shared utilities for diagnostic check modules.
 """
 
 import subprocess
-from typing import Any
 
 try:
     import psutil
 except ModuleNotFoundError:  # pragma: no cover
     psutil = None
 
-from ...platform_utils import IS_LINUX as _IS_LINUX, IS_WINDOWS as _IS_WINDOWS, IS_MAC as _IS_MAC, SYSTEM as _SYSTEM
+from ...platform_utils import (
+    IS_LINUX as _IS_LINUX,
+    IS_WINDOWS as _IS_WINDOWS,
+    IS_MAC as _IS_MAC,
+    SYSTEM as _SYSTEM,
+)
 from ...constants import DIAGNOSTIC_CMD_TIMEOUT
 
 

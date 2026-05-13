@@ -9,7 +9,6 @@ Refactored: Now uses ServiceDetailsProvider and ServiceCleaner for detailed oper
 import os
 import glob
 import json
-from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
@@ -21,6 +20,7 @@ from ..constants import SERVICE_SCAN_THRESHOLD_MB
 
 class ServiceType(Enum):
     """Service types that can be scanned and cleaned."""
+
     DOCKER = "docker"
     OLLAMA = "ollama"
     CONTAINERD = "containerd"
@@ -75,6 +75,7 @@ class ServiceType(Enum):
 @dataclass
 class ServiceDataInfo:
     """Information about service data."""
+
     service_type: ServiceType
     name: str
     path: str
@@ -126,7 +127,16 @@ class ServiceDataScanner:
         ServiceType.VMWARE: ["~/vmware", "~/Virtual Machines"],
         ServiceType.NIX: ["~/.nix-profile", "~/.nix-defexpr", "/nix"],
         ServiceType.BREW: ["~/homebrew", "/usr/local/Homebrew", "/opt/homebrew"],
-        ServiceType.CHROME: ["~/.cache/google-chrome", "~/.config/google-chrome/*/Cache", "~/.config/google-chrome/*/Code Cache", "~/.config/google-chrome/*/GPUCache", "~/.config/google-chrome/*/DawnCache", "~/.config/google-chrome/*/GrShaderCache", "~/.config/google-chrome/*/ShaderCache", "~/.config/google-chrome/*/Service Worker"],
+        ServiceType.CHROME: [
+            "~/.cache/google-chrome",
+            "~/.config/google-chrome/*/Cache",
+            "~/.config/google-chrome/*/Code Cache",
+            "~/.config/google-chrome/*/GPUCache",
+            "~/.config/google-chrome/*/DawnCache",
+            "~/.config/google-chrome/*/GrShaderCache",
+            "~/.config/google-chrome/*/ShaderCache",
+            "~/.config/google-chrome/*/Service Worker",
+        ],
         ServiceType.FIREFOX: ["~/.cache/mozilla", "~/.mozilla/firefox/*/cache2"],
         ServiceType.EDGE: ["~/.cache/microsoft-edge"],
         ServiceType.VSCODE: ["~/.vscode/extensions", "~/.config/Code/Cache"],
@@ -177,7 +187,9 @@ class ServiceDataScanner:
                         results.append(info)
         return results
 
-    def _analyze_service_path(self, service_type: ServiceType, path: str) -> Optional[ServiceDataInfo]:
+    def _analyze_service_path(
+        self, service_type: ServiceType, path: str
+    ) -> Optional[ServiceDataInfo]:
         """Analyze a specific service path."""
         try:
             size_mb = self._get_path_size_mb(path)
@@ -198,19 +210,22 @@ class ServiceDataScanner:
                 safe_to_cleanup=ServiceCleaner.is_safe_cleanup(service_type, path),
                 impact="high" if size_gb > 1.0 else "medium",
                 items_count=details.get("items_count"),
-                details=details
+                details=details,
             )
         except Exception as e:
             return ServiceDataInfo(
                 service_type=service_type,
                 name=service_type.value.title(),
                 path=path,
-                size_mb=0, size_gb=0,
+                size_mb=0,
+                size_gb=0,
                 description=f"Error analyzing: {str(e)}",
                 can_cleanup=False,
-                cleanup_command="", preview_command="",
-                safe_to_cleanup=False, impact="none",
-                details={"error": str(e)}
+                cleanup_command="",
+                preview_command="",
+                safe_to_cleanup=False,
+                impact="none",
+                details={"error": str(e)},
             )
 
     def _get_path_size_mb(self, path: str) -> float:
@@ -234,7 +249,9 @@ class ServiceDataScanner:
         """Generate cleanup plan for services."""
         return self._cleaner.get_cleanup_plan(selected_services)
 
-    def cleanup_service(self, service_type: str, dry_run: bool = False) -> Dict[str, Any]:
+    def cleanup_service(
+        self, service_type: str, dry_run: bool = False
+    ) -> Dict[str, Any]:
         """Execute cleanup for a specific service."""
         return self._cleaner.cleanup_service(service_type, dry_run)
 

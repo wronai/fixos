@@ -50,6 +50,7 @@ Co naprawiamy? (wpisz numer, 'all', 'skip' lub 'q' aby zakończyć)"""
 # ── Timeout handler ─────────────────────────────────────────────────────────
 from fixos.utils.timeout import SessionTimeout
 
+
 def _timeout_handler(signum, frame):
     raise SessionTimeout()
 
@@ -69,16 +70,27 @@ def execute_command(cmd: str) -> tuple[bool, str]:
     Zwraca (sukces, output).
     """
     # Komendy wymagające sudo
-    dangerous_prefixes = ['dnf', 'rpm', 'systemctl', 'firewall-cmd', 'setenforce',
-                          'chmod', 'chown', 'rm ', 'mv ', 'dd ', 'mkfs']
+    dangerous_prefixes = [
+        "dnf",
+        "rpm",
+        "systemctl",
+        "firewall-cmd",
+        "setenforce",
+        "chmod",
+        "chown",
+        "rm ",
+        "mv ",
+        "dd ",
+        "mkfs",
+    ]
     is_dangerous = any(cmd.strip().startswith(p) for p in dangerous_prefixes)
 
-    if is_dangerous and not cmd.strip().startswith('sudo '):
-        cmd = 'sudo ' + cmd.strip()
+    if is_dangerous and not cmd.strip().startswith("sudo "):
+        cmd = "sudo " + cmd.strip()
 
     print(f"\n  [exec] {cmd}")
     confirm = input("  Potwierdź wykonanie (Y/n): ").strip().lower()
-    if confirm not in ('y', 'yes', ''):
+    if confirm not in ("y", "yes", ""):
         return False, "Anulowano przez użytkownika."
 
     try:
@@ -101,7 +113,10 @@ def _llm_call(client, model: str, messages: list) -> Optional[str]:
     """Call the LLM; return reply text, '' on rate-limit, None on fatal error."""
     try:
         response = client.chat.completions.create(
-            model=model, messages=messages, max_tokens=2000, temperature=0.3,
+            model=model,
+            messages=messages,
+            max_tokens=2000,
+            temperature=0.3,
         )
         return response.choices[0].message.content
     except openai.AuthenticationError:
@@ -120,7 +135,9 @@ def _handle_user_turn(session, messages: list, remaining: int, verbose: bool) ->
     """Read user input, update messages. Returns 'quit', 'break', 'continue', or 'ok'."""
     try:
         user_input = session.prompt(
-            HTML(f"\n<prompt>fixos</prompt> <timer>[{format_time(remaining)}]</timer> ❯ ")
+            HTML(
+                f"\n<prompt>fixos</prompt> <timer>[{format_time(remaining)}]</timer> ❯ "
+            )
         ).strip()
     except (EOFError, KeyboardInterrupt):
         print("\n\nSesja przerwana przez użytkownika.")
@@ -128,11 +145,11 @@ def _handle_user_turn(session, messages: list, remaining: int, verbose: bool) ->
 
     if not user_input:
         return "continue"
-    if user_input.lower() in ('q', 'quit', 'exit', 'koniec'):
+    if user_input.lower() in ("q", "quit", "exit", "koniec"):
         print("\n✅ Sesja zakończona przez użytkownika.")
         return "quit"
 
-    if user_input.startswith('!'):
+    if user_input.startswith("!"):
         cmd = user_input[1:].strip()
         _, output = execute_command(cmd)
         feedback = f"Wynik komendy `{cmd}`:\n{output}"
@@ -142,14 +159,16 @@ def _handle_user_turn(session, messages: list, remaining: int, verbose: bool) ->
         return "continue"
 
     messages.append({"role": "user", "content": user_input})
-    if user_input.isdigit() or user_input.lower() == 'all':
-        messages.append({
-            "role": "user",
-            "content": (
-                f"Podaj TYLKO konkretną komendę shell do naprawy problemu {user_input}. "
-                f"Format: `komenda`. Bez opisu."
-            )
-        })
+    if user_input.isdigit() or user_input.lower() == "all":
+        messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Podaj TYLKO konkretną komendę shell do naprawy problemu {user_input}. "
+                    f"Format: `komenda`. Bez opisu."
+                ),
+            }
+        )
     return "ok"
 
 
@@ -185,14 +204,17 @@ def run_llm_shell(
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": (
-            f"Oto anonimizowane dane diagnostyczne mojego systemu system:\n\n"
-            f"```\n{anon_data}\n```\n\n"
-            f"Przeanalizuj je i przedstaw wykryte problemy."
-        )},
+        {
+            "role": "user",
+            "content": (
+                f"Oto anonimizowane dane diagnostyczne mojego systemu system:\n\n"
+                f"```\n{anon_data}\n```\n\n"
+                f"Przeanalizuj je i przedstaw wykryte problemy."
+            ),
+        },
     ]
 
-    style = Style.from_dict({'prompt': '#00aa00 bold', 'timer': '#888888'})
+    style = Style.from_dict({"prompt": "#00aa00 bold", "timer": "#888888"})
     session = PromptSession(style=style)
 
     print("\n" + "═" * 60)
@@ -232,5 +254,7 @@ def run_llm_shell(
         signal.alarm(0)  # Wyłącz alarm
 
     print(f"\n{'═' * 60}")
-    print(f"  📊 Podsumowanie sesji: {len(messages) - 2} interakcji w {format_time(elapsed)}")
+    print(
+        f"  📊 Podsumowanie sesji: {len(messages) - 2} interakcji w {format_time(elapsed)}"
+    )
     print(f"{'═' * 60}\n")

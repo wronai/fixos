@@ -6,8 +6,6 @@ Fixtures: mock LLM, mock diagnostics, simulated broken environments.
 from __future__ import annotations
 
 import os
-import json
-from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock, patch
 
@@ -17,6 +15,7 @@ from fixos.config import FixOsConfig
 
 
 # ── Helpers ───────────────────────────────────────────────
+
 
 def _env(key: str, default: str = "") -> str:
     return os.environ.get(key, default)
@@ -32,6 +31,7 @@ def _has_real_token() -> bool:
 # ══════════════════════════════════════════════════════════
 #  FIXTURES
 # ══════════════════════════════════════════════════════════
+
 
 @pytest.fixture(scope="session")
 def real_api_available() -> bool:
@@ -75,7 +75,9 @@ def mock_llm_client(mock_config):
    → Fix: `nautilus -q && rm -rf ~/.cache/thumbnails/*`
 """
         mock_response.usage.total_tokens = 350
-        mock_openai.OpenAI.return_value.chat.completions.create.return_value = mock_response
+        mock_openai.OpenAI.return_value.chat.completions.create.return_value = (
+            mock_response
+        )
         yield mock_openai
 
 
@@ -159,7 +161,9 @@ def broken_thumbnails_diagnostics() -> dict[str, Any]:
 
 
 @pytest.fixture
-def full_broken_diagnostics(broken_audio_diagnostics, broken_thumbnails_diagnostics) -> dict:
+def full_broken_diagnostics(
+    broken_audio_diagnostics, broken_thumbnails_diagnostics
+) -> dict:
     """Dane diagnostyczne z wieloma jednoczesne problemami."""
     combined = dict(broken_audio_diagnostics)
     combined["thumbnails"] = broken_thumbnails_diagnostics["thumbnails"]

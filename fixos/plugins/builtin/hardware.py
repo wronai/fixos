@@ -19,49 +19,59 @@ class Plugin(DiagnosticPlugin):
         gpu = self._check_gpu()
         raw_data["gpu"] = gpu
         if gpu.get("error"):
-            findings.append(Finding(
-                title="Nie wykryto GPU",
-                severity=Severity.WARNING,
-                description="Nie udało się odczytać informacji o GPU.",
-                suggestion="Sprawdź sterowniki graficzne.",
-            ))
+            findings.append(
+                Finding(
+                    title="Nie wykryto GPU",
+                    severity=Severity.WARNING,
+                    description="Nie udało się odczytać informacji o GPU.",
+                    suggestion="Sprawdź sterowniki graficzne.",
+                )
+            )
 
         # Battery
         battery = self._check_battery()
         raw_data["battery"] = battery
         if battery.get("capacity") is not None and battery["capacity"] < 30:
-            findings.append(Finding(
-                title="Niski poziom baterii",
-                severity=Severity.WARNING,
-                description=f"Bateria na poziomie {battery['capacity']}%.",
-            ))
+            findings.append(
+                Finding(
+                    title="Niski poziom baterii",
+                    severity=Severity.WARNING,
+                    description=f"Bateria na poziomie {battery['capacity']}%.",
+                )
+            )
         if battery.get("health") and battery["health"] < 50:
-            findings.append(Finding(
-                title="Zużyta bateria",
-                severity=Severity.CRITICAL,
-                description=f"Zdrowie baterii: {battery['health']}%.",
-                suggestion="Rozważ wymianę baterii.",
-            ))
+            findings.append(
+                Finding(
+                    title="Zużyta bateria",
+                    severity=Severity.CRITICAL,
+                    description=f"Zdrowie baterii: {battery['health']}%.",
+                    suggestion="Rozważ wymianę baterii.",
+                )
+            )
 
         # Touchpad
         touchpad = self._check_touchpad()
         raw_data["touchpad"] = touchpad
         if touchpad.get("missing"):
-            findings.append(Finding(
-                title="Nie wykryto touchpada",
-                severity=Severity.INFO,
-                description="System nie wykrył urządzenia touchpad.",
-            ))
+            findings.append(
+                Finding(
+                    title="Nie wykryto touchpada",
+                    severity=Severity.INFO,
+                    description="System nie wykrył urządzenia touchpad.",
+                )
+            )
 
         # Camera
         camera = self._check_camera()
         raw_data["camera"] = camera
         if camera.get("missing"):
-            findings.append(Finding(
-                title="Nie wykryto kamery",
-                severity=Severity.INFO,
-                description="Nie znaleziono urządzenia /dev/video*.",
-            ))
+            findings.append(
+                Finding(
+                    title="Nie wykryto kamery",
+                    severity=Severity.INFO,
+                    description="Nie znaleziono urządzenia /dev/video*.",
+                )
+            )
 
         # DMI info
         dmi = self._check_dmi()
@@ -116,7 +126,10 @@ class Plugin(DiagnosticPlugin):
 
     def _check_camera(self) -> dict:
         ok, stdout, stderr, rc = run_command("ls /dev/video* 2>/dev/null", timeout=5)
-        return {"missing": not ok or not stdout.strip(), "devices": stdout.splitlines() if ok else []}
+        return {
+            "missing": not ok or not stdout.strip(),
+            "devices": stdout.splitlines() if ok else [],
+        }
 
     def _check_dmi(self) -> dict:
         ok, stdout, stderr, rc = run_command(

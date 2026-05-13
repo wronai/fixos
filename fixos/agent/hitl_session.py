@@ -10,15 +10,11 @@ from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize, deanonymize, display_anonymized_preview
 from ..utils.web_search import search_all, format_results_for_llm
 from ..config import FixOsConfig
-from ..constants import (
-    HITL_TIMEOUT_BUFFER,
-    AUTONOMOU_TIMEOUT_BUFFER,
-    CLEANUP_TIMEOUT_ESTIMATE,
-    MAX_COMMAND_LENGTH,
-)
 from ..platform_utils import (
-    setup_signal_timeout, cancel_signal_timeout,
-    get_os_info, get_package_manager,
+    setup_signal_timeout,
+    cancel_signal_timeout,
+    get_os_info,
+    get_package_manager,
 )
 from ..utils.timeout import SessionTimeout
 
@@ -54,8 +50,10 @@ class HITLSession:
     def _setup_timeout(self) -> None:
         """Setup session timeout handler."""
         from . import session_io
+
         def _timeout(signum, frame) -> None:
             raise SessionTimeout()
+
         # Store reference in session_io for reinstatement during user input
         session_io._setup_timeout_ref(self, self.config.session_timeout, _timeout)
         setup_signal_timeout(self.config.session_timeout, _timeout)
@@ -67,6 +65,7 @@ class HITLSession:
     def remaining(self) -> int:
         """Get remaining session time in seconds."""
         from . import get_remaining_time
+
         return get_remaining_time(self)
 
     def _initialize_messages(self) -> bool:
@@ -96,17 +95,24 @@ class HITLSession:
     def _print_header(self) -> None:
         """Print session header with system info."""
         io.print_session_header(
-            self.os_info, self.pkg_manager,
-            self.config.model, self.config.session_timeout,
-            self.remaining
+            self.os_info,
+            self.pkg_manager,
+            self.config.model,
+            self.config.session_timeout,
+            self.remaining,
         )
 
     def _handle_llm_error(self) -> bool:
         """Handle LLM error - try web search if enabled."""
-        if self.config.enable_web_search and self.web_search_count < self.MAX_WEB_SEARCHES:
+        if (
+            self.config.enable_web_search
+            and self.web_search_count < self.MAX_WEB_SEARCHES
+        ):
             self.web_search_count += 1
             io.print_searching()
-            results = search_all("linux system diagnostics repair", self.config.serpapi_key)
+            results = search_all(
+                "linux system diagnostics repair", self.config.serpapi_key
+            )
             if results:
                 io.console.print(format_results_for_llm(results))
                 return True
@@ -114,11 +120,21 @@ class HITLSession:
 
     def _check_low_confidence(self, reply: str) -> bool:
         """Check if LLM is uncertain and perform web search if enabled."""
-        low_conf = any(p in reply.lower() for p in [
-            "nie wiem", "nie jestem pewien", "i don't know",
-            "not sure", "cannot determine",
-        ])
-        if low_conf and self.config.enable_web_search and self.web_search_count < self.MAX_WEB_SEARCHES:
+        low_conf = any(
+            p in reply.lower()
+            for p in [
+                "nie wiem",
+                "nie jestem pewien",
+                "i don't know",
+                "not sure",
+                "cannot determine",
+            ]
+        )
+        if (
+            low_conf
+            and self.config.enable_web_search
+            and self.web_search_count < self.MAX_WEB_SEARCHES
+        ):
             if io.ask_low_confidence_search():
                 self.web_search_count += 1
                 topic = extract_search_topic(reply)
@@ -126,8 +142,12 @@ class HITLSession:
                 if results:
                     web_ctx = format_results_for_llm(results)
                     io.console.print(web_ctx)
-                    self.messages.append({"role": "user",
-                                     "content": f"External sources:\n{web_ctx}\nUpdate analysis."})
+                    self.messages.append(
+                        {
+                            "role": "user",
+                            "content": f"External sources:\n{web_ctx}\nUpdate analysis.",
+                        }
+                    )
                     return True
         return False
 
@@ -164,14 +184,17 @@ class HITLSession:
 
         # Handle all command types via handlers module
         should_continue, was_handled = handlers.parse_user_input(
-            user_in, self.last_fixes, self.messages, self.executed,
-            self.config.serpapi_key
+            user_in,
+            self.last_fixes,
+            self.messages,
+            self.executed,
+            self.config.serpapi_key,
         )
-        
+
         if not was_handled:
             # Free text → send to LLM
             self.messages.append({"role": "user", "content": user_in})
-        
+
         return should_continue
 
     def run(self) -> None:
@@ -195,7 +218,9 @@ class HITLSession:
     def _print_summary(self) -> None:
         """Print session summary."""
         elapsed = int(time.time() - self.start_ts)
-        io.print_session_summary(len(self.messages)-2, elapsed, self.llm.total_tokens, self.executed)
+        io.print_session_summary(
+            len(self.messages) - 2, elapsed, self.llm.total_tokens, self.executed
+        )
 
 
 def run_hitl_session(
@@ -215,7 +240,7 @@ def run_hitl_session(
 # Backward compatibility exports
 __all__ = [
     "CmdResult",
-    "HITLSession", 
+    "HITLSession",
     "run_hitl_session",
     "SYSTEM_PROMPT",
 ]

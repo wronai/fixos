@@ -21,7 +21,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from fixos.utils.anonymizer import anonymize, AnonymizationReport
+from fixos.utils.anonymizer import anonymize
 
 REAL_HOSTNAME = socket.gethostname()
 REAL_USER = getpass.getuser()
@@ -31,9 +31,11 @@ REAL_HOME = os.path.expanduser("~")
 def _assert_no_sensitive(text: str, label: str = ""):
     prefix = f"[{label}] " if label else ""
     assert REAL_HOSTNAME not in text, f"{prefix}Hostname wyciekł"
-    assert f"192.168.10.55" not in text, f"{prefix}IP wyciekł"
+    assert "192.168.10.55" not in text, f"{prefix}IP wyciekł"
     assert "aa:bb:cc:dd:ee:ff" not in text, f"{prefix}MAC wyciekł"
-    assert "sk-abc123def456ghi789jkl012mno345pqr" not in text, f"{prefix}API token wyciekł"
+    assert "sk-abc123def456ghi789jkl012mno345pqr" not in text, (
+        f"{prefix}API token wyciekł"
+    )
     assert "mysecretpass123" not in text, f"{prefix}Hasło wyciekło"
     assert "a1b2c3d4-e5f6-7890-abcd-ef1234567890" not in text, f"{prefix}UUID wyciekł"
 
@@ -41,6 +43,7 @@ def _assert_no_sensitive(text: str, label: str = ""):
 @pytest.fixture
 def mock_cfg():
     from fixos.config import FixOsConfig
+
     return FixOsConfig(
         provider="gemini",
         api_key="AIzaSy_FAKE_TOKEN_FOR_TESTING_1234567890",
@@ -57,8 +60,8 @@ def mock_cfg():
 #  WARSTWA 1: anonymize() – wszystkie wzorce
 # ══════════════════════════════════════════════════════════
 
-class TestAnonymizePatterns:
 
+class TestAnonymizePatterns:
     def test_hostname_replaced(self):
         anon, report = anonymize(f"host={REAL_HOSTNAME}")
         assert REAL_HOSTNAME not in anon
@@ -168,8 +171,8 @@ class TestAnonymizePatterns:
 #  WARSTWA 2: Dane diagnostyczne → anonymize()
 # ══════════════════════════════════════════════════════════
 
-class TestDiagnosticsAnonymization:
 
+class TestDiagnosticsAnonymization:
     def _make_diag(self) -> dict:
         return {
             "system": {
@@ -230,8 +233,8 @@ class TestDiagnosticsAnonymization:
 #  WARSTWA 3: HITL → LLM prompt
 # ══════════════════════════════════════════════════════════
 
-class TestHITLAnonymizationLayer:
 
+class TestHITLAnonymizationLayer:
     @patch("fixos.providers.llm.openai")
     def test_llm_prompt_no_hostname(self, mock_openai, mock_cfg):
         from fixos.agent.hitl import run_hitl_session
@@ -259,7 +262,9 @@ class TestHITLAnonymizationLayer:
             run_hitl_session(diagnostics=diagnostics, config=mock_cfg, show_data=False)
 
         for content in captured:
-            assert REAL_HOSTNAME not in content, f"Hostname wyciekł do LLM: {content[:200]}"
+            assert REAL_HOSTNAME not in content, (
+                f"Hostname wyciekł do LLM: {content[:200]}"
+            )
 
     @patch("fixos.providers.llm.openai")
     def test_llm_prompt_no_username(self, mock_openai, mock_cfg):
@@ -289,14 +294,16 @@ class TestHITLAnonymizationLayer:
 
         pattern = rf"\b{re.escape(REAL_USER)}\b"
         for content in captured:
-            assert not re.search(pattern, content), f"Username wyciekł do LLM"
+            assert not re.search(pattern, content), "Username wyciekł do LLM"
 
     def test_user_rejects_send_no_llm_call(self, mock_cfg):
         """Gdy użytkownik odpowie 'n', LLM nie powinien być wywołany."""
         from fixos.agent.hitl import run_hitl_session
 
         with patch("fixos.providers.llm.openai") as mock_openai:
-            mock_openai.OpenAI.return_value.chat.completions.create.return_value = MagicMock()
+            mock_openai.OpenAI.return_value.chat.completions.create.return_value = (
+                MagicMock()
+            )
 
             with patch("builtins.input", return_value="n"):
                 run_hitl_session(
@@ -312,8 +319,8 @@ class TestHITLAnonymizationLayer:
 #  WARSTWA 4: Autonomous – output komend → LLM
 # ══════════════════════════════════════════════════════════
 
-class TestAutonomousAnonymizationLayer:
 
+class TestAutonomousAnonymizationLayer:
     def test_command_output_anonymized(self):
         raw = (
             f"User Name: {REAL_USER}\n"
@@ -350,23 +357,27 @@ class TestAutonomousAnonymizationLayer:
             captured_messages.extend(kwargs.get("messages", []))
             resp = MagicMock()
             if call_count[0] == 1:
-                resp.choices[0].message.content = json.dumps({
-                    "analysis": "test",
-                    "severity": "low",
-                    "action": "EXEC",
-                    "command": f"echo 'host={REAL_HOSTNAME} user={REAL_USER}'",
-                    "reason": "test",
-                    "next_step": "done",
-                })
+                resp.choices[0].message.content = json.dumps(
+                    {
+                        "analysis": "test",
+                        "severity": "low",
+                        "action": "EXEC",
+                        "command": f"echo 'host={REAL_HOSTNAME} user={REAL_USER}'",
+                        "reason": "test",
+                        "next_step": "done",
+                    }
+                )
             else:
-                resp.choices[0].message.content = json.dumps({
-                    "analysis": "done",
-                    "severity": "low",
-                    "action": "DONE",
-                    "command": "",
-                    "reason": "finished",
-                    "next_step": "none",
-                })
+                resp.choices[0].message.content = json.dumps(
+                    {
+                        "analysis": "done",
+                        "severity": "low",
+                        "action": "DONE",
+                        "command": "",
+                        "reason": "finished",
+                        "next_step": "none",
+                    }
+                )
             resp.usage.total_tokens = 50
             return resp
 
@@ -395,8 +406,8 @@ class TestAutonomousAnonymizationLayer:
 #  WARSTWA 5: Orchestrator → LLM
 # ══════════════════════════════════════════════════════════
 
-class TestOrchestratorAnonymizationLayer:
 
+class TestOrchestratorAnonymizationLayer:
     @patch("fixos.providers.llm.openai")
     def test_diagnostics_anonymized_in_prompt(self, mock_openai, mock_cfg):
         from fixos.orchestrator import FixOrchestrator
@@ -407,9 +418,9 @@ class TestOrchestratorAnonymizationLayer:
             for msg in kwargs.get("messages", []):
                 captured.append(msg.get("content", ""))
             resp = MagicMock()
-            resp.choices[0].message.content = json.dumps({
-                "new_problems": [], "explanation": "ok"
-            })
+            resp.choices[0].message.content = json.dumps(
+                {"new_problems": [], "explanation": "ok"}
+            )
             resp.usage.total_tokens = 50
             return resp
 
@@ -429,8 +440,10 @@ class TestOrchestratorAnonymizationLayer:
         orch.load_from_diagnostics(diagnostics)
 
         for content in captured:
-            assert REAL_HOSTNAME not in content, f"Hostname wyciekł w orchestrate diagnose"
-            assert REAL_USER not in content, f"Username wyciekł w orchestrate diagnose"
+            assert REAL_HOSTNAME not in content, (
+                "Hostname wyciekł w orchestrate diagnose"
+            )
+            assert REAL_USER not in content, "Username wyciekł w orchestrate diagnose"
 
     @patch("fixos.providers.llm.openai")
     def test_stdout_stderr_anonymized_in_evaluate(self, mock_openai, mock_cfg):
@@ -444,10 +457,14 @@ class TestOrchestratorAnonymizationLayer:
             for msg in kwargs.get("messages", []):
                 captured.append(msg.get("content", ""))
             resp = MagicMock()
-            resp.choices[0].message.content = json.dumps({
-                "verdict": "resolved", "confidence": 0.95,
-                "new_problems": [], "explanation": "ok"
-            })
+            resp.choices[0].message.content = json.dumps(
+                {
+                    "verdict": "resolved",
+                    "confidence": 0.95,
+                    "new_problems": [],
+                    "explanation": "ok",
+                }
+            )
             resp.usage.total_tokens = 50
             return resp
 
@@ -467,13 +484,14 @@ class TestOrchestratorAnonymizationLayer:
         orch._evaluate_and_rediagnose(problem, result)
 
         for content in captured:
-            assert REAL_HOSTNAME not in content, f"Hostname wyciekł w evaluate stdout"
-            assert REAL_USER not in content, f"Username wyciekł w evaluate stderr"
+            assert REAL_HOSTNAME not in content, "Hostname wyciekł w evaluate stdout"
+            assert REAL_USER not in content, "Username wyciekł w evaluate stderr"
 
 
 # ══════════════════════════════════════════════════════════
 #  WARSTWA 6: Granica LLM – żadne surowe dane nie trafiają
 # ══════════════════════════════════════════════════════════
+
 
 class TestLLMBoundaryNoLeaks:
     """Testy granicy LLM – weryfikacja że żadne surowe dane nie trafiają do API."""
@@ -524,12 +542,14 @@ class TestLLMBoundaryNoLeaks:
 
     def test_multiline_journal_log_anonymized(self):
         """Wieloliniowe logi journald muszą być w pełni anonimizowane."""
-        log = "\n".join([
-            f"Feb 18 {REAL_HOSTNAME} systemd[1]: Started service",
-            f"Feb 18 {REAL_HOSTNAME} kernel: [drm] error",
-            f"Feb 18 {REAL_HOSTNAME} pipewire[1234]: mod.client-node: detected old client",
-            f"Feb 18 {REAL_HOSTNAME} (python3)[5678]: service failed /home/{REAL_USER}/app",
-        ])
+        log = "\n".join(
+            [
+                f"Feb 18 {REAL_HOSTNAME} systemd[1]: Started service",
+                f"Feb 18 {REAL_HOSTNAME} kernel: [drm] error",
+                f"Feb 18 {REAL_HOSTNAME} pipewire[1234]: mod.client-node: detected old client",
+                f"Feb 18 {REAL_HOSTNAME} (python3)[5678]: service failed /home/{REAL_USER}/app",
+            ]
+        )
         anon, report = anonymize(log)
         assert REAL_HOSTNAME not in anon
         assert REAL_USER not in anon
@@ -552,10 +572,10 @@ class TestLLMBoundaryNoLeaks:
     def test_env_file_content_anonymized(self):
         """Zawartość pliku .env z tokenami musi być anonimizowana."""
         env_content = (
-            f"LLM_PROVIDER=openrouter\n"
-            f"OPENROUTER_API_KEY=sk-or-v1-abc123def456ghi789jkl012mno345pqr678stu901vwx\n"
-            f"GEMINI_API_KEY=AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ123456\n"
-            f"DB_PASSWORD=supersecret123\n"
+            "LLM_PROVIDER=openrouter\n"
+            "OPENROUTER_API_KEY=sk-or-v1-abc123def456ghi789jkl012mno345pqr678stu901vwx\n"
+            "GEMINI_API_KEY=AIzaSyABCDEFGHIJKLMNOPQRSTUVWXYZ123456\n"
+            "DB_PASSWORD=supersecret123\n"
         )
         anon, report = anonymize(env_content)
         assert "sk-or-v1-abc123def456ghi789jkl012mno345pqr678stu901vwx" not in anon
@@ -590,22 +610,24 @@ def _make_sensitive_string() -> str:
         "UUID=a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     )
 
+
 # ══════════════════════════════════════════════════════════
 #  WARSTWA 7: Deanonimizacja (LLM → wykonanie)
 # ══════════════════════════════════════════════════════════
+
 
 class TestDeanonymizationLayer:
     """Testy odwracania anonimizacji dla komend z LLM."""
 
     def test_deanonymize_base_function(self):
         from fixos.utils.anonymizer import deanonymize
-        
+
         cmd = "ping [HOSTNAME]"
         assert deanonymize(cmd) == f"ping {REAL_HOSTNAME}"
-        
+
         cmd = "ls /home/[USER]/.cache"
         assert deanonymize(cmd) == f"ls /home/{REAL_USER}/.cache"
-        
+
         cmd = "chown [USER]:[USER] [HOME]/file"
         res = deanonymize(cmd)
         assert REAL_USER in res
@@ -616,29 +638,29 @@ class TestDeanonymizationLayer:
     @patch("fixos.providers.llm.openai")
     def test_hitl_deanonymize_extracted_fixes(self, mock_openai, mock_cfg):
         from fixos.agent.hitl_session import HITLSession
-        
+
         def capture(**kwargs):
             resp = MagicMock()
             resp.choices[0].message.content = (
-                "**Komenda:** `rm -rf /home/[USER]/tmp`\n"
-                "**Co robi:** clean\n"
+                "**Komenda:** `rm -rf /home/[USER]/tmp`\n**Co robi:** clean\n"
             )
             resp.usage.total_tokens = 10
             return resp
 
         mock_openai.OpenAI.return_value.chat.completions.create.side_effect = capture
-        
+
         session = HITLSession(diagnostics={}, config=mock_cfg, show_data=False)
         # Mock _initialize_messages and inputs
         session._initialize_messages = MagicMock(return_value=True)
         session.web_search_count = 0
-        
-        with patch("fixos.agent.session_io.get_user_input", return_value="q"), \
-             patch("fixos.agent.session_io.ask_execute_prompt", return_value="n"), \
-             patch("fixos.agent.session_handlers.run_single_command") as mock_run:
-            
+
+        with (
+            patch("fixos.agent.session_io.get_user_input", return_value="q"),
+            patch("fixos.agent.session_io.ask_execute_prompt", return_value="n"),
+            patch("fixos.agent.session_handlers.run_single_command") as mock_run,
+        ):
             session.run()
-            
+
         assert len(session.last_fixes) == 1
         cmd, comment = session.last_fixes[0]
         assert cmd == f"rm -rf /home/{REAL_USER}/tmp"
@@ -648,29 +670,31 @@ class TestDeanonymizationLayer:
     @patch("fixos.agent.autonomous_session.subprocess.run")
     def test_autonomous_deanonymize_exec(self, mock_subproc, mock_openai, mock_cfg):
         from fixos.agent.autonomous import run_autonomous_session
-        
+
         def capture(**kwargs):
             resp = MagicMock()
-            resp.choices[0].message.content = json.dumps({
-                "analysis": "test",
-                "severity": "low",
-                "action": "EXEC",
-                "command": "echo [HOSTNAME] [USER] [HOME]",
-                "reason": "test",
-                "next_step": "done",
-            })
+            resp.choices[0].message.content = json.dumps(
+                {
+                    "analysis": "test",
+                    "severity": "low",
+                    "action": "EXEC",
+                    "command": "echo [HOSTNAME] [USER] [HOME]",
+                    "reason": "test",
+                    "next_step": "done",
+                }
+            )
             resp.usage.total_tokens = 50
             return resp
 
         mock_openai.OpenAI.return_value.chat.completions.create.side_effect = capture
-        
+
         # Mock subprocess.run to avoid actual execution
         mock_proc = MagicMock()
         mock_proc.returncode = 0
         mock_proc.stdout = "ok"
         mock_proc.stderr = ""
         mock_subproc.return_value = mock_proc
-        
+
         with patch("builtins.input", return_value="yes"):
             report = run_autonomous_session(
                 diagnostics={},
@@ -678,23 +702,23 @@ class TestDeanonymizationLayer:
                 show_data=False,
                 max_fixes=1,
             )
-            
+
         assert len(report.fixes_applied) == 1
         executed_cmd = report.fixes_applied[0].command
         assert REAL_HOSTNAME in executed_cmd
         assert REAL_USER in executed_cmd
         assert "[HOSTNAME]" not in executed_cmd
         assert "[USER]" not in executed_cmd
-        
+
     @patch("fixos.agent.session_handlers.run_command")
     def test_run_single_command_deanonymizes(self, mock_run):
         from fixos.agent.session_handlers import run_single_command
-        
+
         mock_run.return_value = (True, "ok", "", 0)
-        
+
         with patch("fixos.agent.session_io.ask_execute_prompt", return_value="y"):
             run_single_command("ls /home/[USER]", "test comment")
-            
+
         # run_command is called with the deanonymized command
         args, kwargs = mock_run.call_args
         assert args[0] == f"ls /home/{REAL_USER}"

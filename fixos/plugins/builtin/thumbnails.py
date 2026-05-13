@@ -19,53 +19,63 @@ class Plugin(DiagnosticPlugin):
         cache = self._check_cache()
         raw_data["cache"] = cache
         if cache.get("count", 0) == 0:
-            findings.append(Finding(
-                title="Pusty cache miniaturek",
-                severity=Severity.WARNING,
-                description="Brak podglądów plików w cache — miniatury nie będą wyświetlane.",
-                suggestion="Sprawdź konfigurację thumbnailerów.",
-            ))
+            findings.append(
+                Finding(
+                    title="Pusty cache miniaturek",
+                    severity=Severity.WARNING,
+                    description="Brak podglądów plików w cache — miniatury nie będą wyświetlane.",
+                    suggestion="Sprawdź konfigurację thumbnailerów.",
+                )
+            )
         elif cache.get("size_mb", 0) > 500:
-            findings.append(Finding(
-                title=f"Duży cache miniaturek ({cache['size_mb']:.0f} MB)",
-                severity=Severity.INFO,
-                description="Cache miniaturek zajmuje dużo miejsca.",
-                suggestion="Wyczyść stare miniatury.",
-                command="rm -rf ~/.cache/thumbnails/fail ~/.cache/thumbnails/large",
-            ))
+            findings.append(
+                Finding(
+                    title=f"Duży cache miniaturek ({cache['size_mb']:.0f} MB)",
+                    severity=Severity.INFO,
+                    description="Cache miniaturek zajmuje dużo miejsca.",
+                    suggestion="Wyczyść stare miniatury.",
+                    command="rm -rf ~/.cache/thumbnails/fail ~/.cache/thumbnails/large",
+                )
+            )
 
         # ffmpegthumbnailer
         ffmpeg = self._check_ffmpegthumbnailer()
         raw_data["ffmpegthumbnailer"] = ffmpeg
         if not ffmpeg.get("installed"):
-            findings.append(Finding(
-                title="ffmpegthumbnailer nie zainstalowany",
-                severity=Severity.WARNING,
-                description="Bez ffmpegthumbnailer nie będą generowane miniatury filmów.",
-                command="sudo dnf install -y ffmpegthumbnailer",
-            ))
+            findings.append(
+                Finding(
+                    title="ffmpegthumbnailer nie zainstalowany",
+                    severity=Severity.WARNING,
+                    description="Bez ffmpegthumbnailer nie będą generowane miniatury filmów.",
+                    command="sudo dnf install -y ffmpegthumbnailer",
+                )
+            )
 
         # totem-video-thumbnailer
         totem = self._check_totem()
         raw_data["totem"] = totem
         if not totem.get("found"):
-            findings.append(Finding(
-                title="totem-video-thumbnailer nie znaleziony",
-                severity=Severity.INFO,
-                description="Alternatywny thumbnailer wideo nie jest dostępny.",
-            ))
+            findings.append(
+                Finding(
+                    title="totem-video-thumbnailer nie znaleziony",
+                    severity=Severity.INFO,
+                    description="Alternatywny thumbnailer wideo nie jest dostępny.",
+                )
+            )
 
         # GStreamer plugins
         gst = self._check_gstreamer()
         raw_data["gstreamer"] = gst
         if gst.get("missing_plugins"):
-            findings.append(Finding(
-                title="Brakujące pluginy GStreamer",
-                severity=Severity.WARNING,
-                description=f"Brakujące: {', '.join(gst['missing_plugins'])}",
-                suggestion="Zainstaluj codec GStreamer.",
-                command="sudo dnf install -y gstreamer1-plugins-good gstreamer1-plugins-ugly",
-            ))
+            findings.append(
+                Finding(
+                    title="Brakujące pluginy GStreamer",
+                    severity=Severity.WARNING,
+                    description=f"Brakujące: {', '.join(gst['missing_plugins'])}",
+                    suggestion="Zainstaluj codec GStreamer.",
+                    command="sudo dnf install -y gstreamer1-plugins-good gstreamer1-plugins-ugly",
+                )
+            )
 
         status = Severity.OK
         if any(f.severity == Severity.CRITICAL for f in findings):
@@ -89,7 +99,11 @@ class Plugin(DiagnosticPlugin):
         ok2, stdout2, _, _ = run_command(
             "du -sm ~/.cache/thumbnails 2>/dev/null | cut -f1", timeout=10
         )
-        size_mb = float(stdout2.strip()) if ok2 and stdout2.strip().replace(".", "").isdigit() else 0
+        size_mb = (
+            float(stdout2.strip())
+            if ok2 and stdout2.strip().replace(".", "").isdigit()
+            else 0
+        )
 
         return {"count": count, "size_mb": size_mb}
 
@@ -98,7 +112,9 @@ class Plugin(DiagnosticPlugin):
         return {"installed": ok and bool(stdout.strip())}
 
     def _check_totem(self) -> dict:
-        ok, stdout, _, _ = run_command("which totem-video-thumbnailer 2>/dev/null", timeout=5)
+        ok, stdout, _, _ = run_command(
+            "which totem-video-thumbnailer 2>/dev/null", timeout=5
+        )
         return {"found": ok and bool(stdout.strip())}
 
     def _check_gstreamer(self) -> dict:

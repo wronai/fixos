@@ -15,6 +15,7 @@ from .terminal import _C
 @dataclass
 class AnonymizationReport:
     """Raport anonimizacji – co zostało zmaskowane."""
+
     original_length: int = 0
     anonymized_length: int = 0
     replacements: dict[str, int] = field(default_factory=dict)
@@ -50,17 +51,38 @@ def _get_sensitive() -> dict:
 
 # (pattern, replacement, flags, report_label) — applied in order after literal replacements
 _REGEX_REPLACEMENTS: list[tuple[str, str, int, str]] = [
-    (r"/home/(?!\[USER\])[^\s\"'\\]+",                                    "/home/[USER]/...", 0,           "Ścieżki /home"),
-    (r"\b(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}\b",                       r"\1.XXX.XXX",     0,           "Adresy IPv4"),
-    (r"\b([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",                      "XX:XX:XX:XX:XX:XX", 0,         "Adresy MAC"),
-    (r"(?<![A-Za-z0-9])(?:sk-|xai-|AIzaSy[A-Za-z0-9_-]+|Bearer\s+)[A-Za-z0-9\-_.]{15,}",
-                                                                           "[API_TOKEN_REDACTED]", 0,      "Tokeny API"),
-    (r"(?i)(password|passwd|secret|token|api_key|apikey|auth)\s*[=:]\s*\S+",
-                                                                           r"\1=[REDACTED]", re.IGNORECASE, "Hasła/sekrety"),
-    (r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b",
-                                                                           "[UUID-REDACTED]", 0,           "UUID (serial/hardware)"),
-    (r"\b(?:S/N|Serial|SN)[\s:]+[A-Z0-9]{6,20}\b",                       "Serial: [SERIAL-REDACTED]",
-                                                                                              re.IGNORECASE, "Numery seryjne"),
+    (r"/home/(?!\[USER\])[^\s\"'\\]+", "/home/[USER]/...", 0, "Ścieżki /home"),
+    (r"\b(\d{1,3}\.\d{1,3})\.\d{1,3}\.\d{1,3}\b", r"\1.XXX.XXX", 0, "Adresy IPv4"),
+    (
+        r"\b([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}\b",
+        "XX:XX:XX:XX:XX:XX",
+        0,
+        "Adresy MAC",
+    ),
+    (
+        r"(?<![A-Za-z0-9])(?:sk-|xai-|AIzaSy[A-Za-z0-9_-]+|Bearer\s+)[A-Za-z0-9\-_.]{15,}",
+        "[API_TOKEN_REDACTED]",
+        0,
+        "Tokeny API",
+    ),
+    (
+        r"(?i)(password|passwd|secret|token|api_key|apikey|auth)\s*[=:]\s*\S+",
+        r"\1=[REDACTED]",
+        re.IGNORECASE,
+        "Hasła/sekrety",
+    ),
+    (
+        r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b",
+        "[UUID-REDACTED]",
+        0,
+        "UUID (serial/hardware)",
+    ),
+    (
+        r"\b(?:S/N|Serial|SN)[\s:]+[A-Z0-9]{6,20}\b",
+        "Serial: [SERIAL-REDACTED]",
+        re.IGNORECASE,
+        "Numery seryjne",
+    ),
 ]
 
 
@@ -123,34 +145,38 @@ def deanonymize(text: str) -> str:
     """
     if not isinstance(text, str):
         return text
-        
+
     sensitive = _get_sensitive()
-    
+
     # 1. Hostname
     if sensitive.get("hostname"):
         text = text.replace("[HOSTNAME]", sensitive["hostname"])
-        
+
     # 2. Home directory
     if sensitive.get("home"):
         text = text.replace("[HOME]", sensitive["home"])
         # Some LLMs might use /home/[USER] literally
         # We replace [USER] next, which covers /home/[USER]
-        
+
     # 3. Username
     if sensitive.get("username"):
         text = text.replace("[USER]", sensitive["username"])
-        
+
     return text
 
 
-def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_lines: int = 80):
+def display_anonymized_preview(
+    data_str: str, report: AnonymizationReport, max_lines: int = 80
+):
     """
     Wyświetla użytkownikowi zanonimizowane dane przed wysłaniem do LLM.
     Formatuje jako czytelny markdown z kolorami ANSI.
     """
-    line_char = '\u2550' * 65
+    line_char = "\u2550" * 65
     print(f"\n{_C.CYAN}{_C.BOLD}{line_char}{_C.RESET}")
-    print(f"{_C.CYAN}{_C.BOLD}  📋 DANE DIAGNOSTYCZNE (zanonimizowane) – wysyłane do LLM{_C.RESET}")
+    print(
+        f"{_C.CYAN}{_C.BOLD}  📋 DANE DIAGNOSTYCZNE (zanonimizowane) – wysyłane do LLM{_C.RESET}"
+    )
     print(f"{_C.CYAN}{_C.BOLD}{line_char}{_C.RESET}")
 
     formatted = _format_diagnostics_markdown(data_str)
@@ -160,9 +186,11 @@ def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_l
         half = max_lines // 2
         shown = (
             lines[:half]
-            + [f"  {_C.DIM}...{_C.RESET}",
-               f"  {_C.DIM}[skrócono – pełne dane wysyłane do LLM]{_C.RESET}",
-               f"  {_C.DIM}...{_C.RESET}"]
+            + [
+                f"  {_C.DIM}...{_C.RESET}",
+                f"  {_C.DIM}[skrócono – pełne dane wysyłane do LLM]{_C.RESET}",
+                f"  {_C.DIM}...{_C.RESET}",
+            ]
             + lines[-half:]
         )
     else:
@@ -172,19 +200,21 @@ def display_anonymized_preview(data_str: str, report: AnonymizationReport, max_l
     for line in shown:
         rendered = _colorize_md_line(line)
         # Strip ANSI for length check, truncate raw if needed
-        raw_len = len(re.sub(r'\033\[[^m]*m', '', rendered))
+        raw_len = len(re.sub(r"\033\[[^m]*m", "", rendered))
         if raw_len > max_width:
             # Truncate the original line (before colorizing) then re-colorize
-            rendered = _colorize_md_line(line[:max_width - 3] + "...")
+            rendered = _colorize_md_line(line[: max_width - 3] + "...")
         print(f"  {rendered}")
 
-    dash_char = '\u2500'
+    dash_char = "\u2500"
     dash_line = f"{_C.DIM}{dash_char * 65}{_C.RESET}"
     print(f"\n{dash_line}")
     print(f"{_C.BOLD}  🔒 Anonimizacja – co zostało ukryte:{_C.RESET}")
     for rep_line in report.summary().splitlines():
         print(f"{_C.GREEN}  {rep_line}{_C.RESET}")
-    print(f"  {_C.DIM}Rozmiar: {report.original_length:,} → {report.anonymized_length:,} znaków{_C.RESET}")
+    print(
+        f"  {_C.DIM}Rozmiar: {report.original_length:,} → {report.anonymized_length:,} znaków{_C.RESET}"
+    )
     print(dash_line)
 
 
@@ -195,7 +225,7 @@ def _colorize_md_line(line: str) -> str:
     # ### Section heading
     if stripped.startswith("### "):
         title = stripped[4:]
-        return f"{_C.CYAN}{_C.BOLD}{line[:len(line)-len(stripped)]}### {title}{_C.RESET}"
+        return f"{_C.CYAN}{_C.BOLD}{line[: len(line) - len(stripped)]}### {title}{_C.RESET}"
 
     # ``` fence lines
     if stripped.startswith("```"):
@@ -204,13 +234,24 @@ def _colorize_md_line(line: str) -> str:
     # - **key**: `value`  or  - **key**: value
     if stripped.startswith("- **"):
         # bold key
-        line = re.sub(r'\*\*([^*]+)\*\*', lambda m: f"{_C.BOLD}{_C.WHITE}{m.group(1)}{_C.RESET}", line)
+        line = re.sub(
+            r"\*\*([^*]+)\*\*",
+            lambda m: f"{_C.BOLD}{_C.WHITE}{m.group(1)}{_C.RESET}",
+            line,
+        )
         # inline code value
-        line = re.sub(r'`([^`]+)`', lambda m: f"{_C.CYAN}`{m.group(1)}`{_C.RESET}", line)
+        line = re.sub(
+            r"`([^`]+)`", lambda m: f"{_C.CYAN}`{m.group(1)}`{_C.RESET}", line
+        )
         return line
 
     # indented code content (inside ``` blocks rendered as plain lines)
-    if line.startswith("  ") and stripped and not stripped.startswith("-") and not stripped.startswith("#"):
+    if (
+        line.startswith("  ")
+        and stripped
+        and not stripped.startswith("-")
+        and not stripped.startswith("#")
+    ):
         return f"{_C.GREEN}{line}{_C.RESET}"
 
     # ... truncation markers
@@ -218,24 +259,24 @@ def _colorize_md_line(line: str) -> str:
         return f"{_C.DIM}{line}{_C.RESET}"
 
     # inline code anywhere
-    line = re.sub(r'`([^`]+)`', lambda m: f"{_C.CYAN}`{m.group(1)}`{_C.RESET}", line)
+    line = re.sub(r"`([^`]+)`", lambda m: f"{_C.CYAN}`{m.group(1)}`{_C.RESET}", line)
     return line
 
 
 def _format_diagnostics_markdown(data_str: str) -> str:
     """Formatuje dane diagnostyczne jako czytelny markdown."""
     import ast
-    
+
     # Próbuj sparsować jako dict
     try:
         # Usuń 'zanonimizowane' znaczniki jeśli są
-        clean = data_str.replace('[HOSTNAME]', 'HOSTNAME').replace('[USER]', 'USER')
+        clean = data_str.replace("[HOSTNAME]", "HOSTNAME").replace("[USER]", "USER")
         data = ast.literal_eval(clean)
         if isinstance(data, dict):
             return _dict_to_markdown(data)
     except (SyntaxError, ValueError):
         pass
-    
+
     # Fallback: formatuj jako kod
     return f"```\n{data_str}\n```"
 

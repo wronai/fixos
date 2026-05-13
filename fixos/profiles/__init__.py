@@ -20,6 +20,7 @@ PROFILES_DIR = Path(__file__).parent
 @dataclass
 class Profile:
     """Profil diagnostyczny z zestawem modułów i progów."""
+
     name: str
     description: str
     modules: list[str]

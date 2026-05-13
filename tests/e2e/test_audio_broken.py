@@ -5,9 +5,7 @@ Używa mock LLM lub prawdziwego API (jeśli dostępny token w .env).
 
 from __future__ import annotations
 
-import json
 import os
-import re
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -16,7 +14,6 @@ import pytest
 pytest.importorskip("psutil")
 
 from fixos.utils.anonymizer import anonymize
-from fixos.diagnostics.system_checks import diagnose_audio, diagnose_hardware
 
 
 class TestAudioAnonymization:
@@ -25,6 +22,7 @@ class TestAudioAnonymization:
     def test_anonymize_hostname(self, broken_audio_diagnostics):
         """Hostname nie powinien być w zanonimizowanych danych."""
         import socket
+
         hostname = socket.gethostname()
         data_str = str(broken_audio_diagnostics)
         data_str += f" hostname={hostname}"
@@ -135,7 +133,9 @@ class TestAudioDiagnosticsMockLLM:
 
     def test_anonymization_report_not_empty(self, broken_audio_diagnostics):
         """Raport anonimizacji powinien zawierać co najmniej jedną kategorię."""
-        import socket, getpass
+        import socket
+        import getpass
+
         data = str(broken_audio_diagnostics)
         data += f" host={socket.gethostname()} user={getpass.getuser()}"
 
@@ -143,7 +143,9 @@ class TestAudioDiagnosticsMockLLM:
         assert len(report.replacements) > 0
 
     @patch("fixos.providers.llm.openai")
-    def test_llm_called_with_sof_context(self, mock_openai, broken_audio_diagnostics, mock_config):
+    def test_llm_called_with_sof_context(
+        self, mock_openai, broken_audio_diagnostics, mock_config
+    ):
         """LLM powinien być wywołany z danymi zawierającymi info o SOF."""
         from fixos.providers.llm import LLMClient
 
@@ -181,6 +183,7 @@ class TestAudioDiagnosticsMockLLM:
         mock_success.usage.total_tokens = 50
 
         call_count = [0]
+
         def side_effect(*args, **kwargs):
             call_count[0] += 1
             if call_count[0] < 3:
@@ -203,8 +206,9 @@ class TestAudioDiagnosticsReal:
     """Testy z prawdziwym API – uruchamiane tylko gdy token dostępny."""
 
     @pytest.mark.skipif(
-        not os.environ.get("GEMINI_API_KEY") or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
-        reason="Wymaga prawdziwego GEMINI_API_KEY w .env"
+        not os.environ.get("GEMINI_API_KEY")
+        or "TWOJ" in os.environ.get("GEMINI_API_KEY", ""),
+        reason="Wymaga prawdziwego GEMINI_API_KEY w .env",
     )
     def test_real_llm_analyzes_audio(self, broken_audio_diagnostics, test_config):
         """Prawdziwy LLM powinien wykryć problemy SOF w danych audio."""
@@ -217,18 +221,26 @@ class TestAudioDiagnosticsReal:
         messages = [
             {
                 "role": "system",
-                "content": "Jesteś diagnostą Fedora. Krótko (max 5 zdań) wskaż główny problem audio."
+                "content": "Jesteś diagnostą Fedora. Krótko (max 5 zdań) wskaż główny problem audio.",
             },
             {
                 "role": "user",
-                "content": f"Dane diagnostyczne Lenovo Yoga:\n{anon_str[:2000]}"
-            }
+                "content": f"Dane diagnostyczne Lenovo Yoga:\n{anon_str[:2000]}",
+            },
         ]
 
         reply = client.chat(messages, max_tokens=200)
 
         # Odpowiedź powinna zawierać relevantne terminy
-        relevant_terms = ["sof", "firmware", "alsa", "pipewire", "audio", "dźwięk", "sterownik"]
+        relevant_terms = [
+            "sof",
+            "firmware",
+            "alsa",
+            "pipewire",
+            "audio",
+            "dźwięk",
+            "sterownik",
+        ]
         reply_lower = reply.lower()
         found = [t for t in relevant_terms if t in reply_lower]
 

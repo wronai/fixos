@@ -15,11 +15,19 @@ from ..config import FixOsConfig
 from ..providers.llm import LLMClient, LLMError
 from ..utils.anonymizer import anonymize
 from ..utils.terminal import (
-    _C, console, print_problem_header, print_cmd_block,
-    print_stdout_box, print_stderr_box, render_tree_colored,
+    console,
+    print_problem_header,
+    print_cmd_block,
+    print_stdout_box,
+    print_stderr_box,
 )
-from .executor import CommandExecutor, ExecutionResult, DangerousCommandError, CommandTimeoutError
-from .graph import Problem, ProblemGraph, ProblemSeverity
+from .executor import (
+    CommandExecutor,
+    ExecutionResult,
+    DangerousCommandError,
+    CommandTimeoutError,
+)
+from .graph import Problem, ProblemGraph
 
 
 class _SkipAll(Exception):
@@ -83,7 +91,7 @@ Return ONLY valid JSON:
 class FixOrchestrator:
     """
     Orkiestrator napraw systemowych.
-    
+
     Tryby:
     - hitl: każda komenda wymaga potwierdzenia użytkownika
     - autonomous: automatyczne wykonanie gdy confidence > threshold
@@ -141,7 +149,10 @@ class FixOrchestrator:
                 )
                 self.graph.add(p)
                 problems.append(p)
-            self._log("diagnose", {"found": len(problems), "explanation": data.get("explanation", "")})
+            self._log(
+                "diagnose",
+                {"found": len(problems), "explanation": data.get("explanation", "")},
+            )
             return problems
         except (LLMError, ValueError) as e:
             self._log("diagnose_error", {"error": str(e)})
@@ -162,9 +173,7 @@ class FixOrchestrator:
             problems.append(p)
         return problems
 
-    def _process_fix_commands(
-        self, problem, confirm_fn, progress_fn
-    ) -> tuple:
+    def _process_fix_commands(self, problem, confirm_fn, progress_fn) -> tuple:
         """Execute all fix commands for a problem.
 
         Returns (last_result, skip_all) where skip_all signals the outer loop
@@ -201,7 +210,9 @@ class FixOrchestrator:
                 break
             except CommandTimeoutError as e:
                 console.print(f"\n  [bold yellow]⏰ TIMEOUT:[/bold yellow] {e}")
-                last_result = ExecutionResult(command=cmd, timed_out=True, executed=False)
+                last_result = ExecutionResult(
+                    command=cmd, timed_out=True, executed=False
+                )
                 break
 
         return last_result, skip_all
@@ -215,7 +226,9 @@ class FixOrchestrator:
             np.caused_by.append(problem.id)
             problem.may_cause.append(np.id)
             self.graph.add(np)
-            console.print(f"\n  [cyan]Odkryto nowy problem:[/cyan] [{np.id}] {np.description}")
+            console.print(
+                f"\n  [cyan]Odkryto nowy problem:[/cyan] [{np.id}] {np.description}"
+            )
 
     def run_sync(
         self,
@@ -246,7 +259,9 @@ class FixOrchestrator:
             problem.status = "in_progress"
             problem.attempts += 1
 
-            last_result, skip_all = self._process_fix_commands(problem, confirm_fn, progress_fn)
+            last_result, skip_all = self._process_fix_commands(
+                problem, confirm_fn, progress_fn
+            )
             if skip_all:
                 continue
 
@@ -289,19 +304,24 @@ class FixOrchestrator:
             verdict = data.get("verdict", "failed")
             confidence = float(data.get("confidence", 0.5))
 
-            if verdict == "resolved" or (verdict == "partial" and confidence >= self.auto_confirm_threshold):
+            if verdict == "resolved" or (
+                verdict == "partial" and confidence >= self.auto_confirm_threshold
+            ):
                 problem.status = "resolved"
             elif problem.attempts >= problem.max_attempts:
                 problem.status = "failed"
             else:
                 problem.status = "pending"
 
-            self._log("evaluate", {
-                "problem_id": problem.id,
-                "verdict": verdict,
-                "confidence": confidence,
-                "explanation": data.get("explanation", ""),
-            })
+            self._log(
+                "evaluate",
+                {
+                    "problem_id": problem.id,
+                    "verdict": verdict,
+                    "confidence": confidence,
+                    "explanation": data.get("explanation", ""),
+                },
+            )
 
             new_problems = []
             for pd in data.get("new_problems", []):
@@ -333,25 +353,27 @@ class FixOrchestrator:
         if text.startswith("```"):
             lines = text.splitlines()
             text = "\n".join(
-                line for line in lines
-                if not line.strip().startswith("```")
+                line for line in lines if not line.strip().startswith("```")
             )
         try:
             return json.loads(text)
         except json.JSONDecodeError:
             # Spróbuj wyciągnąć JSON z tekstu
             import re
+
             m = re.search(r"\{.*\}", text, re.DOTALL)
             if m:
                 return json.loads(m.group())
             raise ValueError(f"Nie można sparsować JSON z odpowiedzi LLM: {raw[:200]}")
 
     def _log(self, event: str, data: dict) -> None:
-        self.session_log.append({
-            "event": event,
-            "timestamp": time.time() - self._start_time,
-            **data,
-        })
+        self.session_log.append(
+            {
+                "event": event,
+                "timestamp": time.time() - self._start_time,
+                **data,
+            }
+        )
 
     def _session_summary(self) -> dict:
         summary = self.graph.summary()
@@ -362,15 +384,23 @@ class FixOrchestrator:
     @staticmethod
     def _default_confirm(problem: Problem, command: str) -> bool:
         print_problem_header(
-            problem.id, problem.description, problem.severity,
-            status=problem.status, attempts=problem.attempts, max_attempts=problem.max_attempts,
+            problem.id,
+            problem.description,
+            problem.severity,
+            status=problem.status,
+            attempts=problem.attempts,
+            max_attempts=problem.max_attempts,
         )
         print_cmd_block(command)
         try:
-            ans = console.input(
-                r"  [bold]Wykonać?[/bold] [green]\[Y][/green]es / "
-                r"[red]\[n][/red]o / [yellow]\[s][/yellow]kip all: "
-            ).strip().lower()
+            ans = (
+                console.input(
+                    r"  [bold]Wykonać?[/bold] [green]\[Y][/green]es / "
+                    r"[red]\[n][/red]o / [yellow]\[s][/yellow]kip all: "
+                )
+                .strip()
+                .lower()
+            )
         except (EOFError, KeyboardInterrupt):
             return False
         if ans in ("s", "skip", "skip all"):
@@ -380,15 +410,21 @@ class FixOrchestrator:
     @staticmethod
     def _default_progress(problem: Problem, result: ExecutionResult) -> None:
         if not result.executed:
-            console.print(f"\n  [dim yellow]⏭️  DRY-RUN:[/dim yellow] [cyan]`{result.command}`[/cyan]")
+            console.print(
+                f"\n  [dim yellow]⏭️  DRY-RUN:[/dim yellow] [cyan]`{result.command}`[/cyan]"
+            )
             if result.preview:
                 console.print(f"  [dim]{result.preview}[/dim]")
             return
         console.print()
         if result.success:
-            console.print(f"  [bold green]OK[/bold green]  [cyan]`{result.command}`[/cyan]")
+            console.print(
+                f"  [bold green]OK[/bold green]  [cyan]`{result.command}`[/cyan]"
+            )
         else:
-            console.print(f"  [bold red]kod {result.returncode}[/bold red]  [cyan]`{result.command}`[/cyan]")
+            console.print(
+                f"  [bold red]kod {result.returncode}[/bold red]  [cyan]`{result.command}`[/cyan]"
+            )
         if result.stdout and not result.stdout.startswith("(już wykonane"):
             print_stdout_box(result.stdout)
         if result.stderr and not result.success:

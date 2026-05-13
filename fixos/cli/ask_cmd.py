@@ -1,6 +1,7 @@
 """
 Natural language command (ask) for fixOS CLI
 """
+
 import click
 import yaml
 import subprocess
@@ -20,11 +21,9 @@ _ACTION_KEYWORDS = {
     ("wylacz", "wyłącz"): "docker ps -aq | xargs -r docker rm -f",
     ("stop", "zatrzymaj"): "docker ps -aq | xargs -r docker stop",
     ("usun", "rm", "remove", "delete", "usuń"): "docker ps -aq | xargs -r docker rm -f",
-    
     # System actions
     ("scan", "diagnostyka", "zlap", "bledy", "errors"): ("fixos", ["scan"]),
     ("fix", "napraw", "naprawa"): ("fixos", ["fix"]),
-    
     # Other - handled specially
     ("lista", "list", "ps", "pokaz", "pokaż"): None,
 }
@@ -32,9 +31,9 @@ _ACTION_KEYWORDS = {
 
 _OBJECT_KEYWORDS: list[tuple[list[str], tuple]] = [
     (["docker", "kontener", "container"], ("docker", ["ps", "-aq"])),
-    (["audio", "dzwięk", "sound"],        ("fixos", ["fix", "--modules", "audio"])),
-    (["siec", "network", "internet"],     ("fixos", ["scan", "--modules", "system"])),
-    (["bezpieczenstwo", "security"],      ("fixos", ["scan", "--modules", "security"])),
+    (["audio", "dzwięk", "sound"], ("fixos", ["fix", "--modules", "audio"])),
+    (["siec", "network", "internet"], ("fixos", ["scan", "--modules", "system"])),
+    (["bezpieczenstwo", "security"], ("fixos", ["scan", "--modules", "security"])),
 ]
 
 
@@ -86,7 +85,7 @@ def _build_output_dict(
     llm: str | None = None,
     reason: str | None = None,
     message: str | None = None,
-    error: str | None = None
+    error: str | None = None,
 ) -> dict:
     """Build standardized output dictionary for YAML serialization."""
     output = {
@@ -113,21 +112,21 @@ def _build_output_dict(
 
 def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) -> None:
     """Execute a heuristic-matched command and output result."""
-    
+
     if dry_run:
         output = _build_output_dict(
             status="dry_run",
             prompt=prompt,
             source="heuristics",
             command=cmd_str,
-            llm=None
+            llm=None,
         )
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
         return
-    
+
     try:
         result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
-        
+
         output = _build_output_dict(
             status="success" if result.returncode == 0 else "failed",
             prompt=prompt,
@@ -135,18 +134,18 @@ def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) ->
             command=cmd_str,
             exit_code=result.returncode,
             stdout=result.stdout if result.stdout else "",
-            stderr=result.stderr if result.stderr else ""
+            stderr=result.stderr if result.stderr else "",
         )
-        
+
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
-        
+
         # Optional LLM validation
         if cfg.api_key and result.returncode == 0:
             try:
                 _validate_result_with_llm(prompt, cmd_str, result, cfg)
             except Exception:
                 pass  # Ignore validation errors
-                
+
     except Exception as e:
         output = _build_output_dict(
             status="error",
@@ -154,7 +153,7 @@ def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) ->
             source="heuristics",
             command=cmd_str,
             error=str(e),
-            llm=None
+            llm=None,
         )
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
 
@@ -162,12 +161,12 @@ def _execute_heuristic_command(cmd_str: str, prompt: str, dry_run: bool, cfg) ->
 def _execute_with_llm(prompt: str, dry_run: bool, cfg) -> None:
     """Generate and execute command using LLM when no heuristic match found."""
     from fixos.providers.llm import LLMClient
-    
+
     llm_provider = f"{cfg.provider}/{cfg.model}"
-    
+
     try:
         llm = LLMClient(cfg)
-        
+
         # Prompt for command generation
         llm_prompt = f"""Jesteś asystentem CLI. Użytkownik wpisał: '{prompt}'
 Wybierz najlepszą komendę systemową Linux do wykonania.
@@ -180,29 +179,29 @@ Przykłady:
 - "diagnostyka" → fixos scan
 """
         resp = llm.chat([{"role": "user", "content": llm_prompt}], max_tokens=200)
-        cmd_str = resp.strip().split('\n')[0].strip()
-        cmd_str = cmd_str.strip('`').strip()
-        
+        cmd_str = resp.strip().split("\n")[0].strip()
+        cmd_str = cmd_str.strip("`").strip()
+
         if not cmd_str or len(cmd_str) <= 2:
             output = {
                 "status": "error",
                 "reason": "llm_empty_response",
-                "message": "LLM nie zwrócił komendy"
+                "message": "LLM nie zwrócił komendy",
             }
             click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
             return
-        
+
         if dry_run:
             output = _build_output_dict(
                 status="dry_run",
                 prompt=prompt,
                 source="llm",
                 command=cmd_str,
-                llm=llm_provider
+                llm=llm_provider,
             )
             click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
             return
-        
+
         # Execute the generated command
         result = subprocess.run(cmd_str, capture_output=True, text=True, shell=True)
         output = _build_output_dict(
@@ -213,19 +212,19 @@ Przykłady:
             exit_code=result.returncode,
             stdout=result.stdout if result.stdout else "",
             stderr=result.stderr if result.stderr else "",
-            llm=llm_provider
+            llm=llm_provider,
         )
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
-        
+
         # Validate result
         _validate_result_with_llm(prompt, cmd_str, result, cfg)
-        
+
     except Exception as e:
         output = {
             "status": "error",
             "reason": "llm_error",
             "message": str(e),
-            "hint": 'fixos ask "wylacz wszystkie kontenery docker"'
+            "hint": 'fixos ask "wylacz wszystkie kontenery docker"',
         }
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
 
@@ -235,19 +234,19 @@ def _handle_natural_command(prompt: str, dry_run: bool = False) -> None:
     Handle natural language commands with heuristic matching and LLM fallback.
     """
     from fixos.config import FixOsConfig
-    
+
     prompt_lower = prompt.lower()
-    
+
     # Stage 1: Try heuristic matching
     matched_cmd = _match_heuristic_command(prompt_lower)
-    
+
     if matched_cmd:
         # Heuristic match found - execute directly
         cmd_str = _format_command(matched_cmd)
         cfg = FixOsConfig.load()
         _execute_heuristic_command(cmd_str, prompt, dry_run, cfg)
         return
-    
+
     # Stage 2: No heuristic match - use LLM
     cfg = FixOsConfig.load()
     if not cfg.api_key:
@@ -255,32 +254,32 @@ def _handle_natural_command(prompt: str, dry_run: bool = False) -> None:
             "status": "error",
             "reason": "no_api_key",
             "message": "Brak klucza API. Użyj: fixos token set <KLUCZ>",
-            "hint": 'fixos ask "wylacz wszystkie kontenery docker"'
+            "hint": 'fixos ask "wylacz wszystkie kontenery docker"',
         }
         click.echo(yaml.dump(output, default_flow_style=False, allow_unicode=True))
         return
-    
+
     _execute_with_llm(prompt, dry_run, cfg)
 
 
 def _validate_result_with_llm(prompt: str, cmd_str: str, result, cfg) -> None:
     """Validate command result using LLM - generates check command and assesses outcome."""
     from fixos.providers.llm import LLMClient
-    
+
     try:
         llm = LLMClient(cfg)
         llm_provider = f"{cfg.provider}/{cfg.model}"
-        
+
         # Get stdout for validation (limit 2000 chars)
         stdout_preview = result.stdout[:2000] if result.stdout else "(puste)"
-        
+
         # LLM generates check command
         check_prompt = f"""Jesteś asystentem CLI. Użytkownik chciał: "{prompt}"
 Wykonana komenda: {cmd_str}
 Wynik (stdout):
 {stdout_preview}
 
-Wynik (stderr): {result.stderr[:500] if result.stderr else '(brak)'}
+Wynik (stderr): {result.stderr[:500] if result.stderr else "(brak)"}
 Exit code: {result.returncode}
 
 Wygeneruj komendę Linux która sprawdzi czy oczekiwany efekt został osiągnięty.
@@ -291,17 +290,21 @@ Przykłady:
 - "sprawdź sieć" → ip addr
 - "napraw dźwięk" → pactl info
 """
-        
-        check_cmd_resp = llm.chat([{"role": "user", "content": check_prompt}], max_tokens=200)
-        check_cmd = check_cmd_resp.strip().split('\n')[0].strip()
-        check_cmd = check_cmd.strip('`').strip()
-        
+
+        check_cmd_resp = llm.chat(
+            [{"role": "user", "content": check_prompt}], max_tokens=200
+        )
+        check_cmd = check_cmd_resp.strip().split("\n")[0].strip()
+        check_cmd = check_cmd.strip("`").strip()
+
         if not check_cmd or len(check_cmd) <= 2:
             return
-        
+
         # Execute check command
-        check_result = subprocess.run(check_cmd, capture_output=True, text=True, shell=True)
-        
+        check_result = subprocess.run(
+            check_cmd, capture_output=True, text=True, shell=True
+        )
+
         # Now assess the result
         validation_prompt = f"""Jesteś walidatorem wyników poleceń systemowych.
 Oczekiwany efekt: "{prompt}"
@@ -309,8 +312,8 @@ Komenda wykonana: {cmd_str}
 Wynik wykonania (stdout): {stdout_preview}
 
 Komenda sprawdzająca: {check_cmd}
-Wynik sprawdzenia (stdout): {check_result.stdout[:2000] if check_result.stdout else '(puste)'}
-Wynik sprawdzenia (stderr): {check_result.stderr[:500] if check_result.stderr else '(brak)'}
+Wynik sprawdzenia (stdout): {check_result.stdout[:2000] if check_result.stdout else "(puste)"}
+Wynik sprawdzenia (stderr): {check_result.stderr[:500] if check_result.stderr else "(brak)"}
 
 Odpowiedz w formacie YAML:
 validation:
@@ -319,36 +322,54 @@ validation:
   user_intent_met: true/false - czy oczekiwania użytkownika zostały spełnione
   suggestion: "opcjonalna sugestia jeśli coś poszło nie tak"
 """
-        
-        resp = llm.chat([{"role": "user", "content": validation_prompt}], max_tokens=500)
-        
+
+        resp = llm.chat(
+            [{"role": "user", "content": validation_prompt}], max_tokens=500
+        )
+
         # Try to parse YAML from response
         try:
-            yaml_start = resp.find('---')
+            yaml_start = resp.find("---")
             if yaml_start >= 0:
                 yaml_content = resp[yaml_start:]
             else:
                 yaml_content = resp
-            
+
             validation = yaml.safe_load(yaml_content)
-            if validation and 'validation' in validation:
+            if validation and "validation" in validation:
                 # Add check command info
-                validation['validation']['check_command'] = check_cmd
-                validation['validation']['check_result'] = check_result.stdout[:500] if check_result.stdout else ""
-                validation['validation']['llm_provider'] = llm_provider
-                click.echo(yaml.dump({"validation": validation['validation']}, default_flow_style=False, allow_unicode=True))
+                validation["validation"]["check_command"] = check_cmd
+                validation["validation"]["check_result"] = (
+                    check_result.stdout[:500] if check_result.stdout else ""
+                )
+                validation["validation"]["llm_provider"] = llm_provider
+                click.echo(
+                    yaml.dump(
+                        {"validation": validation["validation"]},
+                        default_flow_style=False,
+                        allow_unicode=True,
+                    )
+                )
                 return
         except Exception:
             pass
-        
+
         # Fallback: show check command info
-        click.echo(yaml.dump({
-            "validation": {
-                "llm_provider": llm_provider,
-                "check_command": check_cmd,
-                "check_result": check_result.stdout[:500] if check_result.stdout else "",
-                "raw_response": resp[:500]
-            }
-        }, default_flow_style=False, allow_unicode=True))
+        click.echo(
+            yaml.dump(
+                {
+                    "validation": {
+                        "llm_provider": llm_provider,
+                        "check_command": check_cmd,
+                        "check_result": check_result.stdout[:500]
+                        if check_result.stdout
+                        else "",
+                        "raw_response": resp[:500],
+                    }
+                },
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        )
     except Exception:
         pass

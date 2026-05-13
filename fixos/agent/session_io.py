@@ -12,12 +12,13 @@ from rich.syntax import Syntax
 from rich.text import Text
 
 from ..utils.terminal import (
-    _C, render_md as _render_md, console,
+    render_md as _render_md,
+    console,
     print_cmd_block as _print_cmd_block_rich,
-    print_stdout_box, print_stderr_box,
+    print_stdout_box,
+    print_stderr_box,
 )
 from ..platform_utils import cancel_signal_timeout, setup_signal_timeout
-from ..utils.timeout import SessionTimeout
 
 if TYPE_CHECKING:
     from .session_core import CmdResult
@@ -41,6 +42,7 @@ def suspend_timeout() -> object:
         # Reinstate timeout with remaining time
         if _timeout_handler and _session_ref:
             from . import get_remaining_time
+
             remaining = get_remaining_time(_session_ref)
             if remaining > 0:
                 setup_signal_timeout(remaining, _timeout_handler)
@@ -54,12 +56,18 @@ def _setup_timeout_ref(session, seconds: int, handler) -> None:
     _session_ref = session
 
 
-def print_session_header(os_info: dict, pkg_manager: str, model: str, timeout: int, remaining_fn) -> None:
+def print_session_header(
+    os_info: dict, pkg_manager: str, model: str, timeout: int, remaining_fn
+) -> None:
     """Print session header with system info."""
     from rich.panel import Panel
+
     header = Text()
     header.append(f"👤 HUMAN-IN-THE-LOOP  |  Model: {model}\n", style="bold cyan")
-    header.append(f"🖥️  OS: {os_info['system']} {os_info['release']}  |  PM: {pkg_manager}\n", style="cyan")
+    header.append(
+        f"🖥️  OS: {os_info['system']} {os_info['release']}  |  PM: {pkg_manager}\n",
+        style="cyan",
+    )
     header.append(f"⏰ Sesja: max {fmt_time(timeout)}", style="dim")
     console.print()
     console.print(Panel(header, border_style="cyan"))
@@ -67,43 +75,55 @@ def print_session_header(os_info: dict, pkg_manager: str, model: str, timeout: i
 
 def fmt_time(s: int) -> str:
     """Format seconds as HH:MM:SS."""
-    return f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}"
+    return f"{s // 3600:02d}:{(s % 3600) // 60:02d}:{s % 60:02d}"
 
 
 def print_action_menu(fixes: list, remaining: int, total_tokens: int) -> None:
     """Print the interactive numbered action menu."""
     console.print()
-    console.print(Rule(
-        f"[bold cyan]📋 DOSTĘPNE AKCJE[/bold cyan]  [dim]⏰ {fmt_time(remaining)}  ~{total_tokens} tokenów[/dim]",
-        style="cyan",
-    ))
+    console.print(
+        Rule(
+            f"[bold cyan]📋 DOSTĘPNE AKCJE[/bold cyan]  [dim]⏰ {fmt_time(remaining)}  ~{total_tokens} tokenów[/dim]",
+            style="cyan",
+        )
+    )
     if fixes:
         for i, (cmd, comment) in enumerate(fixes, 1):
             label = comment if comment else (f"{cmd[:55]}..." if len(cmd) > 55 else cmd)
             console.print(f"  [bold yellow][{i}][/bold yellow] {label}")
-            console.print(Panel(
-                Syntax(cmd, "bash", theme="monokai", word_wrap=True),
-                border_style="dim cyan",
-                padding=(0, 1),
-            ))
+            console.print(
+                Panel(
+                    Syntax(cmd, "bash", theme="monokai", word_wrap=True),
+                    border_style="dim cyan",
+                    padding=(0, 1),
+                )
+            )
         console.print()
-        console.print(f"  [bold yellow][A][/bold yellow]  Wykonaj wszystkie ({len(fixes)} komend)")
-        console.print(f"  [bold yellow][S][/bold yellow]  Pomiń wszystkie")
+        console.print(
+            f"  [bold yellow][A][/bold yellow]  Wykonaj wszystkie ({len(fixes)} komend)"
+        )
+        console.print("  [bold yellow][S][/bold yellow]  Pomiń wszystkie")
     else:
         console.print("  [dim](brak zaproponowanych komend)[/dim]")
     console.print()
-    console.print(f"  [bold yellow][D][/bold yellow]           Opisz własny problem / co chcesz zmienić")
-    console.print(f"  [bold yellow][!cmd][/bold yellow]        Wykonaj własną komendę")
-    console.print(f"  [bold yellow][search <q>][/bold yellow]  Szukaj zewnętrznie")
-    console.print(f"  [bold yellow][?][/bold yellow]           Zapytaj o więcej szczegółów")
-    console.print(f"  [bold yellow][Q][/bold yellow]           Zakończ sesję")
+    console.print(
+        "  [bold yellow][D][/bold yellow]           Opisz własny problem / co chcesz zmienić"
+    )
+    console.print("  [bold yellow][!cmd][/bold yellow]        Wykonaj własną komendę")
+    console.print("  [bold yellow][search <q>][/bold yellow]  Szukaj zewnętrznie")
+    console.print(
+        "  [bold yellow][?][/bold yellow]           Zapytaj o więcej szczegółów"
+    )
+    console.print("  [bold yellow][Q][/bold yellow]           Zakończ sesję")
     console.print(Rule(style="cyan"))
 
 
 def ask_user_problem() -> str:
     """Interactively asks the user to describe their problem."""
     body = Text()
-    body.append("Napisz co chcesz naprawić, zmienić lub co nie działa.\n", style="white")
+    body.append(
+        "Napisz co chcesz naprawić, zmienić lub co nie działa.\n", style="white"
+    )
     body.append("Możesz pisać po polsku lub angielsku.\n\n", style="dim")
     body.append("Przykłady:\n", style="bold cyan")
     body.append(
@@ -116,7 +136,13 @@ def ask_user_problem() -> str:
         style="dim",
     )
     console.print()
-    console.print(Panel(body, title="[bold cyan]💬 OPISZ SWÓJ PROBLEM[/bold cyan]", border_style="cyan"))
+    console.print(
+        Panel(
+            body,
+            title="[bold cyan]💬 OPISZ SWÓJ PROBLEM[/bold cyan]",
+            border_style="cyan",
+        )
+    )
     try:
         with suspend_timeout():
             return console.input("  [bold cyan]Twój problem:[/bold cyan] ").strip()
@@ -132,6 +158,7 @@ def print_cmd_preview(cmd: str, comment: str = "") -> None:
 def print_cmd_result(result: "CmdResult") -> None:
     """Shows command result with colorized markdown."""
     from rich.text import Text
+
     if result.skipped:
         console.print(Text(f"⏭️  Pominięto: `{result.cmd}`", style="dim"))
         return
@@ -139,7 +166,9 @@ def print_cmd_result(result: "CmdResult") -> None:
     if result.ok:
         console.print(Text(f"✅  {result.cmd}", style="bold green"))
     else:
-        console.print(Text(f"❌  (kod {result.returncode})  {result.cmd}", style="bold red"))
+        console.print(
+            Text(f"❌  (kod {result.returncode})  {result.cmd}", style="bold red")
+        )
 
     if result.stdout.strip():
         print_stdout_box(result.stdout, max_lines=40)
@@ -151,7 +180,9 @@ def print_cmd_result(result: "CmdResult") -> None:
     console.print()
 
 
-def print_session_summary(messages_count: int, elapsed: int, total_tokens: int, executed: list) -> None:
+def print_session_summary(
+    messages_count: int, elapsed: int, total_tokens: int, executed: list
+) -> None:
     """Print session summary."""
     ok_count = sum(1 for r in executed if r.ok)
     console.print(
@@ -205,7 +236,9 @@ def print_session_interrupted() -> None:
 
 def print_executing_all(count: int) -> None:
     """Print executing all commands message."""
-    console.print(f"\n  [bold cyan]▶️  Wykonuję wszystkie {count} komend...[/bold cyan]\n")
+    console.print(
+        f"\n  [bold cyan]▶️  Wykonuję wszystkie {count} komend...[/bold cyan]\n"
+    )
 
 
 def print_no_commands() -> None:
@@ -215,7 +248,9 @@ def print_no_commands() -> None:
 
 def print_invalid_option(user_in: str, max_option: int) -> None:
     """Print invalid option message."""
-    console.print(f"  [yellow]Brak opcji [{user_in}]. Dostępne: 1–{max_option}[/yellow]")
+    console.print(
+        f"  [yellow]Brak opcji [{user_in}]. Dostępne: 1–{max_option}[/yellow]"
+    )
 
 
 def print_no_results() -> None:
@@ -253,6 +288,8 @@ def get_user_input(remaining: int) -> str:
     """Get user input with prompt."""
     try:
         with suspend_timeout():
-            return console.input(f"\n  [bold cyan]fixos [{fmt_time(remaining)}] ❯[/bold cyan] ").strip()
+            return console.input(
+                f"\n  [bold cyan]fixos [{fmt_time(remaining)}] ❯[/bold cyan] "
+            ).strip()
     except (EOFError, KeyboardInterrupt):
         return ""

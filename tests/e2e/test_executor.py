@@ -5,8 +5,6 @@ Weryfikuje: -y injection, sudo logic, idempotency, dangerous blocking.
 
 from __future__ import annotations
 
-import subprocess
-import sys
 
 import pytest
 
@@ -16,7 +14,9 @@ from fixos.orchestrator.executor import CommandExecutor, DangerousCommandError
 @pytest.fixture
 def ex_live():
     """Executor w trybie live (wykonuje komendy)."""
-    return CommandExecutor(default_timeout=10, require_confirmation=False, dry_run=False)
+    return CommandExecutor(
+        default_timeout=10, require_confirmation=False, dry_run=False
+    )
 
 
 @pytest.fixture
@@ -134,7 +134,9 @@ class TestDangerousCommandBlocking:
 
     def test_mkfs_blocked(self, ex_live):
         with pytest.raises(DangerousCommandError):
-            ex_live.execute_sync("mkfs.ext4 /dev/sda", add_sudo=False, check_idempotent=False)
+            ex_live.execute_sync(
+                "mkfs.ext4 /dev/sda", add_sudo=False, check_idempotent=False
+            )
 
     def test_wget_pipe_sh_blocked(self, ex_live):
         with pytest.raises(DangerousCommandError):
@@ -146,10 +148,14 @@ class TestDangerousCommandBlocking:
 
     def test_fork_bomb_blocked(self, ex_live):
         with pytest.raises(DangerousCommandError):
-            ex_live.execute_sync(":(){ :|:& };:", add_sudo=False, check_idempotent=False)
+            ex_live.execute_sync(
+                ":(){ :|:& };:", add_sudo=False, check_idempotent=False
+            )
 
     def test_safe_echo_not_blocked(self, ex_live):
-        result = ex_live.execute_sync("echo hello", add_sudo=False, check_idempotent=False)
+        result = ex_live.execute_sync(
+            "echo hello", add_sudo=False, check_idempotent=False
+        )
         assert result.executed is True
         assert result.returncode == 0
         assert "hello" in result.stdout
@@ -159,7 +165,9 @@ class TestLiveExecution:
     """Testy faktycznego wykonania bezpiecznych komend."""
 
     def test_echo_executes_correctly(self, ex_live):
-        result = ex_live.execute_sync("echo fixos_test", add_sudo=False, check_idempotent=False)
+        result = ex_live.execute_sync(
+            "echo fixos_test", add_sudo=False, check_idempotent=False
+        )
         assert result.success is True
         assert "fixos_test" in result.stdout
         assert result.returncode == 0
@@ -170,13 +178,18 @@ class TestLiveExecution:
         assert result.returncode != 0
 
     def test_uname_returns_output(self, ex_live):
-        result = ex_live.execute_sync("uname -s", add_sudo=False, check_idempotent=False)
+        result = ex_live.execute_sync(
+            "uname -s", add_sudo=False, check_idempotent=False
+        )
         assert result.success is True
         assert len(result.stdout) > 0
 
     def test_timeout_handling(self):
-        ex = CommandExecutor(default_timeout=1, require_confirmation=False, dry_run=False)
+        ex = CommandExecutor(
+            default_timeout=1, require_confirmation=False, dry_run=False
+        )
         from fixos.orchestrator.executor import CommandTimeoutError
+
         with pytest.raises(CommandTimeoutError):
             ex.execute_sync("sleep 5", add_sudo=False, check_idempotent=False)
 
@@ -206,7 +219,8 @@ class TestIdempotencyCheck:
     """Testy sprawdzania idempotentności przed wykonaniem."""
 
     def test_mkdir_skipped_if_exists(self, ex_live):
-        import tempfile, os
+        import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             result = ex_live.execute_sync(
                 f"mkdir -p {tmpdir}", add_sudo=False, check_idempotent=True
@@ -216,7 +230,9 @@ class TestIdempotencyCheck:
             assert "już wykonane" in result.stdout
 
     def test_mkdir_executed_if_not_exists(self, ex_live):
-        import tempfile, os
+        import tempfile
+        import os
+
         with tempfile.TemporaryDirectory() as tmpdir:
             new_dir = os.path.join(tmpdir, "fixos_test_new_dir")
             result = ex_live.execute_sync(

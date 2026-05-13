@@ -16,6 +16,7 @@ from ..constants import (
 @dataclass
 class CmdResult:
     """Result of executed command."""
+
     cmd: str
     comment: str
     ok: bool
@@ -92,8 +93,8 @@ IMPORTANT: Adapt commands to the detected OS (Linux/Windows/macOS).
 def _is_diagnostic_only_command(cmd: str) -> bool:
     """Return True if command is read-only and not a repair action."""
     # Split by common shell delimiters to check each part
-    parts = re.split(r' && | \|\| |; ', cmd)
-    
+    parts = re.split(r" && | \|\| |; ", cmd)
+
     # If any part of a compound command looks like a repair, the whole thing is actionable
     for part in parts:
         if not _is_part_diagnostic_only(part):
@@ -109,7 +110,11 @@ def _is_part_diagnostic_only(part: str) -> bool:
 
     # Special case: diagnostic tools used for cleanup/repair
     if normalized.startswith("journalctl"):
-        if "--vacuum-" in normalized or "--flush" in normalized or "--rotate" in normalized:
+        if (
+            "--vacuum-" in normalized
+            or "--flush" in normalized
+            or "--rotate" in normalized
+        ):
             return False
 
     diagnostic_prefixes = (
@@ -147,7 +152,8 @@ def _pattern_strict_bold(reply: str) -> List[Tuple[str, str]]:
     fixes: List[Tuple[str, str]] = []
     for m in re.finditer(
         r"\*\*Komenda:\*\*\s*`([^`]+)`(?:[^\n]*?\*\*Co robi:\*\*\s*(.+?))?(?=\n|$)",
-        reply, re.IGNORECASE,
+        reply,
+        re.IGNORECASE,
     ):
         cmd = m.group(1).strip()
         if cmd:
@@ -160,11 +166,12 @@ def _pattern_backticks(reply: str) -> List[Tuple[str, str]]:
     fixes: List[Tuple[str, str]] = []
     for m in re.finditer(
         r"\*{0,2}Komenda:\*{0,2}\s*`([^`]+)`",
-        reply, re.IGNORECASE,
+        reply,
+        re.IGNORECASE,
     ):
         cmd = m.group(1).strip()
         if cmd:
-            fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+            fixes.append((cmd, _extract_co_robi(reply[m.end() :])))
     return fixes
 
 
@@ -175,11 +182,12 @@ def _pattern_no_backticks(reply: str) -> List[Tuple[str, str]]:
         r"\*{0,2}Komenda:\*{0,2}\s*"
         r"(.+?)"
         r"(?=\n\s*\*{0,2}Co robi:|\n[🔴🟡🟢]|\n━|\n─|\n\[[\dA-Z]|\Z)",
-        reply, re.IGNORECASE | re.DOTALL,
+        reply,
+        re.IGNORECASE | re.DOTALL,
     ):
         cmd = re.sub(r"\s*\n\s*", " ", m.group(1)).strip()
         if cmd:
-            fixes.append((cmd, _extract_co_robi(reply[m.end():])))
+            fixes.append((cmd, _extract_co_robi(reply[m.end() :])))
     return fixes
 
 
@@ -199,7 +207,9 @@ def _pattern_fallbacks(reply: str) -> List[Tuple[str, str]]:
 
 def _deduplicate(fixes: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
     """Remove diagnostic-only commands and deduplicate."""
-    filtered = [(cmd, comment) for cmd, comment in fixes if not _is_diagnostic_only_command(cmd)]
+    filtered = [
+        (cmd, comment) for cmd, comment in fixes if not _is_diagnostic_only_command(cmd)
+    ]
     seen: set[str] = set()
     unique: List[Tuple[str, str]] = []
     for cmd, comment in filtered:
@@ -226,7 +236,8 @@ def extract_search_topic(llm_reply: str) -> str:
         r"\b(sof-firmware|pipewire|alsa|thumbnails?|nautilus|"
         r"dnf|apt|systemctl|journalctl|codec|driver|nvidia|amd|"
         r"snd_hda|intel_sst|avs|wireplumber|pulseaudio|bluetooth|wifi)\b",
-        llm_reply, re.IGNORECASE
+        llm_reply,
+        re.IGNORECASE,
     )
     if tech_terms:
         return " ".join(dict.fromkeys(tech_terms[:MAX_TECH_TERMS]))

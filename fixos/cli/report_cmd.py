@@ -1,6 +1,7 @@
 """
 Report command for fixOS CLI
 """
+
 import click
 import json
 from pathlib import Path
@@ -18,7 +19,9 @@ def _render_report_markdown(results: list, timestamp: str) -> str:
     """Render diagnostic results as a Markdown string."""
     lines = ["# fixOS Diagnostic Report", "", f"**Timestamp:** {timestamp}", ""]
     for r in results:
-        status_icon = {"ok": "✅", "warning": "⚠️", "critical": "❌"}.get(r.status.value, "ℹ️")
+        status_icon = {"ok": "✅", "warning": "⚠️", "critical": "❌"}.get(
+            r.status.value, "ℹ️"
+        )
         lines.append(f"## {status_icon} {r.plugin_name} ({r.status.value})")
         lines.append(f"*Duration: {r.duration_ms:.0f}ms*\n")
         if r.findings:
@@ -48,7 +51,9 @@ def _render_report_html(results: list, timestamp: str) -> str:
                 f"<td>{f.title}</td><td>{f.description}</td>"
                 f"<td>{cmd_html}</td></tr>"
             )
-    table_rows = "\n".join(rows) if rows else "<tr><td colspan='5'>Brak problemów</td></tr>"
+    table_rows = (
+        "\n".join(rows) if rows else "<tr><td colspan='5'>Brak problemów</td></tr>"
+    )
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>fixOS Report</title>
 <style>
@@ -72,12 +77,20 @@ def _render_report_yaml(results: list, timestamp: str) -> str:
         "timestamp": timestamp,
         "results": [r.to_dict() for r in results],
     }
-    return yaml.dump(data, default_flow_style=False, allow_unicode=True, sort_keys=False)
+    return yaml.dump(
+        data, default_flow_style=False, allow_unicode=True, sort_keys=False
+    )
 
 
 @click.command("report")
-@click.option("--format", "output_format", type=click.Choice(["html", "markdown", "json", "yaml"]),
-              default="html", show_default=True, help="Format raportu")
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["html", "markdown", "json", "yaml"]),
+    default="html",
+    show_default=True,
+    help="Format raportu",
+)
 @click.option("--output", "-o", default=None, help="Ścieżka pliku wyjściowego")
 @click.option("--modules", "-m", default=None, help="Moduły diagnostyki")
 @click.option("--profile", "-p", default=None, help="Profil diagnostyczny")
@@ -102,6 +115,7 @@ def report(output_format, output, modules, profile) -> None:
     mods = None
     if profile:
         from fixos.profiles import Profile
+
         try:
             prof = Profile.load(profile)
             mods = prof.modules

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 @dataclass
 class LLMAnalysis:
     """Result of LLM analysis"""
+
     suggestions: List[Dict[str, Any]]
     confidence: float
     reasoning: str
@@ -19,7 +20,7 @@ class LLMAnalysis:
 
 class LLMAnalyzer:
     """Uses LLM to analyze disk issues when heuristics aren't sufficient"""
-    
+
     def __init__(self, llm_client):
         self.llm_client = llm_client
         self.analysis_prompts = {
@@ -106,45 +107,45 @@ Provide response in JSON format:
     "confidence": 0.75,
     "reasoning": "Pattern recognition explanation"
 }}
-"""
+""",
         }
-    
+
     def analyze_disk_issues(self, disk_data: Dict[str, Any]) -> LLMAnalysis:
         """Use LLM to analyze disk issues when heuristics are insufficient"""
         try:
             prompt = self.analysis_prompts["disk_analysis"].format(
                 disk_data=json.dumps(disk_data, indent=2, default=str)
             )
-            
-            response = self.llm_client.chat([
-                {"role": "user", "content": prompt}
-            ], max_tokens=1000, temperature=0.3)
-            
+
+            response = self.llm_client.chat(
+                [{"role": "user", "content": prompt}], max_tokens=1000, temperature=0.3
+            )
+
             # Parse JSON response
             try:
                 llm_result = json.loads(response)
-                
+
                 suggestions = []
                 for suggestion in llm_result.get("suggestions", []):
                     # Validate and sanitize suggestion
                     clean_suggestion = self._sanitize_suggestion(suggestion)
                     if clean_suggestion:
                         suggestions.append(clean_suggestion)
-                
+
                 return LLMAnalysis(
                     suggestions=suggestions,
                     confidence=llm_result.get("confidence", 0.5),
                     reasoning=llm_result.get("reasoning", ""),
-                    fallback_used=True
+                    fallback_used=True,
                 )
-                
+
             except json.JSONDecodeError:
                 # Fallback if JSON parsing fails
                 return self._create_fallback_analysis("Failed to parse LLM response")
-                
+
         except Exception as e:
             return self._create_fallback_analysis(f"LLM analysis failed: {str(e)}")
-    
+
     def analyze_failed_action(self, action: Dict[str, Any], error: str) -> LLMAnalysis:
         """Analyze failed cleanup action and suggest alternatives"""
         try:
@@ -152,19 +153,21 @@ Provide response in JSON format:
                 description=action.get("description", ""),
                 command=action.get("command", ""),
                 path=action.get("path", ""),
-                error=error
+                error=error,
             )
-            
-            response = self.llm_client.chat([
-                {"role": "user", "content": prompt}
-            ], max_tokens=500, temperature=0.3)
-            
+
+            response = self.llm_client.chat(
+                [{"role": "user", "content": prompt}], max_tokens=500, temperature=0.3
+            )
+
             try:
                 llm_result = json.loads(response)
-                
+
                 # Convert alternative approaches to suggestions format
                 suggestions = []
-                for approach in llm_result.get("failure_analysis", {}).get("alternative_approaches", []):
+                for approach in llm_result.get("failure_analysis", {}).get(
+                    "alternative_approaches", []
+                ):
                     suggestion = {
                         "type": "llm_fallback",
                         "priority": "medium",
@@ -174,57 +177,67 @@ Provide response in JSON format:
                         "command": approach.get("commands", [""])[0],
                         "safe": approach.get("safety_level", "low") == "high",
                         "impact": "medium",
-                        "reasoning": f"LLM suggested alternative for failed: {action.get('description', '')}"
+                        "reasoning": f"LLM suggested alternative for failed: {action.get('description', '')}",
                     }
                     suggestions.append(suggestion)
-                
+
                 return LLMAnalysis(
                     suggestions=suggestions,
                     confidence=llm_result.get("confidence", 0.5),
                     reasoning=llm_result.get("reasoning", ""),
-                    fallback_used=True
+                    fallback_used=True,
                 )
-                
+
             except json.JSONDecodeError:
-                return self._create_fallback_analysis("Failed to parse LLM failure analysis")
-                
+                return self._create_fallback_analysis(
+                    "Failed to parse LLM failure analysis"
+                )
+
         except Exception as e:
-            return self._create_fallback_analysis(f"LLM failure analysis failed: {str(e)}")
-    
+            return self._create_fallback_analysis(
+                f"LLM failure analysis failed: {str(e)}"
+            )
+
     def analyze_complex_pattern(self, pattern_data: Dict[str, Any]) -> LLMAnalysis:
         """Analyze complex disk usage patterns that heuristics can't categorize"""
         try:
             prompt = self.analysis_prompts["complex_disk_pattern"].format(
                 pattern_data=json.dumps(pattern_data, indent=2, default=str)
             )
-            
-            response = self.llm_client.chat([
-                {"role": "user", "content": prompt}
-            ], max_tokens=800, temperature=0.3)
-            
+
+            response = self.llm_client.chat(
+                [{"role": "user", "content": prompt}], max_tokens=800, temperature=0.3
+            )
+
             try:
                 llm_result = json.loads(response)
-                
+
                 suggestions = []
                 for suggestion in llm_result.get("suggestions", []):
                     clean_suggestion = self._sanitize_suggestion(suggestion)
                     if clean_suggestion:
                         suggestions.append(clean_suggestion)
-                
+
                 return LLMAnalysis(
                     suggestions=suggestions,
                     confidence=llm_result.get("confidence", 0.5),
                     reasoning=llm_result.get("reasoning", ""),
-                    fallback_used=True
+                    fallback_used=True,
                 )
-                
+
             except json.JSONDecodeError:
-                return self._create_fallback_analysis("Failed to parse LLM pattern analysis")
-                
+                return self._create_fallback_analysis(
+                    "Failed to parse LLM pattern analysis"
+                )
+
         except Exception as e:
-            return self._create_fallback_analysis(f"LLM pattern analysis failed: {str(e)}")
-    
-    def _sanitize_suggestion(self, suggestion: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+            return self._create_fallback_analysis(
+                f"LLM pattern analysis failed: {str(e)}"
+            )
+
+    def _sanitize_suggestion(
+        self, suggestion: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Sanitize and validate LLM suggestion"""
         try:
             # Required fields
@@ -232,18 +245,25 @@ Provide response in JSON format:
             for field in required_fields:
                 if field not in suggestion:
                     return None
-            
+
             # Validate priority
             valid_priorities = ["critical", "high", "medium", "low"]
             if suggestion["priority"] not in valid_priorities:
                 suggestion["priority"] = "medium"
-            
+
             # Validate type
-            valid_types = ["cache_cleanup", "log_cleanup", "temp_cleanup", "large_file", 
-                          "system_cleanup", "llm_fallback", "pattern_specific_cleanup"]
+            valid_types = [
+                "cache_cleanup",
+                "log_cleanup",
+                "temp_cleanup",
+                "large_file",
+                "system_cleanup",
+                "llm_fallback",
+                "pattern_specific_cleanup",
+            ]
             if suggestion["type"] not in valid_types:
                 suggestion["type"] = "system_cleanup"
-            
+
             # Ensure numeric fields
             if "size_gb" not in suggestion:
                 suggestion["size_gb"] = 0.0
@@ -252,72 +272,77 @@ Provide response in JSON format:
                     suggestion["size_gb"] = float(suggestion["size_gb"])
                 except (ValueError, TypeError):
                     suggestion["size_gb"] = 0.0
-            
+
             # Ensure boolean fields
             if "safe" not in suggestion:
                 suggestion["safe"] = False
             else:
                 suggestion["safe"] = bool(suggestion["safe"])
-            
+
             # Validate impact
             valid_impacts = ["high", "medium", "low"]
             if "impact" not in suggestion or suggestion["impact"] not in valid_impacts:
                 suggestion["impact"] = "medium"
-            
+
             # Add reasoning if missing
             if "reasoning" not in suggestion:
                 suggestion["reasoning"] = "LLM generated suggestion"
-            
+
             return suggestion
-            
+
         except Exception:
             return None
-    
+
     def _create_fallback_analysis(self, error_message: str) -> LLMAnalysis:
         """Create fallback analysis when LLM fails"""
         return LLMAnalysis(
             suggestions=[],
             confidence=0.0,
             reasoning=f"LLM analysis unavailable: {error_message}",
-            fallback_used=False
+            fallback_used=False,
         )
-    
-    def enhance_heuristics_with_llm(self, heuristic_suggestions: List[Dict], 
-                                  disk_data: Dict[str, Any]) -> List[Dict]:
+
+    def enhance_heuristics_with_llm(
+        self, heuristic_suggestions: List[Dict], disk_data: Dict[str, Any]
+    ) -> List[Dict]:
         """Enhance heuristic suggestions with LLM insights"""
         if not heuristic_suggestions:
             # No heuristics available, use full LLM analysis
             llm_analysis = self.analyze_disk_issues(disk_data)
             return llm_analysis.suggestions
-        
+
         # Check if heuristics found significant issues
         total_size = sum(s.get("size_gb", 0) for s in heuristic_suggestions)
-        high_priority_count = sum(1 for s in heuristic_suggestions if s.get("priority") in ["critical", "high"])
-        
+        high_priority_count = sum(
+            1
+            for s in heuristic_suggestions
+            if s.get("priority") in ["critical", "high"]
+        )
+
         # If heuristics found good results, just use them
         if total_size > 1.0 or high_priority_count > 2:
             return heuristic_suggestions
-        
+
         # Heuristics were insufficient, enhance with LLM
         try:
             llm_analysis = self.analyze_disk_issues(disk_data)
-            
+
             if llm_analysis.confidence > 0.6 and llm_analysis.suggestions:
                 # Combine heuristics and LLM suggestions
                 combined = heuristic_suggestions.copy()
-                
+
                 # Add LLM suggestions that aren't duplicates
                 heuristic_paths = {s.get("path", "") for s in heuristic_suggestions}
-                
+
                 for llm_suggestion in llm_analysis.suggestions:
                     if llm_suggestion.get("path", "") not in heuristic_paths:
                         combined.append(llm_suggestion)
-                
+
                 return combined
             else:
                 # LLM confidence low, stick with heuristics
                 return heuristic_suggestions
-                
+
         except Exception:
             # LLM failed, use heuristics
             return heuristic_suggestions

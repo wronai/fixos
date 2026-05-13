@@ -39,7 +39,7 @@ def get_full_diagnostics(
 ) -> dict[str, Any]:
     """
     Zbiera diagnostykę z wybranych modułów.
-    
+
     Args:
         modules: Lista modułów do uruchomienia (None = wszystkie)
         progress_callback: Funkcja (name, description) -> None do aktualizacji UI

@@ -1,6 +1,7 @@
 """
 Profile commands for fixOS CLI
 """
+
 import click
 
 
@@ -41,7 +42,6 @@ def profile_list() -> None:
 def profile_show(name: str) -> None:
     """Pokaż szczegóły profilu diagnostycznego."""
     from fixos.profiles import Profile
-    import yaml
 
     try:
         p = Profile.load(name)

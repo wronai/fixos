@@ -77,8 +77,7 @@ class ProblemGraph:
 
     def all_done(self) -> bool:
         return all(
-            p.status in ("resolved", "failed", "blocked")
-            for p in self.nodes.values()
+            p.status in ("resolved", "failed", "blocked") for p in self.nodes.values()
         )
 
     def pending_count(self) -> int:
@@ -105,10 +104,15 @@ class ProblemGraph:
                 return
             visited.add(pid)
             p = self.nodes[pid]
-            icon = {"critical": "🔴", "warning": "🟡", "info": "🟢"}.get(p.severity, "⚪")
+            icon = {"critical": "🔴", "warning": "🟡", "info": "🟢"}.get(
+                p.severity, "⚪"
+            )
             status_icon = {
-                "pending": "⏳", "in_progress": "🔄",
-                "resolved": "✅", "failed": "❌", "blocked": "🚫"
+                "pending": "⏳",
+                "in_progress": "🔄",
+                "resolved": "✅",
+                "failed": "❌",
+                "blocked": "🚫",
             }.get(p.status, "?")
             prefix = "  " * indent + ("└─ " if indent > 0 else "")
             lines.append(f"{prefix}{icon} [{p.id}] {p.description} {status_icon}")
@@ -134,9 +138,7 @@ class ProblemGraph:
                 if dep in self.nodes:
                     in_degree[p.id] = in_degree.get(p.id, 0) + 1
 
-        queue = deque(
-            pid for pid, deg in in_degree.items() if deg == 0
-        )
+        queue = deque(pid for pid, deg in in_degree.items() if deg == 0)
         order = []
 
         while queue:

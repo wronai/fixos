@@ -1,6 +1,7 @@
 """
 Token management commands for fixOS CLI
 """
+
 import click
 import os
 from pathlib import Path
@@ -14,7 +15,9 @@ def token() -> None:
 
 @token.command("set")
 @click.argument("key")
-@click.option("--provider", "-p", default=None, help="Provider (auto-detect if not provided)")
+@click.option(
+    "--provider", "-p", default=None, help="Provider (auto-detect if not provided)"
+)
 @click.option("--env-file", "-e", default=".env", help="Plik .env do zapisu")
 def token_set(key, provider, env_file) -> None:
     """
@@ -26,7 +29,7 @@ def token_set(key, provider, env_file) -> None:
       fixos token set sk-... --provider openai   # wymuszony provider
       fixos token set $TOKEN --env-file ~/.env   # inny plik
     """
-    from fixos.config import detect_provider_from_key, FixOsConfig, ENV_SEARCH_PATHS
+    from fixos.config import detect_provider_from_key, FixOsConfig
     from dotenv import set_key
 
     # Auto-detect provider if not specified
@@ -70,7 +73,9 @@ def token_set(key, provider, env_file) -> None:
         # Set file permissions to 600 (owner read/write only)
         os.chmod(env_path, 0o600)
         masked = f"{key[:8]}...{key[-4:]}" if len(key) > 12 else "***"
-        click.echo(click.style(f"Zapisano {env_var}={masked} do {env_path}", fg="green"))
+        click.echo(
+            click.style(f"Zapisano {env_var}={masked} do {env_path}", fg="green")
+        )
 
         # Also update current process
         os.environ[env_var] = key
@@ -80,7 +85,9 @@ def token_set(key, provider, env_file) -> None:
         if cfg.api_key == key:
             click.echo(click.style("Token aktywny i działa!", fg="green"))
         else:
-            click.echo(click.style("Token zapisany, ale wymagany restart shell.", fg="yellow"))
+            click.echo(
+                click.style("Token zapisany, ale wymagany restart shell.", fg="yellow")
+            )
 
     except Exception as e:
         click.echo(click.style(f"Błąd zapisu: {e}", fg="red"))
@@ -113,10 +120,20 @@ def token_clear(env_file) -> None:
         return
 
     # Unset all known API keys
-    keys = ["GEMINI_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY",
-            "OPENROUTER_API_KEY", "GROQ_API_KEY", "MISTRAL_API_KEY",
-            "ANTHROPIC_API_KEY", "TOGETHER_API_KEY", "COHERE_API_KEY",
-            "DEEPSEEK_API_KEY", "CEREBRAS_API_KEY", "LLM_API_KEY"]
+    keys = [
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "XAI_API_KEY",
+        "OPENROUTER_API_KEY",
+        "GROQ_API_KEY",
+        "MISTRAL_API_KEY",
+        "ANTHROPIC_API_KEY",
+        "TOGETHER_API_KEY",
+        "COHERE_API_KEY",
+        "DEEPSEEK_API_KEY",
+        "CEREBRAS_API_KEY",
+        "LLM_API_KEY",
+    ]
 
     for key in keys:
         unset_key(str(env_path), key)

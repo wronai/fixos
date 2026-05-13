@@ -34,24 +34,28 @@ def diagnose_files() -> dict[str, Any]:
         result.update(_find_downloads_cleanup())
 
     elif IS_WINDOWS:
-        result.update({
-            "large_files": _cmd(
-                'powershell -Command "Get-ChildItem -Path $HOME -Recurse '
-                '-ErrorAction SilentlyContinue | Where-Object {$_.Length -gt 200MB} | '
-                'Sort-Object Length -Descending | Select-Object FullName,'
-                '@{N=\'SizeMB\';E={[math]::Round($_.Length/1MB,1)}} | '
-                'Format-Table -AutoSize | Out-String -Width 200" 2>nul'
-            ),
-        })
+        result.update(
+            {
+                "large_files": _cmd(
+                    'powershell -Command "Get-ChildItem -Path $HOME -Recurse '
+                    "-ErrorAction SilentlyContinue | Where-Object {$_.Length -gt 200MB} | "
+                    "Sort-Object Length -Descending | Select-Object FullName,"
+                    "@{N='SizeMB';E={[math]::Round($_.Length/1MB,1)}} | "
+                    'Format-Table -AutoSize | Out-String -Width 200" 2>nul'
+                ),
+            }
+        )
 
     elif IS_MAC:
-        result.update({
-            "large_files": _cmd(
-                f"find ~ -xdev -size +{MIN_LARGE_FILE_ANALYSIS_MB}M "
-                "-not -path '*/Library/*' -not -path '*/.Trash/*' "
-                f"2>/dev/null | head -{MAX_FILE_ANALYSIS_LARGE}"
-            ),
-        })
+        result.update(
+            {
+                "large_files": _cmd(
+                    f"find ~ -xdev -size +{MIN_LARGE_FILE_ANALYSIS_MB}M "
+                    "-not -path '*/Library/*' -not -path '*/.Trash/*' "
+                    f"2>/dev/null | head -{MAX_FILE_ANALYSIS_LARGE}"
+                ),
+            }
+        )
 
     return result
 
@@ -68,12 +72,11 @@ def _find_large_files() -> dict[str, Any]:
             "-not -path '*/.var/app/*' "
             "-printf '%s %T@ %p\\n' 2>/dev/null | "
             "sort -rn | "
-            "awk '{size=$1/1048576; split($3,a,\"/\"); "
-            "ext=substr(a[length(a)],index(a[length(a)],\".\")+1); "
-            "printf \"%.0f MB | %s | %s\\n\", size, ext, $3}' | "
+            'awk \'{size=$1/1048576; split($3,a,"/"); '
+            'ext=substr(a[length(a)],index(a[length(a)],".")+1); '
+            'printf "%.0f MB | %s | %s\\n", size, ext, $3}\' | '
             f"head -{MAX_FILE_ANALYSIS_LARGE}"
         ),
-
         # Large videos (mp4, mkv, avi, mov, wmv, webm)
         "large_videos": _cmd(
             "find ~ -xdev \\( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.avi' "
@@ -85,7 +88,6 @@ def _find_large_files() -> dict[str, Any]:
             "awk '{printf \"%.0f MB | %s\\n\", $1/1048576, $2}' | "
             f"head -{MAX_FILE_ANALYSIS_MEDIA}"
         ),
-
         # Large archives (zip, tar.gz, rar, 7z, iso)
         "large_archives": _cmd(
             "find ~ -xdev \\( -iname '*.zip' -o -iname '*.tar.gz' -o -iname '*.tar.bz2' "
@@ -97,7 +99,6 @@ def _find_large_files() -> dict[str, Any]:
             "awk '{printf \"%.0f MB | %s\\n\", $1/1048576, $2}' | "
             f"head -{MAX_FILE_ANALYSIS_MEDIA}"
         ),
-
         # Large disk images (vmdk, qcow2, vdi, vhd, raw)
         "large_disk_images": _cmd(
             "find ~ -xdev \\( -iname '*.vmdk' -o -iname '*.qcow2' -o -iname '*.vdi' "
@@ -107,7 +108,6 @@ def _find_large_files() -> dict[str, Any]:
             "-printf '%s %p\\n' 2>/dev/null | sort -rn | "
             "awk '{printf \"%.0f MB | %s\\n\", $1/1048576, $2}' | head -10"
         ),
-
         # Summary: total large files by category
         "large_files_summary": _cmd(
             "find ~ -xdev -size +200M "
@@ -116,9 +116,9 @@ def _find_large_files() -> dict[str, Any]:
             "-not -path '*/.cargo/*' -not -path '*/.var/app/*' "
             "-printf '%s %f\\n' 2>/dev/null | "
             "awk '{"
-            "ext=tolower(substr($2,index($2,\".\")+1)); "
+            'ext=tolower(substr($2,index($2,".")+1)); '
             "size[ext]+=$1; count[ext]++} "
-            "END {for(e in size) printf \"%d MB | %d plików | .%s\\n\", "
+            'END {for(e in size) printf "%d MB | %d plików | .%s\\n", '
             "size[e]/1048576, count[e], e}' | sort -rn | head -15"
         ),
     }
@@ -137,13 +137,12 @@ def _find_duplicates() -> dict[str, Any]:
             "sort -n | "
             "awk '{if(prev_size==$1) {"
             "if(!printed_prev) {print prev_line; printed_prev=1}; "
-            "printf \"%s %s\\n\", $1, $2} "
+            'printf "%s %s\\n", $1, $2} '
             "else {printed_prev=0}; "
             "prev_size=$1; prev_line=$0}' | "
             "awk '{printf \"%.1f MB | %s\\n\", $1/1048576, $2}' | "
             f"head -{MAX_FILE_ANALYSIS_DUPES}"
         ),
-
         # Verify with partial MD5 (first 4KB) for top candidates
         "duplicate_verified": _cmd(
             "find ~ -xdev -size +50M "
@@ -152,18 +151,16 @@ def _find_duplicates() -> dict[str, Any]:
             "-not -path '*/.cargo/*' -not -path '*/.var/app/*' "
             "-printf '%s %p\\n' 2>/dev/null | "
             "sort -n | "
-            "awk '{if(prev==$1) arr[$1]=arr[$1]\"\\n\"$2; "
-            "else if(arr[prev]) arr[prev]=prev_f\"\\n\"arr[prev]; "
+            'awk \'{if(prev==$1) arr[$1]=arr[$1]"\\n"$2; '
+            'else if(arr[prev]) arr[prev]=prev_f"\\n"arr[prev]; '
             "prev=$1; prev_f=$2}' | "
             "head -20 || echo 'N/A'"
         ),
-
         # Use fdupes if available (most accurate)
         "fdupes_summary": _cmd(
             "fdupes -r -S ~/Documents ~/Downloads ~/Desktop 2>/dev/null | "
             "head -40 || echo 'fdupes niedostępny (dnf install fdupes)'"
         ),
-
         # rdfind summary
         "rdfind_summary": _cmd(
             "rdfind -dryrun true ~/Documents ~/Downloads 2>/dev/null | "
@@ -191,7 +188,6 @@ def _find_media_files() -> dict[str, Any]:
             "-printf '%s\\n' 2>/dev/null | "
             "awk '{s+=$1; c++} END {printf \"%d plików, %.1f MB łącznie\\n\", c, s/1048576}'"
         ),
-
         # PDF documents (separate from ebooks, often larger)
         "pdf_documents": _cmd(
             "find ~ -xdev -iname '*.pdf' "
@@ -205,7 +201,6 @@ def _find_media_files() -> dict[str, Any]:
             "-printf '%s\\n' 2>/dev/null | "
             "awk '{s+=$1; c++} END {printf \"%d plików, %.1f MB łącznie\\n\", c, s/1048576}'"
         ),
-
         # Music (mp3, flac, ogg, m4a, wav, wma, aac)
         "music_files": _cmd(
             "find ~ -xdev \\( -iname '*.mp3' -o -iname '*.flac' -o -iname '*.ogg' "
@@ -220,7 +215,6 @@ def _find_media_files() -> dict[str, Any]:
             "-not -path '*/.cache/*' "
             "-printf '%h\\n' 2>/dev/null | sort | uniq -c | sort -rn | head -10"
         ),
-
         # Video files summary
         "video_summary": _cmd(
             "find ~ -xdev \\( -iname '*.mp4' -o -iname '*.mkv' -o -iname '*.avi' "
@@ -235,7 +229,6 @@ def _find_media_files() -> dict[str, Any]:
             "-not -path '*/.cache/*' "
             "-printf '%h\\n' 2>/dev/null | sort | uniq -c | sort -rn | head -10"
         ),
-
         # Images summary (large collections)
         "images_summary": _cmd(
             "find ~ -xdev \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' "
@@ -266,17 +259,15 @@ def _find_archive_candidates() -> dict[str, Any]:
             "-not -path '*/.var/app/*' "
             "-printf '%Ab %Ad %AY | %s | %p\\n' 2>/dev/null | "
             "awk -F'|' '{gsub(/^[ ]+|[ ]+$/,\"\",$2); "
-            "printf \"%s | %.0f MB | %s\\n\", $1, $2/1048576, $3}' | "
+            'printf "%s | %.0f MB | %s\\n", $1, $2/1048576, $3}\' | '
             f"head -{MAX_FILE_ANALYSIS_LARGE}"
         ),
-
         # Directories with media that could be archived to external drive
         "media_dirs_to_archive": _cmd(
             "du -sh ~/Videos ~/Music ~/Pictures ~/Documents/ebooks "
             "~/Audiobooks ~/Podcasts ~/Recordings "
             "2>/dev/null | sort -rh | head -10"
         ),
-
         # Old downloads (>30 days in Downloads folder)
         "old_downloads": _cmd(
             "find ~/Downloads -maxdepth 1 -mtime +30 "
@@ -290,7 +281,6 @@ def _find_archive_candidates() -> dict[str, Any]:
             "-printf '%s\\n' 2>/dev/null | "
             "awk '{s+=$1; c++} END {printf \"%d plików, %.1f MB łącznie\\n\", c, s/1048576}'"
         ),
-
         # Trash size
         "trash_size": _cmd(
             "du -sh ~/.local/share/Trash/files 2>/dev/null || echo 'Kosz pusty'"
@@ -305,22 +295,18 @@ def _find_downloads_cleanup() -> dict[str, Any]:
     """Analyze Downloads folder specifically."""
     return {
         # Downloads folder size
-        "downloads_total_size": _cmd(
-            "du -sh ~/Downloads 2>/dev/null || echo 'N/A'"
-        ),
-
+        "downloads_total_size": _cmd("du -sh ~/Downloads 2>/dev/null || echo 'N/A'"),
         # Downloads grouped by extension
         "downloads_by_type": _cmd(
             "find ~/Downloads -maxdepth 2 -type f "
             "-printf '%s %f\\n' 2>/dev/null | "
             "awk '{"
-            "ext=tolower(substr($2,index($2,\".\")+1)); "
-            "if(ext==$2) ext=\"brak\"; "
+            'ext=tolower(substr($2,index($2,".")+1)); '
+            'if(ext==$2) ext="brak"; '
             "size[ext]+=$1; count[ext]++} "
-            "END {for(e in size) printf \"%d MB | %d plików | .%s\\n\", "
+            'END {for(e in size) printf "%d MB | %d plików | .%s\\n", '
             "size[e]/1048576, count[e], e}' | sort -rn | head -15"
         ),
-
         # Installer/package files that can be removed
         "installer_files": _cmd(
             "find ~/Downloads -maxdepth 2 \\( "

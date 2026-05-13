@@ -1,4 +1,5 @@
 """Container storage analyzers (Docker, Podman)."""
+
 from __future__ import annotations
 
 import os
@@ -36,20 +37,28 @@ class _ContainerAnalyzerMixin:
         build_cache = 0
         current_section = None
 
-        for raw_line in output.split('\n'):
+        for raw_line in output.split("\n"):
             line = raw_line.strip()
             section = _ContainerAnalyzerMixin._detect_docker_section(line)
             if section:
                 current_section = section
                 continue
-            if current_section == "images" and line and not line.startswith("REPOSITORY"):
+            if (
+                current_section == "images"
+                and line
+                and not line.startswith("REPOSITORY")
+            ):
                 parts = line.split()
                 if len(parts) >= 4:
                     if parts[0] == "<none>" or parts[1] == "<none>":
                         dangling_images += 1
                         dangling_size += StorageAnalyzer._parse_size_static(parts[3])
                     total_images += 1
-            elif current_section == "build_cache" and line and not line.startswith("CACHE ID"):
+            elif (
+                current_section == "build_cache"
+                and line
+                and not line.startswith("CACHE ID")
+            ):
                 parts = line.split()
                 if len(parts) >= 2:
                     build_cache += StorageAnalyzer._parse_size_static(parts[-2])
@@ -61,55 +70,63 @@ class _ContainerAnalyzerMixin:
             "build_cache": build_cache,
         }
 
-    def _add_dangling_images_item(self, dangling_images: int, dangling_size: int) -> None:
+    def _add_dangling_images_item(
+        self, dangling_images: int, dangling_size: int
+    ) -> None:
         """Append a StorageItem for dangling Docker images if threshold exceeded."""
         if dangling_size > MIN_DOCKER_DANGLING_MB * 1024 * 1024:
-            self.items.append(StorageItem(
-                name=f"Dangling Docker Images ({dangling_images})",
-                path="/var/lib/docker",
-                size_bytes=dangling_size,
-                category="containers",
-                risk="low",
-                cleanup_command="docker image prune -f",
-                description=(
-                    f"Dangling images (bez tagu): {StorageItem._format_size(dangling_size)}. "
-                    "Bezpieczne do usunięcia - to nieużywane obrazy."
-                ),
-            ))
+            self.items.append(
+                StorageItem(
+                    name=f"Dangling Docker Images ({dangling_images})",
+                    path="/var/lib/docker",
+                    size_bytes=dangling_size,
+                    category="containers",
+                    risk="low",
+                    cleanup_command="docker image prune -f",
+                    description=(
+                        f"Dangling images (bez tagu): {StorageItem._format_size(dangling_size)}. "
+                        "Bezpieczne do usunięcia - to nieużywane obrazy."
+                    ),
+                )
+            )
 
     def _add_build_cache_item(self, build_cache: int) -> None:
         """Append a StorageItem for Docker build cache if threshold exceeded."""
         if build_cache > 100 * 1024 * 1024:
-            self.items.append(StorageItem(
-                name="Docker Build Cache",
-                path="/var/lib/docker",
-                size_bytes=build_cache,
-                category="containers",
-                risk="low",
-                cleanup_command="docker builder prune -f",
-                description=(
-                    f"Build cache Dockera: {StorageItem._format_size(build_cache)}. "
-                    "Bezpieczne do usunięcia."
-                ),
-            ))
+            self.items.append(
+                StorageItem(
+                    name="Docker Build Cache",
+                    path="/var/lib/docker",
+                    size_bytes=build_cache,
+                    category="containers",
+                    risk="low",
+                    cleanup_command="docker builder prune -f",
+                    description=(
+                        f"Build cache Dockera: {StorageItem._format_size(build_cache)}. "
+                        "Bezpieczne do usunięcia."
+                    ),
+                )
+            )
 
     def _add_docker_total_item(self, total_images: int, dangling_images: int) -> None:
         """Append a StorageItem for total Docker usage if threshold exceeded."""
         total_docker = self._get_dir_size("/var/lib/docker")
         if total_docker > 1024**3:
-            self.items.append(StorageItem(
-                name="Docker Total",
-                path="/var/lib/docker",
-                size_bytes=total_docker,
-                category="containers",
-                risk="medium",
-                cleanup_command="docker system prune -a --volumes",
-                description=(
-                    f"Docker łącznie: {StorageItem._format_size(total_docker)}. "
-                    f"Obrazy: {total_images}, dangling: {dangling_images}. "
-                    "Uwaga: usunie wszystkie nieużywane zasoby."
-                ),
-            ))
+            self.items.append(
+                StorageItem(
+                    name="Docker Total",
+                    path="/var/lib/docker",
+                    size_bytes=total_docker,
+                    category="containers",
+                    risk="medium",
+                    cleanup_command="docker system prune -a --volumes",
+                    description=(
+                        f"Docker łącznie: {StorageItem._format_size(total_docker)}. "
+                        f"Obrazy: {total_images}, dangling: {dangling_images}. "
+                        "Uwaga: usunie wszystkie nieużywane zasoby."
+                    ),
+                )
+            )
 
     def _analyze_docker(self):
         """Analyze Docker storage - images, containers, volumes, build cache"""
@@ -120,16 +137,18 @@ class _ContainerAnalyzerMixin:
         if not output:
             size = self._get_dir_size("/var/lib/docker")
             if size > 500 * 1024 * 1024:
-                self.items.append(StorageItem(
-                    name="Docker",
-                    path="/var/lib/docker",
-                    size_bytes=size,
-                    category="containers",
-                    risk="medium",
-                    cleanup_command="docker system prune -a",
-                    description=f"Docker zajmuje {StorageItem._format_size(size)}. "
-                               "Uwaga: usunie nieużywane obrazy i kontenery.",
-                ))
+                self.items.append(
+                    StorageItem(
+                        name="Docker",
+                        path="/var/lib/docker",
+                        size_bytes=size,
+                        category="containers",
+                        risk="medium",
+                        cleanup_command="docker system prune -a",
+                        description=f"Docker zajmuje {StorageItem._format_size(size)}. "
+                        "Uwaga: usunie nieużywane obrazy i kontenery.",
+                    )
+                )
             return
 
         stats = self._parse_docker_df_output(output)
@@ -144,12 +163,14 @@ class _ContainerAnalyzerMixin:
 
         size = self._get_dir_size("/var/lib/containers")
         if size > MIN_PODMAN_MB * 1024 * 1024:
-            self.items.append(StorageItem(
-                name="Podman",
-                path="/var/lib/containers",
-                size_bytes=size,
-                category="containers",
-                risk="medium",
-                cleanup_command="podman system prune -a",
-                description=f"Podman zajmuje {StorageItem._format_size(size)}.",
-            ))
+            self.items.append(
+                StorageItem(
+                    name="Podman",
+                    path="/var/lib/containers",
+                    size_bytes=size,
+                    category="containers",
+                    risk="medium",
+                    cleanup_command="podman system prune -a",
+                    description=f"Podman zajmuje {StorageItem._format_size(size)}.",
+                )
+            )

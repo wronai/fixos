@@ -1,6 +1,7 @@
 """
 Provider management commands for fixOS CLI
 """
+
 import click
 
 
@@ -130,7 +131,9 @@ def llm_providers(free: bool) -> None:
 
         # Build provider line with badge
         pricing = info.get("pricing", "PAID")
-        badge = click.style(f"[{pricing}]", fg="green" if pricing == "FREE" else "yellow")
+        badge = click.style(
+            f"[{pricing}]", fg="green" if pricing == "FREE" else "yellow"
+        )
         active_marker = ""
         if provider_id == active_provider:
             active_marker = click.style(" [aktywny]", fg="green", bold=True)
@@ -139,7 +142,9 @@ def llm_providers(free: bool) -> None:
         click.echo(f"  {badge} {name}{active_marker}")
         click.echo(f"    ID: {provider_id}")
         click.echo(f"    Strona: {info['url']}")
-        click.echo(f"    Klucz   : {click.style(info['key_url'], fg='blue', underline=True)}")
+        click.echo(
+            f"    Klucz   : {click.style(info['key_url'], fg='blue', underline=True)}"
+        )
         click.echo(f"    Zmienna : {info.get('env_var', 'N/A')}")
         click.echo(f"    Modele: {', '.join(info['models'][:3])}")
         click.echo()
@@ -166,7 +171,9 @@ def providers() -> None:
 
     for provider_id, info in PROVIDERS_INFO.items():
         pricing = info.get("pricing", "PAID")
-        badge = click.style(f"[{pricing}]", fg="green" if pricing == "FREE" else "yellow")
+        badge = click.style(
+            f"[{pricing}]", fg="green" if pricing == "FREE" else "yellow"
+        )
         active_marker = ""
         if provider_id == active_provider:
             active_marker = click.style(" [aktywny]", fg="green", bold=True)
@@ -174,7 +181,9 @@ def providers() -> None:
         name = click.style(info["name"], fg="yellow", bold=True)
         click.echo(f"  {badge} {name}{active_marker}")
         click.echo(f"    ID: {provider_id}")
-        click.echo(f"    Klucz   : {click.style(info['key_url'], fg='blue', underline=True)}")
+        click.echo(
+            f"    Klucz   : {click.style(info['key_url'], fg='blue', underline=True)}"
+        )
         click.echo(f"    Zmienna : {info.get('env_var', 'N/A')}")
         click.echo()
 
@@ -207,6 +216,7 @@ def test_llm(provider: str, token: str, model: str, no_banner: bool) -> None:
 
     if not no_banner:
         from fixos.cli.shared import BANNER
+
         click.echo(click.style(BANNER, fg="cyan"))
 
     cfg = FixOsConfig.load()
@@ -220,10 +230,16 @@ def test_llm(provider: str, token: str, model: str, no_banner: bool) -> None:
     click.echo(click.style("\nTest połączenia z LLM...", fg="yellow"))
     click.echo(f"  Provider: {cfg.provider}")
     click.echo(f"  Model: {cfg.model}")
-    click.echo(f"  Klucz: {'skonfigurowany' if cfg.api_key else click.style('BRAK', fg='red', bold=True)}")
+    click.echo(
+        f"  Klucz: {'skonfigurowany' if cfg.api_key else click.style('BRAK', fg='red', bold=True)}"
+    )
 
     if not cfg.api_key:
-        click.echo(click.style("\nBłąd: Brak klucza API. Użyj: fixos token set <KLUCZ>", fg="red"))
+        click.echo(
+            click.style(
+                "\nBłąd: Brak klucza API. Użyj: fixos token set <KLUCZ>", fg="red"
+            )
+        )
         return
 
     try:
@@ -231,12 +247,17 @@ def test_llm(provider: str, token: str, model: str, no_banner: bool) -> None:
         click.echo(click.style("\nWysyłam testowe zapytanie...", fg="cyan"))
 
         response = llm.chat(
-            [{"role": "user", "content": "Hello! Please respond with 'Hello from fixOS test.'"}],
-            max_tokens=50
+            [
+                {
+                    "role": "user",
+                    "content": "Hello! Please respond with 'Hello from fixOS test.'",
+                }
+            ],
+            max_tokens=50,
         )
 
         click.echo(click.style("✅ Połączenie udane!", fg="green", bold=True))
-        click.echo(f"\nOdpowiedź LLM:")
+        click.echo("\nOdpowiedź LLM:")
         click.echo(f"  {response.strip()}")
         click.echo(f"\nZużyte tokeny: {llm.total_tokens}")
 

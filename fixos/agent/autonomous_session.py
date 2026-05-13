@@ -18,13 +18,11 @@ from ..utils.timeout import SessionTimeout
 from ..constants import (
     UI_BORDER_WIDTH,
     MAX_OUTPUT_PREVIEW_LENGTH,
-    MAX_ANON_PREVIEW_LENGTH,
     DEFAULT_COMMAND_TIMEOUT,
     DEFAULT_TOKEN_LIMIT,
     MAX_COMMAND_LENGTH,
     MAX_SEARCH_QUERY_LENGTH,
 )
-
 
 
 # Commands NEVER executed automatically
@@ -42,8 +40,16 @@ FORBIDDEN_COMMANDS = [
 ]
 
 SUDO_PREFIXES = [
-    "dnf", "rpm", "systemctl", "firewall-cmd", "setenforce",
-    "modprobe", "rmmod", "alsactl", "grub2-", "update-grub",
+    "dnf",
+    "rpm",
+    "systemctl",
+    "firewall-cmd",
+    "setenforce",
+    "modprobe",
+    "rmmod",
+    "alsactl",
+    "grub2-",
+    "update-grub",
 ]
 
 SYSTEM_PROMPT_AUTONOMOUS = """Jesteś autonomicznym agentem diagnostyki Linux, Windows, macOS.
@@ -130,8 +136,10 @@ class AutonomousSession:
 
     def _setup_timeout(self) -> None:
         """Setup session timeout handler."""
+
         def _timeout_handler(signum, frame) -> None:
             raise SessionTimeout()
+
         signal.signal(signal.SIGALRM, _timeout_handler)
         signal.alarm(self.config.session_timeout)
 
@@ -149,7 +157,9 @@ class AutonomousSession:
         print(f"  Timeout sesji: {self.config.session_timeout}s")
         print(f"  Model: {self.config.model}")
 
-        confirm = input("\n  Czy na pewno chcesz uruchomić tryb autonomiczny? (yes/N): ").strip()
+        confirm = input(
+            "\n  Czy na pewno chcesz uruchomić tryb autonomiczny? (yes/N): "
+        ).strip()
         if confirm.lower() not in ("yes", "tak"):
             print("  Anulowano. Użyj --mode hitl dla trybu z potwierdzeniem.")
             return False
@@ -175,6 +185,7 @@ class AutonomousSession:
     def _get_remaining_time(self) -> int:
         """Get remaining session time in seconds."""
         from . import get_remaining_time
+
         return get_remaining_time(self)
 
     def _check_timeout(self) -> None:
@@ -185,7 +196,9 @@ class AutonomousSession:
     def _query_llm(self) -> Optional[str]:
         """Query LLM and return reply."""
         try:
-            return self.llm.chat(self.messages, max_tokens=DEFAULT_TOKEN_LIMIT, temperature=0.1)
+            return self.llm.chat(
+                self.messages, max_tokens=DEFAULT_TOKEN_LIMIT, temperature=0.1
+            )
         except LLMError as e:
             print(f"  ❌ LLM błąd: {e}")
             return None
@@ -195,10 +208,9 @@ class AutonomousSession:
         if self.config.enable_web_search and self.search_count < self.MAX_SEARCHES:
             results = search_all("fedora repair diagnostics", self.config.serpapi_key)
             if results:
-                self.messages.append({
-                    "role": "user",
-                    "content": format_results_for_llm(results)
-                })
+                self.messages.append(
+                    {"role": "user", "content": format_results_for_llm(results)}
+                )
                 self.search_count += 1
                 return True
         return False
@@ -206,6 +218,7 @@ class AutonomousSession:
     def _parse_action(self, reply: str) -> Optional[Dict[str, Any]]:
         """Parse JSON action from LLM reply."""
         import json
+
         patterns = [
             r"```(?:json)?\s*(\{.*?\})\s*```",
             r"(\{[^{}]*\"action\"[^{}]*\})",
@@ -242,7 +255,11 @@ class AutonomousSession:
         """Execute command and return (success, output)."""
         try:
             proc = subprocess.run(
-                cmd, shell=True, capture_output=True, text=True, timeout=DEFAULT_COMMAND_TIMEOUT
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=DEFAULT_COMMAND_TIMEOUT,
             )
             out = proc.stdout.strip() or proc.stderr.strip() or "(brak outputu)"
             return proc.returncode == 0, out[:MAX_OUTPUT_PREVIEW_LENGTH]
@@ -260,22 +277,28 @@ class AutonomousSession:
             self.report.searches_done.append(query)
             if results:
                 web_ctx = format_results_for_llm(results)
-                self.messages.append({
-                    "role": "user",
-                    "content": f"Wyniki dla '{query}':\n{web_ctx}\nKontynuuj naprawę."
-                })
+                self.messages.append(
+                    {
+                        "role": "user",
+                        "content": f"Wyniki dla '{query}':\n{web_ctx}\nKontynuuj naprawę.",
+                    }
+                )
             else:
-                self.messages.append({
-                    "role": "user",
-                    "content": f"Brak wyników dla '{query}'. Co innego możemy zrobić?"
-                })
+                self.messages.append(
+                    {
+                        "role": "user",
+                        "content": f"Brak wyników dla '{query}'. Co innego możemy zrobić?",
+                    }
+                )
             return True
         else:
             print("  ⚠️  Limit wyszukiwań osiągnięty.")
-            self.messages.append({
-                "role": "user",
-                "content": "Brak więcej wyszukiwań. Co możemy zrobić bez zewnętrznych źródeł?"
-            })
+            self.messages.append(
+                {
+                    "role": "user",
+                    "content": "Brak więcej wyszukiwań. Co możemy zrobić bez zewnętrznych źródeł?",
+                }
+            )
             return False
 
     def _handle_exec(self, action_data: Dict[str, Any]) -> bool:
@@ -284,17 +307,21 @@ class AutonomousSession:
         reason = action_data.get("reason", "")
 
         if not cmd_raw:
-            self.messages.append({"role": "user", "content": "Brak komendy. Podaj konkretną komendę."})
+            self.messages.append(
+                {"role": "user", "content": "Brak komendy. Podaj konkretną komendę."}
+            )
             return False
 
         # Security check
         danger = self._is_forbidden(cmd_raw)
         if danger:
             print(f"  🚫 ZABLOKOWANO: {danger}")
-            self.messages.append({
-                "role": "user",
-                "content": f"Komenda `{cmd_raw}` jest zabroniona: {danger}. Zaproponuj bezpieczniejszą alternatywę."
-            })
+            self.messages.append(
+                {
+                    "role": "user",
+                    "content": f"Komenda `{cmd_raw}` jest zabroniona: {danger}. Zaproponuj bezpieczniejszą alternatywę.",
+                }
+            )
             return False
 
         cmd = deanonymize(cmd_raw)
@@ -313,25 +340,26 @@ class AutonomousSession:
         anon_out, _ = anonymize(out)
         anon_cmd, _ = anonymize(cmd)
 
-        self.messages.append({
-            "role": "user",
-            "content": (
-                f"Wykonano: `{anon_cmd}`\n"
-                f"Sukces: {ok}\n"
-                f"Output: {anon_out[:MAX_SEARCH_QUERY_LENGTH]}\n"
-                f"Zweryfikuj wynik i zaproponuj następną akcję."
-            ),
-        })
+        self.messages.append(
+            {
+                "role": "user",
+                "content": (
+                    f"Wykonano: `{anon_cmd}`\n"
+                    f"Sukces: {ok}\n"
+                    f"Output: {anon_out[:MAX_SEARCH_QUERY_LENGTH]}\n"
+                    f"Zweryfikuj wynik i zaproponuj następną akcję."
+                ),
+            }
+        )
         return True
 
     def _handle_skip(self, action_data: Dict[str, Any]) -> None:
         """Handle SKIP action."""
         reason = action_data.get("reason", "")
         print(f"  ⏭️  Pomijam: {reason}")
-        self.messages.append({
-            "role": "user",
-            "content": f"Pominięto: {reason}. Co dalej?"
-        })
+        self.messages.append(
+            {"role": "user", "content": f"Pominięto: {reason}. Co dalej?"}
+        )
         self.fix_count += 1
 
     def _handle_done(self) -> None:
@@ -345,7 +373,9 @@ class AutonomousSession:
         """
         self._check_timeout()
         remaining = self._get_remaining_time()
-        print(f"  ⟳ Tura {self.fix_count + 1}/{self.max_fixes} | ⏰ {remaining}s pozostało")
+        print(
+            f"  ⟳ Tura {self.fix_count + 1}/{self.max_fixes} | ⏰ {remaining}s pozostało"
+        )
 
         # Query LLM
         reply = self._query_llm()
@@ -360,10 +390,12 @@ class AutonomousSession:
         action_data = self._parse_action(reply)
         if not action_data:
             print("  ⚠️  Nieprawidłowy format JSON, kontynuuję...")
-            self.messages.append({
-                "role": "user",
-                "content": "Odpowiedz TYLKO w formacie JSON jak w instrukcji."
-            })
+            self.messages.append(
+                {
+                    "role": "user",
+                    "content": "Odpowiedz TYLKO w formacie JSON jak w instrukcji.",
+                }
+            )
             return True
 
         action = action_data.get("action", "SKIP")
@@ -407,9 +439,9 @@ class AutonomousSession:
                 if not should_continue:
                     break
         except SessionTimeout:
-            print(f"\n  ⏰ Timeout sesji.")
+            print("\n  ⏰ Timeout sesji.")
         except KeyboardInterrupt:
-            print(f"\n\n  ⛔ Przerwano przez użytkownika (Ctrl+C).")
+            print("\n\n  ⛔ Przerwano przez użytkownika (Ctrl+C).")
         finally:
             self._clear_timeout()
 

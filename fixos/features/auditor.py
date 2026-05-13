@@ -3,7 +3,7 @@ Feature auditor - compares system state with desired profile.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Set
+from typing import List
 import shutil
 
 from .catalog import PackageCatalog, PackageInfo
@@ -14,6 +14,7 @@ from . import SystemInfo
 @dataclass
 class AuditResult:
     """Result of feature audit - what's installed, what's missing."""
+
     profile_name: str
     system: SystemInfo
     installed: List[PackageInfo] = field(default_factory=list)

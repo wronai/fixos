@@ -8,7 +8,6 @@ from __future__ import annotations
 import getpass
 import socket
 
-import pytest
 
 from fixos.utils.anonymizer import anonymize, AnonymizationReport
 
@@ -72,6 +71,7 @@ class TestHomePaths:
     def test_literal_home_dir_replaced_first(self):
         """Dosłowny katalog domowy (~) powinien być zastąpiony przed regex."""
         import os
+
         home = os.path.expanduser("~")
         data = f"path: {home}/.config/fixos"
         anon, report = anonymize(data)

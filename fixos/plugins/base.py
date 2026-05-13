@@ -15,6 +15,7 @@ from typing import Any
 
 class Severity(Enum):
     """Severity level for diagnostic findings."""
+
     OK = "ok"
     INFO = "info"
     WARNING = "warning"
@@ -24,6 +25,7 @@ class Severity(Enum):
 @dataclass
 class Finding:
     """Single finding from a diagnostic plugin."""
+
     title: str
     severity: Severity
     description: str
@@ -35,6 +37,7 @@ class Finding:
 @dataclass
 class DiagnosticResult:
     """Result of a diagnostic plugin run."""
+
     plugin_name: str
     status: Severity
     findings: list[Finding] = field(default_factory=list)
@@ -86,6 +89,7 @@ class DiagnosticPlugin(ABC):
     def can_run(self) -> bool:
         """Czy plugin może działać na aktualnej platformie?"""
         import platform
+
         current = platform.system().lower()
         platform_map = {"linux": "linux", "darwin": "macos", "windows": "windows"}
         return platform_map.get(current, current) in self.platforms

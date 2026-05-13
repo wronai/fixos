@@ -9,6 +9,7 @@ from __future__ import annotations
 
 class SessionTimeout(Exception):
     """Wyjątek rzucany po przekroczeniu limitu czasu sesji."""
+
     pass
 
 

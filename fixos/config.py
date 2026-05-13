@@ -21,6 +21,7 @@ TIMEOUT_3600 = 3600
 # Próbuj załadować python-dotenv
 try:
     from dotenv import load_dotenv
+
     _HAS_DOTENV = True
 except ImportError:
     _HAS_DOTENV = False
@@ -167,9 +168,9 @@ class FixOsConfig:
     base_url: Optional[str] = None
 
     # Agent
-    agent_mode: str = "hitl"          # hitl | autonomous
+    agent_mode: str = "hitl"  # hitl | autonomous
     session_timeout: int = TIMEOUT_3600
-    max_auto_fixes: int = 10          # limit dla trybu autonomous
+    max_auto_fixes: int = 10  # limit dla trybu autonomous
 
     # UI
     show_anonymized_data: bool = True  # Pokaż dane użytkownikowi przed wysłaniem
@@ -202,10 +203,7 @@ class FixOsConfig:
         cfg = cls(env_file_loaded=env_file)
 
         # Provider
-        cfg.provider = (
-            provider
-            or os.environ.get("LLM_PROVIDER", "gemini")
-        ).lower()
+        cfg.provider = (provider or os.environ.get("LLM_PROVIDER", "gemini")).lower()
 
         if cfg.provider not in PROVIDER_DEFAULTS:
             print(
@@ -234,10 +232,7 @@ class FixOsConfig:
         cfg.base_url = base_url or os.environ.get(url_env_key) or pdef["base_url"]
 
         # Agent mode
-        cfg.agent_mode = (
-            agent_mode
-            or os.environ.get("AGENT_MODE", "hitl")
-        ).lower()
+        cfg.agent_mode = (agent_mode or os.environ.get("AGENT_MODE", "hitl")).lower()
 
         # Timeout
         cfg.session_timeout = session_timeout or int(
@@ -281,7 +276,9 @@ class FixOsConfig:
         """Krótkie podsumowanie konfiguracji (bez klucza API)."""
         if self.api_key:
             if len(self.api_key) > CONSTANT_12:
-                key_masked = f"{self.api_key[:CONSTANT_8]}...{self.api_key[-CONSTANT_4:]}"
+                key_masked = (
+                    f"{self.api_key[:CONSTANT_8]}...{self.api_key[-CONSTANT_4:]}"
+                )
             else:
                 key_masked = "***"
         else:
@@ -407,6 +404,7 @@ def interactive_provider_setup() -> Optional["FixOsConfig"]:
     """
     # Lazy import to avoid circular dependency
     from .config_interactive import interactive_provider_setup as _interactive_setup
+
     return _interactive_setup()
 
 
@@ -414,12 +412,14 @@ def get_providers_list() -> list[dict]:
     """Zwraca listę providerów jako listę słowników."""
     result = []
     for name, d in PROVIDER_DEFAULTS.items():
-        result.append({
-            "name": name,
-            "model": d["model"],
-            "key_env": d.get("key_env") or "(brak – lokalny)",
-            "key_url": d.get("key_url", ""),
-            "free_tier": d.get("free_tier", False),
-            "description": d.get("description", ""),
-        })
+        result.append(
+            {
+                "name": name,
+                "model": d["model"],
+                "key_env": d.get("key_env") or "(brak – lokalny)",
+                "key_url": d.get("key_url", ""),
+                "free_tier": d.get("free_tier", False),
+                "description": d.get("description", ""),
+            }
+        )
     return result

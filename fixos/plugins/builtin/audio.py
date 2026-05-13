@@ -19,54 +19,64 @@ class Plugin(DiagnosticPlugin):
         alsa = self._check_alsa()
         raw_data["alsa"] = alsa
         if not alsa.get("cards"):
-            findings.append(Finding(
-                title="Brak kart ALSA",
-                severity=Severity.CRITICAL,
-                description="System nie wykrył żadnych kart dźwiękowych ALSA.",
-                suggestion="Sprawdź czy moduły jądra snd_* są załadowane.",
-                command="sudo modprobe snd_hda_intel",
-            ))
+            findings.append(
+                Finding(
+                    title="Brak kart ALSA",
+                    severity=Severity.CRITICAL,
+                    description="System nie wykrył żadnych kart dźwiękowych ALSA.",
+                    suggestion="Sprawdź czy moduły jądra snd_* są załadowane.",
+                    command="sudo modprobe snd_hda_intel",
+                )
+            )
 
         # PipeWire status
         pw = self._check_pipewire()
         raw_data["pipewire"] = pw
         if pw.get("status") == "failed":
-            findings.append(Finding(
-                title="PipeWire nie działa",
-                severity=Severity.CRITICAL,
-                description="Usługa PipeWire nie jest aktywna.",
-                command="systemctl --user restart pipewire pipewire-pulse",
-            ))
+            findings.append(
+                Finding(
+                    title="PipeWire nie działa",
+                    severity=Severity.CRITICAL,
+                    description="Usługa PipeWire nie jest aktywna.",
+                    command="systemctl --user restart pipewire pipewire-pulse",
+                )
+            )
         elif pw.get("status") == "inactive":
-            findings.append(Finding(
-                title="PipeWire nieaktywny",
-                severity=Severity.WARNING,
-                description="Usługa PipeWire jest nieaktywna.",
-                command="systemctl --user start pipewire pipewire-pulse",
-            ))
+            findings.append(
+                Finding(
+                    title="PipeWire nieaktywny",
+                    severity=Severity.WARNING,
+                    description="Usługa PipeWire jest nieaktywna.",
+                    command="systemctl --user start pipewire pipewire-pulse",
+                )
+            )
 
         # WirePlumber
         wp = self._check_wireplumber()
         raw_data["wireplumber"] = wp
         if wp.get("status") == "failed":
-            findings.append(Finding(
-                title="WirePlumber nie działa",
-                severity=Severity.WARNING,
-                description="WirePlumber (session manager) nie jest aktywny.",
-                command="systemctl --user restart wireplumber",
-            ))
+            findings.append(
+                Finding(
+                    title="WirePlumber nie działa",
+                    severity=Severity.WARNING,
+                    description="WirePlumber (session manager) nie jest aktywny.",
+                    command="systemctl --user restart wireplumber",
+                )
+            )
 
         # SOF firmware
         sof = self._check_sof()
         raw_data["sof"] = sof
         if sof.get("missing"):
-            findings.append(Finding(
-                title="Brak firmware SOF",
-                severity=Severity.WARNING,
-                description="Firmware Sound Open Firmware nie jest zainstalowany.",
-                suggestion="Zainstaluj pakiet sof-firmware.",
-                command="sudo dnf install -y sof-firmware",
-            ))
+            findings.append(
+                Finding(
+                    title="Brak firmware SOF",
+                    severity=Severity.WARNING,
+                    description="Firmware Sound Open Firmware nie jest zainstalowany.",
+                    suggestion="Zainstaluj pakiet sof-firmware.",
+                    command="sudo dnf install -y sof-firmware",
+                )
+            )
 
         status = Severity.OK
         if any(f.severity == Severity.CRITICAL for f in findings):

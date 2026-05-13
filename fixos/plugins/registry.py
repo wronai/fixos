@@ -35,8 +35,14 @@ class PluginRegistry:
     def _register_builtins(self):
         """Rejestracja wbudowanych pluginów."""
         from fixos.plugins.builtin import (
-            audio, hardware, security, resources, disk, thumbnails,
+            audio,
+            hardware,
+            security,
+            resources,
+            disk,
+            thumbnails,
         )
+
         for module in [audio, hardware, security, resources, disk, thumbnails]:
             plugin = module.Plugin()
             self._plugins[plugin.name] = plugin
@@ -109,15 +115,19 @@ class PluginRegistry:
                 self._results[name] = result
             except Exception as e:
                 logger.error(f"Plugin {name} failed: {e}")
-                results.append(DiagnosticResult(
-                    plugin_name=name,
-                    status=Severity.CRITICAL,
-                    findings=[Finding(
-                        title=f"Plugin {name} crashed",
-                        severity=Severity.CRITICAL,
-                        description=str(e),
-                    )],
-                ))
+                results.append(
+                    DiagnosticResult(
+                        plugin_name=name,
+                        status=Severity.CRITICAL,
+                        findings=[
+                            Finding(
+                                title=f"Plugin {name} crashed",
+                                severity=Severity.CRITICAL,
+                                description=str(e),
+                            )
+                        ],
+                    )
+                )
 
         return results
 

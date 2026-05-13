@@ -1,6 +1,7 @@
 """
 Quickfix command for fixOS CLI - heuristic fixes without LLM
 """
+
 import click
 import subprocess
 from fixos.plugins.base import Severity
@@ -55,21 +56,26 @@ def quickfix(dry_run, modules) -> None:
                         if click.confirm("    Wykonać?"):
                             try:
                                 proc = subprocess.run(
-                                    finding.command, shell=True,
-                                    capture_output=True, text=True, timeout=60,
+                                    finding.command,
+                                    shell=True,
+                                    capture_output=True,
+                                    text=True,
+                                    timeout=60,
                                 )
                                 if proc.returncode == 0:
                                     click.echo(click.style("    OK", fg="green"))
                                     fixes_applied += 1
                                 else:
-                                    click.echo(click.style(
-                                        f"    FAIL (exit {proc.returncode}): {proc.stderr[:200]}",
-                                        fg="red",
-                                    ))
+                                    click.echo(
+                                        click.style(
+                                            f"    FAIL (exit {proc.returncode}): {proc.stderr[:200]}",
+                                            fg="red",
+                                        )
+                                    )
                             except Exception as e:
                                 click.echo(click.style(f"    Błąd: {e}", fg="red"))
 
-    click.echo(click.style(f"\nPodsumowanie quickfix:", fg="cyan"))
+    click.echo(click.style("\nPodsumowanie quickfix:", fg="cyan"))
     click.echo(f"  Znalezione naprawy: {fixes_found}")
     if not dry_run:
         click.echo(f"  Wykonane: {fixes_applied}")

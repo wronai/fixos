@@ -85,7 +85,9 @@ def validate(data: dict, scenario: str) -> list[str]:
     """Validate data against scenario expectations. Returns list of failures."""
     expectations = SCENARIOS.get(scenario)
     if expectations is None:
-        return [f"Nieznany scenariusz: '{scenario}'. Dostępne: {', '.join(SCENARIOS.keys())}"]
+        return [
+            f"Nieznany scenariusz: '{scenario}'. Dostępne: {', '.join(SCENARIOS.keys())}"
+        ]
 
     failures = []
     for exp in expectations:
@@ -101,14 +103,20 @@ def validate(data: dict, scenario: str) -> list[str]:
 
         if "equals" in exp:
             if value_str.strip() != str(exp["equals"]).strip():
-                failures.append(f"  ✗ {desc}: oczekiwano '{exp['equals']}', otrzymano '{value_str[:80]}'")
+                failures.append(
+                    f"  ✗ {desc}: oczekiwano '{exp['equals']}', otrzymano '{value_str[:80]}'"
+                )
 
         if "contains" in exp:
             if exp["contains"].lower() not in value_str.lower():
-                failures.append(f"  ✗ {desc}: brak '{exp['contains']}' w '{value_str[:80]}'")
+                failures.append(
+                    f"  ✗ {desc}: brak '{exp['contains']}' w '{value_str[:80]}'"
+                )
 
         if "contains_any" in exp:
-            if not any(term.lower() in value_str.lower() for term in exp["contains_any"]):
+            if not any(
+                term.lower() in value_str.lower() for term in exp["contains_any"]
+            ):
                 failures.append(
                     f"  ✗ {desc}: brak żadnego z {exp['contains_any']} w '{value_str[:80]}'"
                 )
@@ -150,7 +158,10 @@ def main() -> None:
         sys.exit(1)
     else:
         expectations_count = len(SCENARIOS[scenario])
-        print(f"✓ Scenariusz '{scenario}' — {expectations_count}/{expectations_count} OK", file=sys.stderr)
+        print(
+            f"✓ Scenariusz '{scenario}' — {expectations_count}/{expectations_count} OK",
+            file=sys.stderr,
+        )
         sys.exit(0)
 
 
